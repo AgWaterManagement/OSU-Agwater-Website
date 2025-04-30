@@ -1,0 +1,94 @@
+{
+  "assistance": {
+    "topics": [
+      {
+        "label": "Crop Water Management and Irrigation",
+        "subtopics": [
+          {
+            "label": "Irrigation Technology",
+            "send_to": [
+              "john.bolte@oregonstate.edu",
+              "maria.zamorare@oregonstate.edu"
+            ]
+          },
+          {
+            "label": "Crop Water Use",
+            "send_to": [
+              "john.bolte@oregonstate.edu",
+              "maria.zamorare@oregonstate.edu"
+            ]
+          },
+          {
+            "label": "Agrivoltaics",
+            "send_to": [
+              "john.bolte@oregonstate.edu",
+              "malena.orduna@oregonstate.edu"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Water Quality",
+        "subtopics": [
+          {
+            "label": "Domestic Water Quality",
+            "send_to": [
+              "john.bolte@oregonstate.edu"
+            ]
+          },
+          {
+            "label": "Agricultural Water Quality",
+            "send_to": [
+              "john.bolte@oregonstate.edu",
+              "maria.zamorare@oregonstate.edu"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Groundwater",
+        "subtopics": [
+          {
+            "label": "Groundwater Management Areas",
+            "send_to": [
+              "john.bolte@oregonstate.edu"
+            ]
+          },
+          {
+            "label": "Groundwater Quality",
+            "send_to": [
+              "john.bolte@oregonstate.edu"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Water Law and Policy",
+        "subtopics": [
+          {
+            "label": "Water Law",
+            "send_to": [
+              "john.bolte@oregonstate.edu",
+              "malena.orduna@oregonstate.edu"
+            ]
+          },
+          {
+            "label": "Water Policy",
+            "send_to": [
+              "john.bolte@oregonstate.edu",
+              "malena.orduna@oregonstate.edu"
+            ]
+          },
+          {
+            "label": "Water Rights",
+            "send_to": [
+              "john.bolte@oregonstate.edu",
+              "malena.orduna@oregonstate.edu"
+            ]
+          }
+
+        ]
+      }
+    ]
+  }
+}

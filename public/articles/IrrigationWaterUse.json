@@ -1,0 +1,15 @@
+{
+"article" : {
+  "keywords": [ "irrigation","agriculture","climate","groundwater","depletion" ],
+  "title": "Irrigation Water Use in the United States, 2008-2020",
+  "subtitle": "A US County-level mapping application exploring irrigation water use, surface and groundwater consumption, and groundwater depletion",
+  "lead_author": "John Bolte, Ph.D.",
+  "avatar": "bolte.jpg",
+  "additional_authors" : [],
+  "site": "Oregon State University",
+  "pub_date": "2024/4/1",
+  "link": "/#/IrrigWaterUse",
+  "cover_image": "https://agwater.org/articles/images/CenterPivotAlachuaCounty.jpg",
+  "body_html" : "<p>A new, county-level dataset describing irrigation water withdrawals from surface and groundwater for twenty crops/cropping systems in the United States.  The dataset provides annual summaries for the period 2008 to 2020.  An interactive, web-based mapping application allows exploration of this dataset, through maps and other forms of communications.</p>"
+  }
+}

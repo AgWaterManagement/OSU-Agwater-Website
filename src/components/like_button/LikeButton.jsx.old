@@ -1,0 +1,19 @@
+
+import { Button } from 'antd';
+import { StarOutlined } from '@ant-design/icons';
+
+
+const LikeButton = () => (
+    <>
+    <Button type="primary" icon={<StarOutlined />} iconPosition='start'>
+        Like
+    </Button>
+
+    <span>0 Likes</span>
+
+    </>
+);
+
+
+export default LikeButton;
+
