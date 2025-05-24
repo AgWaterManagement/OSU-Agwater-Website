@@ -15,6 +15,7 @@ import Dashboards from '../../apps/dashboards/Dashboards';
 import IrrigWaterUse from '../../apps/irrig_water_use/IrrigWaterUse';
 import OregonCropWaterUse from '../../apps/oregon_crop_water_use/OregonCropWaterUse';
 import SubmitArticle from '../submit_article/SubmitArticle';
+import Documentation from '../doc/Documentation';
 import Test from '../test/Test';
 
 //import awLogo from '../../assets/images/AgWaterLogo.jpg'
@@ -116,6 +117,7 @@ const AppLayout = () => {
                         <Route path="/submitArticle/:id" element={<SubmitArticle />} />
                         <Route path="/login" element={<Home />} />
                         <Route path="/dashboards" element={<Dashboards />} />
+                        <Route path="/doc" element={<Documentation />} />
                         <Route path="/test" element={<Test />} />
                     </Routes>
                 </article>
