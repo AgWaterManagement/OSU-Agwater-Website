@@ -12,7 +12,7 @@ const API_URL = "https://api.fake-rest.refine.dev";
 const App = () => (
 
     <Refine dataProvider={dataProvider(API_URL)}>
-        <AppLayout />;
+        <AppLayout />
     </Refine>
 )
 

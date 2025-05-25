@@ -13,8 +13,9 @@ const HomePage = () => (
         </span>
 
         <h3 className="aw-light-text" style={{marginBottom:0, paddingBottom:0}}>Latest News...</h3>
-        <AWArticles showFilters={false} showSearch={false}></AWArticles>
-
+        <div className='content-container'>
+            <AWArticles showFilters={false} showSearch={false}></AWArticles>
+        </div>
         <hr/>
         
     </div>
