@@ -15,7 +15,9 @@
             "label": "Crop Water Use",
             "send_to": [
               "john.bolte@oregonstate.edu",
-              "maria.zamorare@oregonstate.edu"
+              "maria.zamorare@oregonstate.edu",
+              "salini.sasidharan@oregonstate.edu"
+
             ]
           },
           {
@@ -51,13 +53,22 @@
           {
             "label": "Groundwater Management Areas",
             "send_to": [
-              "john.bolte@oregonstate.edu"
+              "john.bolte@oregonstate.edu",
+              "salini.sasidharan@oregonstate.edu"
             ]
           },
           {
             "label": "Groundwater Quality",
             "send_to": [
-              "john.bolte@oregonstate.edu"
+              "john.bolte@oregonstate.edu",
+              "salini.sasidharan@oregonstate.edu"
+            ]
+          },
+          {
+            "label": "Groundwater Supply",
+            "send_to": [
+              "john.bolte@oregonstate.edu",
+              "salini.sasidharan@oregonstate.edu"
             ]
           }
         ]
