@@ -21,6 +21,27 @@ const SearchPage = () => {
 
   function onSearch() {
 
+    fetch('/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        searchTerms: document.getElementById('searchInput').value
+      })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '/search_results';
+        } else {
+          alert('Search failed. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while searching. Please try again.');
+      });
   }
 
   return (
