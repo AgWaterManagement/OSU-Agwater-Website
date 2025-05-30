@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useMediaQuery } from 'react-responsive';
 
-import { Card, Row, Col, Input, Select, Button, Pagination, Image, Tag } from "antd";
+import { Row, Col, Input, Select, Pagination, Image, Tag } from "antd";
 
 const { Option } = Select;
 const { Search } = Input;
-const { Meta } = Card;
+
 
 const POSTS_PER_PAGE = 8;
 
@@ -17,14 +17,14 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
     const [selectedTag, setSelectedTag] = useState("");
 
     useEffect(() => {
-        fetch("/articles/articles.json")
+        fetch("https://agwater.org:5556/ArticleList")
             .then((res) => res.json())
-            .then((data) => {
-                for (let _article of data.articles)
+            .then((articles) => {
+                for (let _article of articles)
                     _article['_id'] = _article.title.replaceAll(' ', '_');
-                return data;
+                return articles;
             })
-            .then((data) => setArticles(data.articles));
+            .then((articles) => setArticles(articles));
     }, []);
 
 
@@ -112,26 +112,26 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
                     {displayedPosts.map((post) => (
                         <Col key={post._id} id={post._id} xs={{ flex: '100%' }} sm={{ flex: '50%' }} md={{ flex: '33%' }} lg={{ flex: '25%' }} xl={{ flex: '20%' }}
                             style={{ margin: "1em", height: "100%" }}
+                                onClick={OnArticleClick}                            
                         >
-
                             <Image
-                                width={300}
-                                height={200}
+                                width={'95%'}
+                                maxWidth={500}
+                                maxHeight={360}
                                 preview={false}
                                 src={post.cover_image}
                                 style={{ borderRadius: 8, margin: 0, padding: 0 }}
-                                onClick={OnArticleClick}
                             />
 
-                            <p style={{ margin: 0, padding: 0 }} onClick={OnArticleClick}>
+                            <p style={{ margin: 0, padding: 0 }} >
                                 <span style={{ fontWeight: 'bold', fontSize: 'large', margin: 0, padding: 0 }}>{post.title}</span>
                             </p>
-                            <p style={{ margin: 0, padding: 0 }}>{post.abstract}</p>
+                            <p style={{ margin: 0, padding: 0, paddingRight:'1em'}}>{post.abstract}</p>
 
                             <p style={{ fontSize: "small", margin: 0, padding: 0, paddingTop: '1em' }} > By {post.lead_author} on {post.pub_date} </p>
                             
-                            {post.tags && post.tags.map((tag) => (
-                                <Tag>{tag}</Tag>
+                            {post.tags && post.tags.map((tag,index) => (
+                                <Tag key={index}>{tag}</Tag>
                             ))}
 
                             {isMobile && (<hr />)}

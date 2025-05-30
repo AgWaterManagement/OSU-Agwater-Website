@@ -19,21 +19,19 @@ const SearchPage = () => {
   //const isPortrait = useMediaQuery({ query: '(orientation: portrait)' })
   //const isRetina = useMediaQuery({ query: '(min-resolution: 2dppx)' })
 
+ 
+
   function onSearch() {
 
-    fetch('/search', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        searchTerms: document.getElementById('searchInput').value
-      })
-    })
+    const keywords = document.getElementById('searchInput').value.trim();
+    fetch('/Search?' + new URLSearchParams({keywords: keywords}))
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          window.location.href = '/search_results';
+          console.log('Search successful:', data);
+
+
+          
         } else {
           alert('Search failed. Please try again.');
         }
@@ -42,7 +40,8 @@ const SearchPage = () => {
         console.error('Error:', error);
         alert('An error occurred while searching. Please try again.');
       });
-  }
+    }
+
 
   return (
     <div className='full-width'
@@ -58,7 +57,7 @@ const SearchPage = () => {
       <br />
   
       <div style={{ fontSize: 'large' }}>
-        <Search placeholder="input search text" allowClear onSearch={onSearch}
+        <Search id="searchInput" placeholder="input search text" allowClear onSearch={onSearch}
           style={{ width: 400, paddingBottom:'1em', fontSize: 'xx-large' }} />
       </div>
 

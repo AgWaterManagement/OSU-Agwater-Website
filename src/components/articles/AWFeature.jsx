@@ -23,6 +23,9 @@ const AWFeatureDetail = ({ article = null }) => {
         margin: '0px',
     };
 
+    if (article != null)
+        console.log(article.url)
+
     return (
         <>
             {(article == null) && (<span>No Article Available</span>)}
@@ -46,7 +49,7 @@ const AWFeatureDetail = ({ article = null }) => {
 
                     <div id='divBodyText' className="aw-white-bg aw-black-text" style={{ padding: '0.5em' }}
                         dangerouslySetInnerHTML={{ __html: article.body_html }}></div>
-                    <Button type="link" href={article.link} target="_blank" className="" >Read More...</Button>
+                    <Button type="link" href={article.url} target="_blank" className="" >Read More...</Button>
                 </>
             )}
         </>
@@ -63,10 +66,10 @@ const AWFeature = () => {
     //document.getElementById('divBodyText').innerHTML= article.body_html;
 
     useEffect(() => {
-        fetch("/articles/articles.json")
+        fetch("https://agwater.org:5556/ArticleList")
             .then((res) => res.json())
-            .then((data) => {
-                for (let article of data.articles) {
+            .then((articles) => {
+                for (let article of articles) {
                     article['_id'] = article.title.replaceAll(' ', '_');
                     if (article['_id'] == params.id) {
                         setArticle(article);
