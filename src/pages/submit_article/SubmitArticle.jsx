@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Row, Col, Button, DatePicker, Form, Input, Select, AutoComplete } from 'antd';
-import PropTypes from 'prop-types';
+//import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 
-import { AWFeatureDetail } from '../../components/articles/AWFeature';
+import { AWFeatureDisplay } from '../../components/articles/AWFeature';
 
 const formItemLayout = {
     labelCol: { sm: { span: 24 }, md: { span: 24} },
@@ -28,21 +28,21 @@ const SubmitArticle = () => {
     const [isDirty, setIsDirty] = useState(false); // State for dirty flag
 
     useEffect(() => {
-        fetch("/articles/articles.json")
+        fetch("https://agwater.org:5556/ArticleList")
             .then((response) => {
                 if (!response.ok) throw new Error("Failed to fetch articles");
                 return response.json();
             })
-            .then((data) => {
-                setArticles(data.articles);
+            .then((articles) => {
+                setArticles(articles);
 
-                for (let article of data.articles)
+                for (let article of articles)
                     article['_id'] = article.title.replaceAll(' ', '_'); // Ensure unique IDs
 
-                const _authors = [...new Set(data.articles.map(article => article.lead_author))];
-                const _sites = [...new Set(data.articles.map(article => article.lead_site))];
-                const _tags = [...new Set(data.articles.flatMap(article => article.tags || []))];
-                const _titles = data.articles.map(article => ({ value: article._id, label: article.title })); // Map titles
+                const _authors = [...new Set(articles.map(article => article.lead_author))];
+                const _sites = [...new Set(articles.map(article => article.lead_site))];
+                const _tags = [...new Set(articles.flatMap(article => article.tags || []))];
+                const _titles = articles.map(article => ({ value: article._id, label: article.title })); // Map titles
                 //const _avatars = [...new Set(data.map(article => article.avatar))];
 
                 setAuthors(_authors);
@@ -339,7 +339,7 @@ const SubmitArticle = () => {
                    <h5 style={{ color: 'black' }}>Article Preview</h5>
                     <div style={{ padding: '1em', color:'black', backgroundColor: '#fff', borderRadius: '8px' }}>
                         {currentArticle && (
-                            <AWFeatureDetail article={currentArticle} />
+                            <AWFeatureDisplay article={currentArticle} />
                         )}
                     </div>
                </Col>

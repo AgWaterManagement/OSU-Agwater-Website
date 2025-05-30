@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Row, Col, Card, Divider, Button, Checkbox, Steps, Input, } from 'antd';
+import { useState, } from 'react';
+import { Divider, Button, Checkbox, Steps, Input, } from 'antd';
 import agTapConfig from './agtap.json'; 
 
 import { InboxOutlined } from '@ant-design/icons';
@@ -111,8 +110,8 @@ const ATGetAssistance = () => {
                 const checkBox = document.getElementById(id);
                 if (checkBox.checked) {
                     body += '\t' + topic.label + ': ' + subtopic.label + '\n';
-                    for (let recipient of subtopic.send_to);
-                    sendToDict[subtopic.send_to] = 1;
+                    //for (let recipient of subtopic.send_to)
+                    //   sendToDict[subtopic.send_to] = 1;
                 }
             }
         }
@@ -186,12 +185,12 @@ const ATGetAssistance = () => {
                 </Button>
             </div>
 
-            <div bordered={true} style={{ display: currentStep == 2 ? 'block' : 'none' }}>
+            <div style={{ display: currentStep == 2 ? 'block' : 'none' }}>
                 <h4>Please provide us contact information</h4>
                 <span>We will use this information to get back to you. This information will NOT be retained or shared with anyone, ever.</span>
                 <br/>
                 <br />
-                <div gutter={16}>
+                <div>
                     <div style={{ width: '8em', textAlign: 'left', display: 'inline-block' }}><label>First Name: </label></div>
                     <div style={{ width: '20em', display: 'inline-block' }}><Input id='iFirstName' placeholder="First Name" /></div>
                     <br />

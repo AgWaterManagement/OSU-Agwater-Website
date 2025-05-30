@@ -5,8 +5,10 @@ import { Button } from 'antd'
 
 import AWAuthor from './AWAuthor'
 
+// AWFeatureDisplay show the full areticle details including the cover image, title, subtitle, authors, publication date, and body text.
+// It is used by AWFeature to display the article details.
 
-const AWFeatureDetail = ({ article = null }) => {
+const AWFeatureDisplay = ({ article = null }) => {
     const overlayStyle = {
         position: 'absolute',
         left: '50%',
@@ -81,16 +83,16 @@ const AWFeature = () => {
 
     return (
         <div className='full-width aw-white-bg' style={{ borderRadius: 10 }}>
-            <AWFeatureDetail article={article} />
+            <AWFeatureDisplay article={article} />
         </div>
     )
 };
 
 
-AWFeatureDetail.propTypes = {
+AWFeatureDisplay.propTypes = {
     article: PropTypes.object,
 }
 
 // Export both components
-export { AWFeature, AWFeatureDetail };
+export { AWFeature, AWFeatureDisplay };
 export default AWFeature

@@ -28,11 +28,9 @@ const Documentation = () => (
         Note: To avoid routing errors, you may need to add <code>/src/pages/test/Test.jsx</code> to your local development project. This file can be used as a template to test out new features or components. Use the following code to create the file:
         <code><pre>
             const Test = () =&gt; (<br />
-                &nbsp;&nbsp;&nbsp;&lt;div className='content-container' &gt;<br />
-                &nbsp;&nbsp;&nbsp;&lt;div className='content-container-header' &gt;Test Title&lt;/div&gt;<br />
-                &nbsp;&nbsp;&nbsp;&lt;p style=&#123;&#123;&#125;&#125;&gt; Test text.&lt;/p&gt;<br />
-                &nbsp;&nbsp;&nbsp;&lt;/div&gt;<br />
-            );<br />
+                <div className='content-container'></div>
+                <div className='content-container-header'>Test Title</div>
+            );
             export default Test;
         </pre></code>
      </p>

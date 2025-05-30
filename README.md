@@ -49,7 +49,6 @@ Override antd styles carefully to avoid specificity issues.
 
 Code Quality:
 
-Use TypeScript for type safety.
 Lint and format code with ESLint and Prettier.
 Write unit and integration tests (e.g., with Jest, React Testing Library).
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMediaQuery } from 'react-responsive';
-
+import PropTypes from 'prop-types';
 import { Row, Col, Input, Select, Pagination, Image, Tag } from "antd";
 
 const { Option } = Select;
@@ -43,7 +43,7 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
         return matchesSearch && matchesAuthor && matchesTag;
     });
 
-    const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+    //const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
     const displayedPosts = filteredPosts.slice(
         (currentPage - 1) * POSTS_PER_PAGE,
         currentPage * POSTS_PER_PAGE
@@ -152,5 +152,10 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
         </>
     );
 };
+
+AWArticles.propTypes = {
+    showFilters: PropTypes.bool,
+    showSearch : PropTypes.bool,
+}
 
 export default AWArticles;
