@@ -26,7 +26,7 @@ const About = () => (
       <p>This site is developed with contributions from the following team.</p>
       <br />
 
-            <AWTeam></AWTeam>
+            <AWTeam team='website'></AWTeam>
 
 
             {/* }

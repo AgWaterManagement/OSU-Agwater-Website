@@ -7,8 +7,9 @@ import Malena from '../../assets/images/malena-150X150.jpg';
 import Floyid from '../../assets/images/Floyid-150X150.jpg';
 import Salini from '../../assets/images/salini-150X150.jpg';
 import Manuel from '../../assets/images/Jamarillo-150X150.jpg';
+import Jen from '../../assets/images/Jen-150X150.jpg';
 
-const AWTeam = (team) => {
+const AWTeam = ({ team }) => {
     return (
 
         <div className="flex-container" style={{ textAlign: 'left'}}>
@@ -50,7 +51,7 @@ const AWTeam = (team) => {
             <div className="flex-item" style={{ minWidth: 400 }}>
                 <Card title="Manuel Garcia-Jamarillo, Ph.D" bordered={true} style={{ height: '100%' }}>
                     <img src={Manuel} />
-                    <a href="https://emt.oregonstate.edu/users/manuel-garcia-jaramillo" target="_blank">Dr. Manuel Garcia-Jamarillo</a>
+                    <a href="https://emt.oregonstate.edu/users/manuel-garcia-jaramillo" target="_blank">Dr. Manuel Garcia-Jamarillo </a>
                     is an Assistant Professor in the <a href="https://emt.oregonstate.edu/">Environmental and Molecular Toxicology department</a> at Oregon State University.
                     He and his team use state-of-the-art tools and techniques to monitor a wide variety of water sources for potential contaminents.
                     They combine risk-based approaches with effects-directed analysis (EDA) to identify unknown toxic chemical contaminants
@@ -81,7 +82,7 @@ const AWTeam = (team) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
-                <Card title="Troy Peterson, Ph.D" bordered={true} style={{ height: '100%' }}>
+                <Card title="Troy Peters, Ph.D" bordered={true} style={{ height: '100%' }}>
                     <img src='https://s3.wp.wsu.edu/uploads/sites/888/2023/03/Troy-Peters-1-396x436.jpg' />
                     <a href="https://bsyse.wsu.edu/people/faculty/peters/" target="_blank">Dr. Troy Peters</a> works in the Land, Air, Water Resources, and Environmental Engineering (LAWREE) emphasis area within
                     the <a href="https://bsyse.wsu.edu/">Biological Systems Engineering department at Washington State University</a>. His primary focus is on agricultural irrigation.
@@ -89,6 +90,17 @@ const AWTeam = (team) => {
                     sprinkler irrigation efficiency, low energy precision application (LEPA), low elevation spray application (LESA),
                     and crop water use estimation. Troy is located at the <a href="https://iarec.wsu.edu/" target="_blank">Irrigated Agriculture Research and Extension Center</a> in Prosser, WA,
                     and is also affiliated with the <a href="https://cpaas.wsu.edu/" target="_blank">Center for Precision and Automated Agricultural Systems</a>.
+                </Card>
+            </div>
+
+            <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
+                <Card title="Jen Martin" bordered={true} style={{ height: '100%' }}>
+                    <img src={Jen} />
+                    <a href="https://bee.oregonstate.edu/users/jennifer-martin" target="_blank">Jen Martin </a> 
+                    is a Faculty Research Assistant in the <a href="https://bee.oregonstate.edu">Biological & Ecological Engineering department </a> 
+                    at Oregon State University. She specializes in scientific software and web app development and is a developer for the Agricultural 
+                    Water Management website. Jen has contributed to projects across a wide range of scientific fields including genomics, bioinformatics, 
+                    geophysics, oceanography, epidemiology, psychology, demography, and digital cartography.
                 </Card>
             </div>
  
