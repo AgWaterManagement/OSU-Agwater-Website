@@ -19,12 +19,12 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
     useEffect(() => {
         fetch("https://agwater.org:5556/ArticleList")
             .then((res) => res.json())
-            .then((articles) => {
-                for (let _article of articles)
-                    _article['_id'] = _article.title.replaceAll(' ', '_');
-                return articles;
+            .then((_articles) => {
+                for (let _article of _articles)
+                    _article['_id'] = _article.title.replaceAll(' ','_');  // replace ' '
+                return _articles;
             })
-            .then((articles) => setArticles(articles));
+            .then((_articles) => setArticles(_articles));
     }, []);
 
 
@@ -54,7 +54,7 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
         const id = e.currentTarget.id;
         const article = articles.find((article) => article._id === id);
         if (article) {
-            const url = '/feature/' + article._id;
+            const url = '/feature/' + encodeURIComponent(article.title);
             window.open(url, '_blank');
         }
     }
@@ -116,8 +116,8 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
                         >
                             <Image
                                 width={'95%'}
-                                maxWidth={500}
-                                maxHeight={360}
+                                maxwidth={500}
+                                maxheight={360}
                                 preview={false}
                                 src={post.cover_image}
                                 style={{ borderRadius: 8, margin: 0, padding: 0 }}

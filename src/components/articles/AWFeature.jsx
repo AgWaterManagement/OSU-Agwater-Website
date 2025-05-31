@@ -51,7 +51,9 @@ const AWFeatureDisplay = ({ article = null }) => {
 
                     <div id='divBodyText' className="aw-white-bg aw-black-text" style={{ padding: '0.5em' }}
                         dangerouslySetInnerHTML={{ __html: article.body_html }}></div>
+                    {article != null && article.url && article.url.length > 0 && (
                     <Button type="link" href={article.url} target="_blank" className="" >Read More...</Button>
+                    )}
                 </>
             )}
         </>
@@ -62,6 +64,7 @@ const AWFeature = () => {
     const [article, setArticle] = useState(null);
 
     const params = useParams();
+    const paramsID = decodeURIComponent(params.id).replaceAll(' ','_');
     console.log('AWFeature article: ', params.id);
 
     // SANITIZE!!!!!
@@ -73,7 +76,7 @@ const AWFeature = () => {
             .then((articles) => {
                 for (let article of articles) {
                     article['_id'] = article.title.replaceAll(' ', '_');
-                    if (article['_id'] == params.id) {
+                    if (article['_id'] == paramsID) {
                         setArticle(article);
                         break;
                     }
