@@ -1,14 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Row, Col, Button, DatePicker, Form, Input, Select, AutoComplete } from 'antd';
 //import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 
 import { AWFeatureDisplay } from '../../components/articles/AWFeature';
 
+//import Quill from "quill";
+//import QuillEditor from "./QuillEditor";
+import './SubmitArticle.css';
+
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+
+
 const formItemLayout = {
     labelCol: { sm: { span: 24 }, md: { span: 24} },
     wrapperCol: { sm: { span: 24 }, md: { span: 24 } },
 };
+
 
 const wrapperCol = { offset: 6, span: 16 };
 
@@ -26,6 +35,16 @@ const SubmitArticle = () => {
     const [articles, setArticles] = useState([]); // State for articles data
     const [currentArticle, setCurrentArticle] = useState(null); // State for current article
     const [isDirty, setIsDirty] = useState(false); // State for dirty flag
+
+    const [bodyHtml, setBodyHtml] = useState('');
+
+
+
+    //const Delta = Quill.import("delta");
+    //const [range, setRange] = useState();
+    //const [lastChange, setLastChange] = useState();
+    //const [readOnly, setReadOnly] = useState(false);
+    const quillRef = useRef();
 
     useEffect(() => {
         fetch("https://agwater.org:5556/ArticleList")
@@ -99,6 +118,29 @@ const SubmitArticle = () => {
         setAbstractCharCount(charCount);
     };
 
+    //quillRef.on('text-change', (delta, oldDelta, source) => {
+    //    if (source == 'api') {
+    //        console.log('An API call triggered this change.');
+    //    } else if (source == 'user') {
+    //        console.log('A user action triggered this change.');
+    //    }
+    //    });
+
+    const OnBodyTextChange = (delta, oldDelta, source, editor) => {
+        setIsDirty(true);
+        const html = editor.getHTML();
+        console.log('Body text changed:', html);
+
+        // Update current article body_html
+        //if (currentArticle) {
+        //    const updatedArticle = {
+        //        ...currentArticle,
+        //        body_html: html,
+        //    };
+        //    setCurrentArticle(updatedArticle); // Update current article state
+        //}
+    }
+
     const onFormValuesChange = () => {
         // update article state when form values change
         const values = form.getFieldsValue();
@@ -115,7 +157,7 @@ const SubmitArticle = () => {
             url: values.url,
             cover_image: values.cover_image,
             abstract: values.abstract,
-            body_html: values.body_html,
+            body_html: '', // Assuming body_html is handled separately
             tags: values.tags,
         };
         setCurrentArticle(updatedArticle); // Update current article state
@@ -300,11 +342,24 @@ const SubmitArticle = () => {
                             name="body_html"
                             rules={[{ required: true, message: 'Please input the article body!' }]}
                         >
-                            <Input.TextArea
+                            {/* Quill editor can be used here, but for simplicity using TextArea                           <Input.TextArea
+                                id="editor"
+                                onChange={() => setIsDirty(true)} // Set dirty flag when body changes
                                 rows={12}
                                 placeholder="Type article body (text or HTML) here..."
                                 aria-label="Article Body"
-                            />
+                            /> */}
+                            {/*}
+                            <QuillEditor
+                                ref={quillRef}
+                                readOnly={false}
+                                onSelectionChange={null}
+                                onTextChange={OnBodyTextChange} // Set dirty flag when body changes
+                                style={{ height: '24em', backgroundColor: 'white' }}
+                            /> */}
+                            
+                          <ReactQuill theme="snow" value={bodyHtml} onChange={OnBodyTextChange} />;
+
                         </Form.Item>
 
                         <Form.Item

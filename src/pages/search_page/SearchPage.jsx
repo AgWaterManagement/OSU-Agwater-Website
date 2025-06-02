@@ -46,12 +46,6 @@ const SearchPage = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  function OnArticleClick(e) {
-    const index = e.currentTarget.id;
-    const articleTitle = results[index];
-    console.log('Clicked article:', articleTitle);
-  }
-
   function onSearch() {
     const keywords = document.getElementById('searchInput').value.trim();
     setLoading(true);
