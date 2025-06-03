@@ -192,8 +192,8 @@ const AWCalcDrip = () => {
         <div>
         <Divider orientation="left">Calculation Method</Divider>
           <p> This calculator uses this equation to determine the Application Rate of a drip line irrigation system. </p>
-          <p style={{ textAlign: 'center' }}>
-            <img src={dripEq} className='full-width' style={{ maxWidth: 400 }} />
+          <p style={{ textAlign: 'center', overflow: 'hidden' }}>
+            <img src={dripEq} className='full-width' style={{ maxWidth: 400, height: 'auto' }} />
           </p>
         </div>
 
