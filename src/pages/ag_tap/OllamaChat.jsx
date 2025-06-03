@@ -1,62 +1,124 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input, Button, Spin, Typography, Card } from "antd";
+
+import './OllamaChat.css';
 
 const { TextArea } = Input;
 const { Title, Paragraph } = Typography;
 
-const API_URL = "/api/ollama-chat"; // Adjust this to your backend endpoint
+const API_URL = "/api/ollama-chat"; //https://agwater.org:5556";
 
 const OllamaChat = () => {
-  const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("");
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSend = async () => {
-    if (!prompt.trim()) return;
-    setLoading(true);
-    setResponse("");
+
+  const sendMessage = async () => {
+    if (input.trim() === "") return;
+
+    const prompt = `"""${input.trim()}"""`;
+    const newMessage = { role: "user", message: input };
+    setMessages([...messages, newMessage, { role: "ai", message: "Loading..." }]);
+    setInput("");
+
     try {
-      const res = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/LLMChat?prompt=`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
-      setResponse(data.response || "No response.");
-    } catch (err) {
-      setResponse("Error contacting backend.");
+
+      if (response.ok) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let chatbotResponse = "";
+
+        while (!done) {
+          const { value, done: readDone } = await reader.read();
+          done = readDone;
+          chatbotResponse += decoder.decode(value, { stream: !done });
+          setMessages((prevMessages) =>
+            prevMessages.map((msg, idx) =>
+              idx === prevMessages.length - 1
+                ? { ...msg, message: chatbotResponse }
+                : msg
+            )
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching response:", error);
     }
-    setLoading(false);
+  };
+
+  const openNewConv = () => {
+    setMessages([]);
   };
 
   return (
-    <Card style={{ maxWidth: 600, margin: "2rem auto" }}>
-      <Title level={3}>Ollama Chat</Title>
-      <Paragraph>Enter your prompt below to interact with the Ollama LLM backend.</Paragraph>
-      <TextArea
-        rows={4}
-        value={prompt}
-        onChange={e => setPrompt(e.target.value)}
-        placeholder="Type your question or prompt..."
-        disabled={loading}
-      />
-      <Button
-        type="primary"
-        onClick={handleSend}
-        loading={loading}
-        style={{ marginTop: 16 }}
-      >
-        Send
-      </Button>
-      <div style={{ marginTop: 24, minHeight: 80 }}>
-        {loading ? <Spin /> : response && (
-          <Card type="inner" title="Response">
-            <Paragraph>{response}</Paragraph>
-          </Card>
+    <div className="container">
+      <header className="header">
+      </header>
+
+      <main className="main">
+        {loading ? (
+          <div className="loading-container">
+            <Spin />
+          </div>
+        ) : (
+          <div>
+            {messages.map((msg, index) => (
+              <div
+                className={`message-container ${
+                  msg.role === "user" ? "justify-end" : "justify-start"
+                }`}
+                key={index}
+              >
+                <div
+                  className={`message ${
+                    msg.role === "user" ? "user-message" : "ai-message"
+                  }`}
+                >
+                  {msg.message}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
-      </div>
-    </Card>
+      </main>
+
+      <footer className="chat-footer">
+        <div className="input-container">
+          <Input.TextArea
+            className="textarea"
+            placeholder="Type your question or prompt..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            autoSize={{ minRows: 1, maxRows: 6 }}
+            onKeyDown={(e) => {
+              if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
+          />
+          <Button
+            type="primary"
+            onClick={sendMessage}
+          >
+            Send
+          </Button>
+        </div>
+      </footer>
+      <Button onClick={openNewConv} 
+        type="text" 
+        size="small"
+      >
+        Start a New Conversation
+      </Button>
+    </div>
   );
 };
 
