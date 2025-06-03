@@ -18,7 +18,7 @@ const items = [
 {
   key: '3',
   label: 'Sprinkler Application Rate',
-  children: <p></p>,
+  children: <p>Coming Soon!</p>,
 },
 ];
 
@@ -30,7 +30,7 @@ const Tools = () => (
         aspects of irrigation planning and water resource analyses.</p>
 
       <div className='section-header aw-white-text'>Irrigation Calculators</div>
-      <Collapse accordion items={items} style={{backgroundColor:'white', margin:'0.5em', padding:'0.5em'}} />
+      <Collapse accordion items={items} style={{backgroundColor:'#e9e5e4', margin:'0.5em', padding:'0.5em'}} />
       <br/>
     </div>
 );
