@@ -99,15 +99,13 @@ const AppLayout = () => {
                 )}
 
                 <footer className="footer">
+                    <hr />
                     <a href='http://oregonstate.edu'>
                         <img src={osuLogo} className="osu-logo" alt="Oregon State University" />
                     </a>
                 </footer>
             </div>
-
-
-            <hr />
-
+            
         </>
 
     )
