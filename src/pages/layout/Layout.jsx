@@ -98,7 +98,7 @@ const AppLayout = () => {
                     <aside className="aside"><SideMenu /></aside>
                 )}
 
-                <footer className="footer">
+                <footer className="footer clearfix">
                     <hr />
                     <a href='http://oregonstate.edu'>
                         <img src={osuLogo} className="osu-logo" alt="Oregon State University" />

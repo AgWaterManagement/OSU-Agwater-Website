@@ -32,7 +32,8 @@
 }
 
 .footer {
-text-align: center;
+  text-align: center;
+  background-color: #242424;
 }
 
 .main {
@@ -64,24 +65,56 @@ HOP BINE  HEX: #AA9D2E
 */
 
 .content-container {
-
   font-family: 'OSU-text';
   width: 100%;
   background-color: black;
   color: white;
-  padding:0;
-  margin:0;
+  padding: 0.5em;
 }
 
+/* Topic head section with topic title, intro, and optional nav buttons */
+.topic_head-container {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+/* Site title on the Home page */
+.main-title {
+  font-family: 'OSU-text';
+  color: yellow;
+}
+
+/* Page headers just below the nav bar */
 .content-container-header {
   font-family: 'OSU-text';
   width: 100%;
   color:white;
   font-size: xx-large;
-  margin-top: 0;
+  margin: 0;
   padding-top: 1.0em;
   padding-bottom: 0.0em;
-  padding-left: 0.5em;  
+}
+
+/* Introductory text below the header */
+.intro-text {
+  font-family: 'Open Sans', sans-serif;
+  margin: 0;
+  padding: 0
+}
+
+.intro-text a {
+  font-weight: 500;
+  text-decoration: underline;
+}
+.intro-text a:visited {
+  font-weight: 500;
+  text-decoration: underline;
+  color: white;
+}
+.intro-text a:hover {
+  font-weight: 500;
+  text-decoration: underline;
+  color: #535bf2;
 }
 
 h1 {
@@ -490,10 +523,16 @@ button:focus-visible {
 
 .section-header {
   padding-top:1em;
-  padding-left: 1em;
+  /* padding-left: 1em; */
   font-weight: 600;
   font-size: large;
   font-family: OSU-text;
+}
+
+.accordion-header {
+  background-color: #E9E5E4; 
+  margin: 0.5em;
+  padding: 0.5em;
 }
 
 .aw-shadow {
@@ -662,23 +701,34 @@ button:focus-visible {
 
 
 
+/* fixes floating issues */
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: block;
+}
 
-
-
-
+/* To Do: add styles for light mode
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
   }
+  a {
+    color: #747bff;
+  }
   a:hover {
+    color: #747bff;
+    text-decoration: underline;
+  }
+  a:visited {
     color: #747bff;
   }
   button {
     background-color: #f9f9f9;
   }
 }
-
+*/
 
 
 

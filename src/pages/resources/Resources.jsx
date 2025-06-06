@@ -26,16 +26,18 @@ const Resources = () => {
     return (
         <>
             <div className='content-container'>
-                <div className='content-container-header'>Resources</div>
-                <p style={{}}> Articles, Factsheets and Other Information about Agricultural Water Management</p>
-                <AWButtonContainer
-                    items={[
-                        { label: 'Articles', key: 'articles', type: 'primary', icon: <FileImageOutlined /> },
-                        { label: 'Fact Sheets', key: 'factsheets', icon: <FileDoneOutlined /> }
-                    ]}
-                    onClick={onClickMenu}
-                />
-                <hr />
+                <div className='topic_head-container'>
+                    <div className='content-container-header'>Resources</div>
+                    <p className='intro-text'> Articles, Factsheets and Other Information about Agricultural Water Management</p>
+                    <AWButtonContainer
+                        items={[
+                            { label: 'Articles', key: 'articles', type: 'primary', icon: <FileImageOutlined /> },
+                            { label: 'Fact Sheets', key: 'factsheets', icon: <FileDoneOutlined /> }
+                        ]}
+                        onClick={onClickMenu}
+                    />
+                    <hr />
+                </div>
 
                 {current == 'articles' && (
                     <AWArticles showFilters={true} showSearch={true} ></AWArticles>

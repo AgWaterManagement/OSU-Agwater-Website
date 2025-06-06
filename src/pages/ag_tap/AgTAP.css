@@ -16,20 +16,20 @@
 
 
 /* Responsive layout - makes a one column-layout instead of a two-column layout */
-@media (width <= 600px) {
+@media (max-width: 600px) {
   .flex-item {
     flex: 100%;
   }
 }
 
 
-@media (600px < width <= 1200px) {
+@media (min-width: 601px) and (max-width: 1200px) {
   .flex-item {
     flex: 50%;
   }
 }
 
-@media (1200px < width ) {
+@media (min-width: 1201px) {
   .flex-item {
     flex: 25%;
   }

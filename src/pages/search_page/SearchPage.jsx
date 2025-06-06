@@ -73,10 +73,9 @@ const SearchPage = () => {
   }
 
   return (
-    <div className='full-width'
+    <div className='content-container'
       style={{
-        height: '800px', textAlign: 'center', backgroundColor: 'black',
-        fontFamily: 'OSU-text'
+        height: '800px', textAlign: 'center'
       }}>
 
       <div className='open-sans' style={{ fontSize: 'xx-large', paddingTop: '3em' }}>Search this site</div>

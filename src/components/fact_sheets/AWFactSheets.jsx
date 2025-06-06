@@ -172,7 +172,7 @@ const AWFactSheets = () => {
 
   return (
   <>
-    <Collapse accordion items={items} style={{ backgroundColor:'white', margin:'0.5em', padding:'0.5em'}} />
+    <Collapse className='accordion-header' accordion items={items} />
   </>
 )};
 
