@@ -8,6 +8,7 @@ import Floyid from '../../assets/images/Floyid-150X150.jpg';
 import Salini from '../../assets/images/salini-150X150.jpg';
 import Manuel from '../../assets/images/Jamarillo-150X150.jpg';
 import Jen from '../../assets/images/Jen-150X150.jpg';
+import Derek from '../../assets/images/DerekGodwin-150x150.jpg';
 
 const AWTeam = ({ team }) => {
     return (
@@ -70,6 +71,20 @@ const AWTeam = ({ team }) => {
                 </Card>
             </div>
 
+            <div className="flex-item" style={{ minWidth: 400 }}>
+                <Card title="Derek Godwin" bordered={true} style={{ height: '100%' }}>
+                    <img src={Derek} />
+                    Derek is an Extension statewide Watershed Management faculty in the <a href="https://bee.oregonstate.edu">Department of 
+                    Biological and Ecological Engineering</a>. He is a Professor and has been working for OSU's Extension Service 
+                    since 1994 in both program and administration positions. He specializes in education and research related to 
+                    minimizing impacts of urban and agriculture land use practices on surface water quality, such as the implementation of 
+                    green infrastructure, low-impact development, riparian enhancement and stream restoration practices. He works with watershed 
+                    councils, Soil and Water Conservation Districts, land managers and policy makers to use a holistic watershed approach to 
+                    address ecosystem concerns while maintaining economic stability. Derek earned a Master’s of Science degree in Bioresource 
+                    Engineering at Oregon State University and a Bachelor’s of Science degree in Forest Management and Wildlife at Virginia 
+                    Polytechnic Institute and State University (Virginia Tech).
+                </Card>
+            </div>
 
             <div className="flex-item" style={{ minWidth: 400 }}>
                 <Card title="John Bolte, Ph.D" bordered={true} style={{ height: '100%' }}>
