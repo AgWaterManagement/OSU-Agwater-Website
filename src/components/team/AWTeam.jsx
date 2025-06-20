@@ -9,6 +9,7 @@ import Salini from '../../assets/images/salini-150X150.jpg';
 import Manuel from '../../assets/images/Jamarillo-150X150.jpg';
 import Jen from '../../assets/images/Jen-150X150.jpg';
 import Derek from '../../assets/images/DerekGodwin-150x150.jpg';
+import Sean from '../../assets/images/sean-higgens-150x150.jpg';
 
 const AWTeam = ({ team }) => {
     return (
@@ -116,6 +117,17 @@ const AWTeam = ({ team }) => {
                     at Oregon State University. She specializes in scientific software and web app development and is a developer for the Agricultural 
                     Water Management website. Jen has contributed to projects across a wide range of scientific fields including genomics, bioinformatics, 
                     geophysics, oceanography, epidemiology, psychology, demography, and digital cartography.
+                </Card>
+            </div>
+
+            <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
+                <Card title="Sean Higgins" bordered={true} style={{ height: '100%' }}>
+                    <img src={Sean} alt="Sean Higgins" />
+                    Sean Higgins has recently received his Bachelor of Science in Computer Science at Oregon State University, 
+                    and he is delighted to begin utilizing his education towards the development of a Retrieval-Augmented Generation 
+                    Large-Language Model (RAG-LLM), an AI system that uses extra documents and resources to provide answers related to 
+                    agriculture and water use. He hopes that this system will be useful in providing helpful and accurate information 
+                    to those who have questions about agriculture and water use.
                 </Card>
             </div>
  
