@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Input, Button, Spin, Typography, Card } from "antd";
 
 import './OllamaChat.css';
@@ -6,50 +6,74 @@ import './OllamaChat.css';
 const { TextArea } = Input;
 const { Title, Paragraph } = Typography;
 
-const API_URL = "/api/ollama-chat"; //https://agwater.org:5556";
+const API_URL = "https://agwater.org:11434";
 
 const OllamaChat = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const inputRef = useRef(null);
 
+  async function processUserQuery(prompt) {
+    try {
+      const response = await fetch(`${API_URL}/LLMChat/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt })
+      });
 
+      // Check if the response is OK
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();  // Correctly parse JSON
+      const combinedResponse = data.response || "Please try again"; // Ensure a fallback if empty
+
+      // Update the message UI progressively with each chunk
+      setMessages((messages) => [
+        ...messages,
+          {
+            id: Date.now(),
+            message: combinedResponse,
+            role: 'ai',
+          }
+      ]);
+    } catch (error) {
+      console.error("Error fetching Falcon response:", error);
+      setMessages((messages) => [
+        ...messages,
+          {
+            id: Date.now(),
+            message: "Error: Unable to fetch response.",
+            role: 'ai',
+          }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+  
   const sendMessage = async () => {
     if (input.trim() === "") return;
 
-    const prompt = `"""${input.trim()}"""`;
-    const newMessage = { role: "user", message: input };
-    setMessages([...messages, newMessage, { role: "ai", message: "Loading..." }]);
-    setInput("");
+    const newMessage = {
+        id: Date.now(),
+        message: input.trim(),
+        role: 'user',
+    };
 
     try {
-      const response = await fetch(`${API_URL}/LLMChat?prompt=`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (response.ok) {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let done = false;
-        let chatbotResponse = "";
-
-        while (!done) {
-          const { value, done: readDone } = await reader.read();
-          done = readDone;
-          chatbotResponse += decoder.decode(value, { stream: !done });
-          setMessages((prevMessages) =>
-            prevMessages.map((msg, idx) =>
-              idx === prevMessages.length - 1
-                ? { ...msg, message: chatbotResponse }
-                : msg
-            )
-          );
-        }
-      }
+        setMessages((messages) => [...messages, newMessage]);
+        setInput("");
+        setLoading(true);
+        await processUserQuery(input);
     } catch (error) {
-      console.error("Error fetching response:", error);
+        console.error('Error sending message:', error);
+    }
+
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
@@ -69,12 +93,12 @@ const OllamaChat = () => {
           </div>
         ) : (
           <div>
-            {messages.map((msg, index) => (
+            {messages.map((msg) => (
               <div
                 className={`message-container ${
                   msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
-                key={index}
+                key={msg.id}
               >
                 <div
                   className={`message ${
@@ -91,7 +115,8 @@ const OllamaChat = () => {
 
       <footer className="chat-footer">
         <div className="input-container">
-          <Input.TextArea
+          <TextArea
+            ref={inputRef}
             className="textarea"
             placeholder="Type your question or prompt..."
             value={input}
@@ -104,10 +129,7 @@ const OllamaChat = () => {
               }
             }}
           />
-          <Button
-            type="primary"
-            onClick={sendMessage}
-          >
+          <Button type="primary" onClick={sendMessage}>
             Send
           </Button>
         </div>
