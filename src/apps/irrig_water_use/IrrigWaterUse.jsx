@@ -1,12 +1,12 @@
 //import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 
-import { Row, Col, Segmented, Slider, Steps, Button } from 'antd'
+import { Row, Col, Segmented, Slider, Steps, Button} from 'antd'
 import IrrigUseMap from '../irrig_water_use/IrrigUseMap';
 
 import { CaretRightOutlined } from '@ant-design/icons';
-import state_bboxes from './stateBoundingBoxes.json';
 
+import './IrrigWaterUse.css';
 
 
 const IrrigWaterUse = () => {
@@ -16,9 +16,7 @@ const IrrigWaterUse = () => {
   const [field, setField ] = useState('gwd_total_2008');
   const [fipsCode, setFIPSCode ] = useState(41)
   const [ stateGeoJsonURL, setStateGeoJsonURL ] = useState('/articles/IrrigWaterUse/data/ST' + fipsCode + '_IrrigUseByCounty.geojson');
-  const cropOptions = ['Corn'];
 
-  //const usDataURL = '/irrig_water_use/data/US_IrrigUseByState.json';
   const usDataURL = '/articles/IrrigWaterUse/data/US_IrrigUseByState.geojson';
 
   const yearOptions = {};
@@ -26,6 +24,7 @@ const IrrigWaterUse = () => {
     yearOptions[i] = i.toFixed(0);
   }
 
+  
   const metricOptions = [
     { label: (<div>Surface<br/>Withdrawals</div>), value: "sw_total" },
     { label: (<div>Groundwater<br/>Withdrawals</div>), value: "gww_total" },
@@ -91,7 +90,8 @@ const IrrigWaterUse = () => {
 
 
 
-  function onChangeMetric(val) {
+  
+    function onChangeMetric(val) {
     console.log('selected ' + val)
     setMetric(val);
     console.log('Setting field to ' + val + '_' + year)
@@ -121,7 +121,7 @@ const IrrigWaterUse = () => {
   
   return (
     <>
-      <div className="aw-dark-bg" style={{ margin: 0, padding: '1em' }}>
+      <div className="" style={{ margin: 0, padding: '1em' }}>
         <h2 className="aw-light-accent-text">Irrigation Water Use in the United States</h2>
         <span>John Bolte, Professor, Biological &amp; Ecological Engineering, Oregon State University</span>
         <br />
@@ -172,7 +172,7 @@ const IrrigWaterUse = () => {
         
         <h4>Annual Irrigation Water Use and Groundwater Depletion Rates</h4>
 
-        <Steps direction="vertical" current={0} items={[
+        <Steps direction="vertical" current={0} style={{ "color": "white" }} items={[
             {title: 'Select a metric to view', description: (
               <Segmented options={metricOptions} block defaultValue='GWD' size='small' 
                 style={{fontSize:'small', textTransform:'uppercase', margin:'0.5em'}} onChange={onChangeMetric} /> )

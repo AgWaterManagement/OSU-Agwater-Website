@@ -1,0 +1,23 @@
+.ant-steps-item-title {
+    color:white !important;
+}
+
+
+.ant-slider-mark-text {
+    color: white !important;
+}
+
+.ant-slider-rail {
+    color: white !important;
+}
+
+
+.ant-slider-track {
+    color: white !important;
+}
+
+
+.ant-slider-thumb {
+    color: white !important;
+    background-color: green !important;
+}

@@ -26,6 +26,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
+    "react-markdown": "^10.1.0",
     "react-plotly.js": "^2.6.0",
     "react-quill-new": "^3.4.6",
     "react-responsive": "^10.0.0",

@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input, Button, Spin, Typography, Card, Select } from "antd";
 
+import Markdown from 'react-markdown'
 import './OllamaChat.css';
 
+
 const { TextArea } = Input;
-const { Title, Paragraph } = Typography;
+//const { Title, Paragraph } = Typography;
 const { Option } = Select;
 
-const API_URL = "https://agwater.org:5556/LLMChat";
+const CHAT_API_URL = "https://agwater.org:5556/LLMChat";
+const MODELS_API_URL = "https://agwater.org:5556/LLMModels";
 
 const OllamaChat = () => {
   const [input, setInput] = useState("");
@@ -25,10 +28,10 @@ const OllamaChat = () => {
       if (selectedModel) {
         modelParam = `&model=${selectedModel}`;
       }
-      const url = `${API_URL}?query=${encodedJSON}${modelParam}`;
+      const url = `${CHAT_API_URL}?query=${encodedJSON}${modelParam}&stream=0`;
       console.log(url);
-      //const response = await fetch(url, { method: "GET" });
-      const response = testStreamingResponse(); // Use the test function for simulated streaming response
+      const response = await fetch(url, { method: "GET" });
+      //const response = testStreamingResponse(); // Use the test function for simulated streaming response
       console.log("response: ", response); // debug
 
       // Check if the response is OK
@@ -132,6 +135,14 @@ const OllamaChat = () => {
     mockStreamingResponse(messages, setMessages);
   };
 
+  const formatResponseContent = (content) => {
+
+    let jsonContent = JSON.parse(content);
+    let contentStr = jsonContent.response.llm_response.replaceAll("\n","\r\n") || "No response available";
+
+    return (<Markdown>{contentStr}</Markdown>);
+  }
+
   return (
     <div className="container">
       <header className="header">
@@ -167,7 +178,8 @@ const OllamaChat = () => {
                     msg.role === "user" ? "user-message" : "ai-message"
                   }`}
                 >
-                  {msg.content}
+                  
+                  {msg.role==="user"? msg.content : formatResponseContent(msg.content) }
                 </div>
               </div>
             ))}

@@ -1,11 +1,15 @@
 
-
-
-import ChoroplethMap from '../../components/choropleth_map/ChoroplethMap';
+import OllamaChat from '../../components/ollama_chat/OllamaChat'
 
 
 const Test = () => (
   <div className='content-container' >
+
+<h2 className='content-title'>Test Page</h2>
+
+<OllamaChat/>
+
+
   </div>
 );
 
