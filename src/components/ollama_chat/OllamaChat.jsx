@@ -155,7 +155,7 @@ const OllamaChat = () => {
           </div>
         ) : (
           <div>
-            {messages.map((msg, index) => (
+            {messages.toReversed().map((msg, index) => (
               <div
                 className={`message-container ${
                   msg.role === "user" ? "justify-start" : "justify-end"
