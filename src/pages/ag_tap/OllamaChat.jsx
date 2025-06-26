@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Input, Button, Spin, Typography, Card } from "antd";
+import { Input, Button, Spin, Typography, Card, Select } from "antd";
 
 import './OllamaChat.css';
 
 const { TextArea } = Input;
 const { Title, Paragraph } = Typography;
+const { Option } = Select;
 
 const API_URL = "https://agwater.org:5556/LLMChat";
 
@@ -14,46 +15,66 @@ const OllamaChat = () => {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
   const [error, setError] = useState(null);
+  const [selectedModel, setSelectedModel] = useState("");
 
   async function processUserQuery(mssgs) {
     try {
-      const response = await fetch(`${API_URL}/LLMChat/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          model: "llama3.2",
-          messages: mssgs,
-          stream: false 
-        })
-      });
+      console.log("mssgs: ", JSON.stringify(mssgs));
+      const encodedJSON = encodeURIComponent(JSON.stringify({ mssgs }));
+      let modelParam = '';
+      if (selectedModel) {
+        modelParam = `&model=${selectedModel}`;
+      }
+      const url = `${API_URL}?query=${encodedJSON}${modelParam}`;
+      console.log(url);
+      //const response = await fetch(url, { method: "GET" });
+      const response = testStreamingResponse(); // Use the test function for simulated streaming response
+      console.log("response: ", response); // debug
 
       // Check if the response is OK
       if (!response.ok) {
-        setError("Error fetching response from the server");  
+        console.log("response: ", response);
+        setError("Error fetching response from the server");
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json();  // Correctly parse JSON
-      const combinedResponse = data.response || "Please try again"; // Ensure a fallback if empty
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let accumulatedResponse = "";
 
-      // Update the message UI progressively with each chunk
-      setMessages((messages) => [
-        ...messages,
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        accumulatedResponse += chunk;
+
+        // Update the message UI progressively with each chunk
+        setMessages((messages) => [
+          ...messages,
           {
-            content: combinedResponse,
+            content: chunk,
             role: "assistant",
-          }
-      ]);
+          },
+        ]);
+      }
+
+      // Ensure a fallback if the response is empty
+      if (!accumulatedResponse) {
+        setMessages((messages) => [
+          ...messages,
+          {
+            content: "Please try again",
+            role: "assistant",
+          },
+        ]);
+      }
     } catch (error) {
-      setError("Uable to fetch response. Please try again later.");  
+      setError("Unable to fetch response. Please try again later.");
       console.error("Error fetching response:", error);
-      // test
-      setMessages((messages) => [...messages,
-            {content: "Test - message from ollama", role: "assistant"}
-      ]);
-      console.log(messages);
     } finally {
       setLoading(false);
+      console.log("messages after processing: ", messages); // debug
     }
   }
   
@@ -69,10 +90,10 @@ const OllamaChat = () => {
 
     try {
         setMessages((messages) => [...messages, newMessage]);
-        console.log(messages)
+        console.log(input.trim(), messages); // debug
         setInput("");
         setLoading(true);
-        await processUserQuery(messages);
+        await processUserQuery(input.trim());
     } catch (error) {
       setError(error.message);  
       console.error('Error sending message:', error);
@@ -88,9 +109,43 @@ const OllamaChat = () => {
     setError(null); // clear previous errors
   };
 
+  // Test function to mimic a streaming response from the API
+  const mockStreamingResponse = async (messages, setMessages) => {
+    const simulatedChunks = [
+      "This is the first chunk of the response.",
+      "Here comes the second chunk.",
+      "Finally, this is the last chunk."
+    ];
+
+    for (const chunk of simulatedChunks) {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { content: chunk, role: "assistant" }
+      ]);
+    }
+  };
+
+  // Example usage of the test function
+  const testStreamingResponse = () => {
+    //setMessages([]); // Clear existing messages
+    mockStreamingResponse(messages, setMessages);
+  };
+
   return (
     <div className="container">
       <header className="header">
+        <Select
+          allowClear
+          placeholder="(Optional) Select an Ollama model ..."
+          value={selectedModel}
+          onChange={(value) => setSelectedModel(value)}
+          style={{ width: 300 }}
+        >
+          <Option value="llama3.2">llama3.2</Option>
+          <Option value="model2">Model 2</Option>
+          <Option value="model3">Model 3</Option>
+        </Select>
       </header>
 
       <main className="main">
@@ -146,6 +201,9 @@ const OllamaChat = () => {
         size="small"
       >
         Start a New Conversation
+      </Button>
+      <Button onClick={testStreamingResponse} type="text" size="small">
+        Test Streaming Response
       </Button>
     </div>
   );
