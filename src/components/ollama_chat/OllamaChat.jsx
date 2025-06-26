@@ -146,17 +146,6 @@ const OllamaChat = () => {
   return (
     <div className="container">
       <header className="header">
-        <Select
-          allowClear
-          placeholder="(Optional) Select an Ollama model ..."
-          value={selectedModel}
-          onChange={(value) => setSelectedModel(value)}
-          style={{ width: 300 }}
-        >
-          <Option value="llama3.2">llama3.2</Option>
-          <Option value="model2">Model 2</Option>
-          <Option value="model3">Model 3</Option>
-        </Select>
       </header>
 
       <main className="main">
@@ -169,7 +158,7 @@ const OllamaChat = () => {
             {messages.map((msg, index) => (
               <div
                 className={`message-container ${
-                  msg.role === "user" ? "justify-end" : "justify-start"
+                  msg.role === "user" ? "justify-start" : "justify-end"
                 }`}
                 key={index}
               >
@@ -207,7 +196,25 @@ const OllamaChat = () => {
             Send
           </Button>
         </div>
+
       </footer>
+      <br/>
+        <div>
+          <Select
+          allowClear
+          placeholder="(Optional) Select a model ..."
+          value={selectedModel}
+          onChange={(value) => setSelectedModel(value)}
+          style={{ width: 300 }}
+        >
+          <Option value="llama3.2">llama3.2</Option>
+          <Option value="model2">Model 2</Option>
+          <Option value="model3">Model 3</Option>
+        </Select>
+      </div>
+
+
+
       <Button onClick={openNewConv} 
         type="text" 
         size="small"
