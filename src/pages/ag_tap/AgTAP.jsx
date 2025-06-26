@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import AWTeam from '../../components/team/AWTeam.jsx';
 import AWButtonContainer from '../../components/button_container/AWButtonContainer.jsx';
 import AWGetAssistance from './ATGetAssistance.jsx';
+//import OllamaChat from './OllamaChat.jsx';
 
 const AgTAP = () => {
 
@@ -31,17 +32,22 @@ const AgTAP = () => {
     }
 
     return (
-        <div>
+        <div className='content-container'>
 
-            <div className='content-container-header'>OSU&apos;s Agricultural Water Technical Assistance Program</div>
-            <AWButtonContainer
-                items={[
-                    { label: 'Get Assistance', key: 'assist', type:'primary', icon: <QuestionCircleOutlined /> },
-                    { label: 'Find Information', key: 'search', type:'default', icon: <SearchOutlined /> }
-                ]}
-                onClick={onClickMenu}
-            />
-            <hr/>
+            <div className='topic_head-container'>
+
+                <div className='content-container-header'>
+                    OSU&apos;s Agricultural Water Technical Assistance Program
+                </div>
+                <AWButtonContainer
+                    items={[
+                        { label: 'Get Assistance', key: 'assist', type:'primary', icon: <QuestionCircleOutlined /> },
+                        { label: 'Find Information', key: 'search', type:'default', icon: <SearchOutlined /> }
+                    ]}
+                    onClick={onClickMenu}
+                />
+                <hr/>
+            </div>
             <div className="flex-item" style={{ display: current == 'assist' ? 'block' : 'none' }}>
                 <Card title="Need Technical Assistance?" bordered={true} style={{ width: '100%' }}>
                     <AWGetAssistance />
@@ -50,11 +56,8 @@ const AgTAP = () => {
 
             <div className="flex-item" style={{ display: current == 'search' ? 'block' : 'none' }}>
                 <Card title="Find Information" bordered={true} style={{ width: '100%' }}>
-                    <Button type="primary" size='large' >
-                        Search For Information
-                    </Button>
-                    <br />
                     Search for information on crop water use, irrigations systems, groundwater and other agricultural products
+                    {/* <OllamaChat /> */}
                 </Card>
             </div>
 
