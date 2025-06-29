@@ -118,14 +118,6 @@ const SubmitArticle = () => {
         setAbstractCharCount(charCount);
     };
 
-    //quillRef.on('text-change', (delta, oldDelta, source) => {
-    //    if (source == 'api') {
-    //        console.log('An API call triggered this change.');
-    //    } else if (source == 'user') {
-    //        console.log('A user action triggered this change.');
-    //    }
-    //    });
-
     const OnBodyTextChange = (delta, oldDelta, source, editor) => {
         setIsDirty(true);
         const html = editor.getHTML();

@@ -10,6 +10,7 @@ import Dashboards from '../../apps/dashboards/Dashboards';
 import IrrigWaterUse from '../../apps/irrig_water_use/IrrigWaterUse';
 import OregonCropWaterUse from '../../apps/oregon_crop_water_use/OregonCropWaterUse';
 import SubmitArticle from '../submit_article/SubmitArticle';
+import SubmitSourceForm from '../../components/ollama_chat/SubmitSourceForm';
 import Documentation from '../doc/Documentation';
 import Test from '../test/Test';
 
@@ -25,6 +26,7 @@ const AppRoutes = () => (
         <Route path="/apps/irrigWaterUse" element={<IrrigWaterUse />} />
         <Route path="/apps/oregonCropWaterUse" element={<OregonCropWaterUse />} />
         <Route path="/submitArticle/:id" element={<SubmitArticle />} />
+        <Route path="/submitSource" element={<SubmitSourceForm />} />
         <Route path="/login" element={<Home />} />
         <Route path="/dashboards" element={<Dashboards />} />
         <Route path="/doc" element={<Documentation />} />
