@@ -155,9 +155,9 @@ const SubmitSourceForm = () => {
           />
         </div>
         <div style={{ marginBottom: 16 }}>
-          <label for="pdfUpload">Upload a PDF of the source document (required)</label><br></br>
+          <label for="pdfFile">Upload a PDF of the source document (required)</label><br></br>
           <Upload
-            id="pdfUpload"
+            id="pdfFile"
             accept="application/pdf"
             beforeUpload={() => false}
             maxCount={1}
