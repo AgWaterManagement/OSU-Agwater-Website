@@ -19,7 +19,7 @@ const SubmitSourceForm = () => {
     try {
       const response = await fetch('https://agwater.org:5556/Tags');
       const result = await response.json();
-      setAvailableTags(result);
+      setAvailableTags(result.tags);
     } catch (error) {
       message.error("Failed to fetch tags. Please try again later.");
       console.error('Error fetching tabs', error);
@@ -146,7 +146,7 @@ const SubmitSourceForm = () => {
         )}
       
         <div style={{ marginBottom: 16 }}>
-          <label for="title">Title of source document (required)</label><br></br>
+          <label htmlFor="title">Title of source document (required)</label><br></br>
           <Input
             id="title"
             placeholder="Title"
@@ -155,7 +155,7 @@ const SubmitSourceForm = () => {
           />
         </div>
         <div style={{ marginBottom: 16 }}>
-          <label for="pdfFile">Upload a PDF of the source document (required)</label><br></br>
+          <label htmlFor="pdfFile">Upload a PDF of the source document (required)</label><br></br>
           <Upload
             id="pdfFile"
             accept="application/pdf"
@@ -168,7 +168,7 @@ const SubmitSourceForm = () => {
           </Upload>
         </div>  
         <div style={{ marginBottom: 16 }}>
-          <label for="tags">Select tags for the source document (at least one required)</label><br></br>
+          <label htmlFor="tags">Select tags for the source document (at least one required)</label><br></br>
           <Select
             id="tags"
             mode="multiple"

@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { Input, Button, Spin, Typography, Card, Select } from "antd";
+import { Input, Button, Spin, Select, message } from "antd";
 
 import Markdown from 'react-markdown'
+import rehypeRaw from 'rehype-raw'
+
 import './OllamaChat.css';
 
 
@@ -18,7 +20,25 @@ const OllamaChat = () => {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
   const [error, setError] = useState(null);
-  const [selectedModel, setSelectedModel] = useState("");
+  const [selectedModel, setSelectedModel] = useState("llama3.2"); // Default model");
+  const [availableModels, setAvailableModels] = useState([]);
+
+  useEffect(() => {
+    fetchModels();
+  }, []);
+
+
+  const fetchModels = async () => {
+    try {
+      const response = await fetch(MODELS_API_URL);
+      const result = await response.json();
+      setAvailableModels(result.models);
+    } catch (error) {
+      message.error("Failed to fetch models. Please try again later.");
+      console.error('Error fetching models', error);
+    }
+  };
+
 
   async function processUserQuery(mssgs) {
     try {
@@ -80,25 +100,25 @@ const OllamaChat = () => {
       console.log("messages after processing: ", messages); // debug
     }
   }
-  
+
   const sendMessage = async () => {
     setError(null); // Clear previous errors
 
     if (input.trim() === "") return;
 
     const newMessage = {
-        content: input.trim(),
-        role: 'user',
+      content: input.trim(),
+      role: 'user',
     };
 
     try {
-        setMessages((messages) => [...messages, newMessage]);
-        console.log(input.trim(), messages); // debug
-        setInput("");
-        setLoading(true);
-        await processUserQuery(input.trim());
+      setMessages((messages) => [...messages, newMessage]);
+      console.log(input.trim(), messages); // debug
+      setInput("");
+      setLoading(true);
+      await processUserQuery(input.trim());
     } catch (error) {
-      setError(error.message);  
+      setError(error.message);
       console.error('Error sending message:', error);
     }
 
@@ -138,10 +158,38 @@ const OllamaChat = () => {
   const formatResponseContent = (content) => {
 
     let jsonContent = JSON.parse(content);
-    let contentStr = jsonContent.response.llm_response.replaceAll("\n","\r\n") || "No response available";
+    let contentStr = jsonContent.response.llm_response.replaceAll("\n", "\r\n") || "No response available";
 
-    return (<Markdown>{contentStr}</Markdown>);
+    let refs = jsonContent.response.referenced_documents || [];
+    let titles = jsonContent.response.referenced_titles || [];
+
+    if (refs.length > 0) {
+      contentStr += "\n\n#### References:\n";
+      refs.forEach((ref, index) => {
+        if (titles.length > 0 && titles[index] !== null) {
+          //contentStr += `${index + 1}. [${titles[index]}](https://agwater.org/sources/${ref})\n`; // Use the title if available
+          contentStr += `${index + 1}. <a href='https://agwater.org/LLMSources?article=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
+        }
+        else {
+          contentStr += `${index + 1}. ${ref}\n`;
+        }
+      })
+    }
+
+    return (<Markdown rehypePlugins={[rehypeRaw]}>{contentStr}</Markdown>);
   }
+
+
+  // Style for the content area in the loading spinner
+  const contentStyle = {
+    padding: 50,
+    color: '#fff',
+    background: 'rgba(0, 0, 0, 0.05)',
+    borderRadius: 'white',
+    width: '12em'
+  };
+
+  const spinnerContent = <div style={contentStyle} />;
 
   return (
     <div className="container">
@@ -150,25 +198,23 @@ const OllamaChat = () => {
 
       <main className="main">
         {loading ? (
-          <div className="loading-container">
-            <Spin />
+          <div style={{ textAlign: "center", marginBottom: 16, backgroundColor: 'white' }}>
+            <Spin tip="Running Query..." size="large">{spinnerContent}</Spin>
           </div>
         ) : (
           <div>
             {messages.map((msg, index) => (
               <div
-                className={`message-container ${
-                  msg.role === "user" ? "justify-start" : "justify-end"
-                }`}
+                className={`message-container ${msg.role === "user" ? "justify-start" : "justify-end"
+                  }`}
                 key={index}
               >
                 <div
-                  className={`message ${
-                    msg.role === "user" ? "user-message" : "ai-message"
-                  }`}
+                  className={`message ${msg.role === "user" ? "user-message" : "ai-message"
+                    }`}
                 >
-                  
-                  {msg.role==="user"? msg.content : formatResponseContent(msg.content) }
+
+                  {msg.role === "user" ? msg.content : formatResponseContent(msg.content)}
                 </div>
               </div>
             ))}
@@ -198,25 +244,29 @@ const OllamaChat = () => {
         </div>
 
       </footer>
-      <br/>
-        <div>
-          <Select
+      <br />
+      <div>
+        <label htmlFor="model-select">Models: </label>
+        <Select
+          id="model-select"
           allowClear
           placeholder="(Optional) Select a model ..."
           value={selectedModel}
           onChange={(value) => setSelectedModel(value)}
           style={{ width: 300 }}
         >
-          <Option value="llama3.2">llama3.2</Option>
-          <Option value="model2">Model 2</Option>
-          <Option value="model3">Model 3</Option>
+          {availableModels.map((model) => (
+            <Option key={model} value={model}>
+              {model}
+            </Option>
+          ))}
         </Select>
       </div>
 
 
 
-      <Button onClick={openNewConv} 
-        type="text" 
+      <Button onClick={openNewConv}
+        type="text"
         size="small"
       >
         Start a New Conversation
