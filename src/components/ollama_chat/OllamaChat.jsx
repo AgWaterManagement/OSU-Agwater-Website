@@ -168,7 +168,7 @@ const OllamaChat = () => {
       refs.forEach((ref, index) => {
         if (titles.length > 0 && titles[index] !== null) {
           //contentStr += `${index + 1}. [${titles[index]}](https://agwater.org/sources/${ref})\n`; // Use the title if available
-          contentStr += `${index + 1}. <a href='https://agwater.org/LLMSources?article=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
+          contentStr += `${index + 1}. <a href='https://agwater.org:5556/LLMSource?filename=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
         }
         else {
           contentStr += `${index + 1}. ${ref}\n`;
