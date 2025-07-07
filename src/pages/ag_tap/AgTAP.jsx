@@ -13,6 +13,8 @@ import { Link } from 'react-router-dom';
 import AWTeam from '../../components/team/AWTeam.jsx';
 import AWButtonContainer from '../../components/button_container/AWButtonContainer.jsx';
 import AWGetAssistance from './ATGetAssistance.jsx';
+
+import Chat from '../../pages/chat/Chat.jsx';
 //import OllamaChat from './OllamaChat.jsx';
 
 const AgTAP = () => {
@@ -55,10 +57,8 @@ const AgTAP = () => {
             </div>
 
             <div className="flex-item" style={{ display: current == 'search' ? 'block' : 'none' }}>
-                <Card title="Find Information" bordered={true} style={{ width: '100%' }}>
-                    Search for information on crop water use, irrigations systems, groundwater and other agricultural products
-                    {/* <OllamaChat /> */}
-                </Card>
+                    <Chat />
+                
             </div>
 
             <div className="flex-item" style={{ display: current == 'dashboards' ? 'block' : 'none' }}>

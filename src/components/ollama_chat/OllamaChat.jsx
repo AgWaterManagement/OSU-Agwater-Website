@@ -1,24 +1,29 @@
 import { useState, useEffect, useRef } from "react";
-import { Input, Button, Spin, Select, message } from "antd";
+import { Input, Button, Spin, Select, message, Rate } from "antd";
 
 import Markdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
+import remarkGfm from 'remark-gfm'
 
 import './OllamaChat.css';
 
 
 const { TextArea } = Input;
-//const { Title, Paragraph } = Typography;
 const { Option } = Select;
 
 const CHAT_API_URL = "https://agwater.org:5556/LLMChat";
 const MODELS_API_URL = "https://agwater.org:5556/LLMModels";
+const RATING_API_URL = "https://agwater.org:5556/LLMRating";
 
 const OllamaChat = () => {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([]);
+  //const input = useRef("");
+  const [prompt, setPrompt] = useState(""); // to keep track of the current input
+  const promptCtrl = useRef(null);
+  const currentQuestion = useRef(""); // to keep track of the current input
+  const currentAnswer = useRef("")
+  const [currentMarkdown, setCurrentMarkdown] = useState(""); // to keep track of the current markdown content
   const [loading, setLoading] = useState(false);
-  const inputRef = useRef(null);
+  const [history, setHistory] = useState([]); // a list of question/answer objects - key = input, value = response
   const [error, setError] = useState(null);
   const [selectedModel, setSelectedModel] = useState("llama3.2"); // Default model");
   const [availableModels, setAvailableModels] = useState([]);
@@ -26,7 +31,6 @@ const OllamaChat = () => {
   useEffect(() => {
     fetchModels();
   }, []);
-
 
   const fetchModels = async () => {
     try {
@@ -40,19 +44,17 @@ const OllamaChat = () => {
   };
 
 
-  async function processUserQuery(mssgs) {
+  async function processUserQuery(_prompt) {
     try {
-      console.log("mssgs: ", JSON.stringify(mssgs));
-      const encodedJSON = encodeURIComponent(JSON.stringify({ mssgs }));
+      console.log("input: ", _prompt); // debug
+      const encodedInput = encodeURIComponent(_prompt);
       let modelParam = '';
-      if (selectedModel) {
+      if (selectedModel)
         modelParam = `&model=${selectedModel}`;
-      }
-      const url = `${CHAT_API_URL}?query=${encodedJSON}${modelParam}&stream=0`;
+
+      const url = `${CHAT_API_URL}?query=${encodedInput}${modelParam}&stream=1`;
       console.log(url);
-      const response = await fetch(url, { method: "GET" });
-      //const response = testStreamingResponse(); // Use the test function for simulated streaming response
-      console.log("response: ", response); // debug
+      const response = await fetch(url);
 
       // Check if the response is OK
       if (!response.ok) {
@@ -63,133 +65,150 @@ const OllamaChat = () => {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
-      let accumulatedResponse = "";
 
+      setLoading(false);
+      let chunks = 0;
+      let chunk = "";
+      let success = true;
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log('done streaming');
+          break;
+        }
 
-        const chunk = decoder.decode(value);
-        accumulatedResponse += chunk;
+        if (success) {
+          chunk = decoder.decode(value, { stream: true });
+        } else {
+          // If the previous chunk failed to parse, we skip it and continue reading
+          chunk += decoder.decode(value, { stream: true });
+        }
+
+        //console.log(`chunk ${chunks}: ${chunk}`); // debug
+        let json = {};
+        try {
+          // Attempt to parse the JSON chunk
+          json = JSON.parse(chunk);
+          success = true;
+          //console.log(`json: ${JSON.stringify(json)}`); // debug
+        } catch (error) {
+          // If parsing fails, log the error and continue
+          success = false;
+          console.error(`Error parsing JSON from chunk ${chunks}:`, error);
+          console.error(`Chunk content: ${chunk}`);
+          continue; // Skip to the next chunk
+        }
+        //accumulatedResponse += chunk;
+        chunks++;
 
         // Update the message UI progressively with each chunk
-        setMessages((messages) => [
-          ...messages,
-          {
-            content: chunk,
-            role: "assistant",
-          },
-        ]);
-      }
+        if (json.done === false) {
+          currentAnswer.current += json['llm_response']; // Accumulate the response
+        } else {
+          // Finalize the response when done
+          const refs = json['referenced_documents'] || [];
+          const titles = json['referenced_titles'] || [];
+          let contentStr = ""
+          if (refs.length > 0) {
+            contentStr += "\n\n#### References:\n";
+            refs.forEach((ref, index) => {
+              if (titles.length > 0 && titles[index] !== null) {
+                contentStr += `${index + 1}. <a href='https://agwater.org:5556/LLMSource?filename=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
+              } else {
+                contentStr += `${index + 1}. ${ref}\n`;
+              }
+            });
+          }
+          currentAnswer.current += contentStr;
+        }
+        setCurrentMarkdown(currentAnswer.current); // Update the markdown content
 
-      // Ensure a fallback if the response is empty
-      if (!accumulatedResponse) {
-        setMessages((messages) => [
-          ...messages,
-          {
-            content: "Please try again",
-            role: "assistant",
-          },
-        ]);
-      }
+      } // end of while loop
+
     } catch (error) {
       setError("Unable to fetch response. Please try again later.");
       console.error("Error fetching response:", error);
-    } finally {
-      setLoading(false);
-      console.log("messages after processing: ", messages); // debug
     }
+
+    const _currentAnswer = currentAnswer.current; // Get the final answer
+
+    currentQuestion.current = ""; // Clear the input field after processing
+    currentAnswer.current = ""; // Clear the response field after processing
+
+    // add a question mark to end os _prompt if not present
+    _prompt = _prompt.endsWith('?') ? _prompt : `${_prompt}?`;
+    setHistory([...history, { question: _prompt, answer: _currentAnswer }]); // Add the question/response pair to history
   }
 
-  const sendMessage = async () => {
+  const sendQuery = async () => {
     setError(null); // Clear previous errors
 
-    if (input.trim() === "") return;
-
-    const newMessage = {
-      content: input.trim(),
-      role: 'user',
-    };
+    if (prompt.slice().trim() === "") return;
 
     try {
-      setMessages((messages) => [...messages, newMessage]);
-      console.log(input.trim(), messages); // debug
-      setInput("");
       setLoading(true);
-      await processUserQuery(input.trim());
+      let _prompt = prompt.slice().trim()
+      setPrompt(""); // Clear the input ref
+
+      currentQuestion.current = _prompt.endsWith('?') ? _prompt : `${_prompt}?`; // Update the current question
+      await processUserQuery(_prompt);
     } catch (error) {
       setError(error.message);
       console.error('Error sending message:', error);
     }
 
-    if (inputRef.current) {
-      inputRef.current.focus();
+    if (promptCtrl.current) {
+      promptCtrl.current.focus();
     }
-  };
+  }
 
   const openNewConv = () => {
-    setMessages([]); // reset messages
+    //setMessages([]); // reset messages
     setError(null); // clear previous errors
-  };
+  }
 
-  // Test function to mimic a streaming response from the API
-  const mockStreamingResponse = async (messages, setMessages) => {
-    const simulatedChunks = [
-      "This is the first chunk of the response.",
-      "Here comes the second chunk.",
-      "Finally, this is the last chunk."
-    ];
+  const rateAnswer = async (qaPair, rating) => {
+    // Here you can handle the rating logic, e.g., send it to a server or update the UI
+    console.log(`Rating for question "${qaPair.question}": ${rating}`);
 
-    for (const chunk of simulatedChunks) {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { content: chunk, role: "assistant" }
-      ]);
+    //const url = `${RATING_API_URL}?question=${encodeURIComponent(qaPair.question)}&answer=${encodeURIComponent(qaPair.answer)}&rating=${rating}&context=RAG+${encodeURIComponent(selectedModel)}`
+    try {
+      const response = await fetch(RATING_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          question: qaPair.question,
+          answer: qaPair.answer,
+          rating: rating,
+          context: `RAG+${selectedModel}`,
+          comment: ""
+        })
+      });
+      const result = await response.json();
+      if ( result.success == true)
+        message.success(`Thank you for rating! Your rating was ${rating}`);
+      else
+        message.error("Failed to submit rating. Please try again later.");
+
+    } catch (error) {
+      message.error("Failed to submit rating. Please try again later.");
+      console.error('Error recording rating', error);
     }
-  };
-
-  // Example usage of the test function
-  const testStreamingResponse = () => {
-    //setMessages([]); // Clear existing messages
-    mockStreamingResponse(messages, setMessages);
-  };
-
-  const formatResponseContent = (content) => {
-
-    let jsonContent = JSON.parse(content);
-    let contentStr = jsonContent.response.llm_response.replaceAll("\n", "\r\n") || "No response available";
-
-    let refs = jsonContent.response.referenced_documents || [];
-    let titles = jsonContent.response.referenced_titles || [];
-
-    if (refs.length > 0) {
-      contentStr += "\n\n#### References:\n";
-      refs.forEach((ref, index) => {
-        if (titles.length > 0 && titles[index] !== null) {
-          //contentStr += `${index + 1}. [${titles[index]}](https://agwater.org/sources/${ref})\n`; // Use the title if available
-          contentStr += `${index + 1}. <a href='https://agwater.org:5556/LLMSource?filename=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
-        }
-        else {
-          contentStr += `${index + 1}. ${ref}\n`;
-        }
-      })
-    }
-
-    return (<Markdown rehypePlugins={[rehypeRaw]}>{contentStr}</Markdown>);
   }
 
 
   // Style for the content area in the loading spinner
-  const contentStyle = {
-    padding: 50,
-    color: '#fff',
-    background: 'rgba(0, 0, 0, 0.05)',
-    borderRadius: 'white',
-    width: '12em'
-  };
+  //const spinnerContentStyle = {
+  //  padding: 50,
+  //  color: '#fff',
+  //  /*background: 'rgba(0, 0, 0, 0.05)',*/
+  //  borderRadius: 'white',
+  //  width: '12em'
+  //};
 
-  const spinnerContent = <div style={contentStyle} />;
+  //const spinnerContent = <div style={spinnerContentStyle} />;
 
   return (
     <div className="container">
@@ -197,53 +216,68 @@ const OllamaChat = () => {
       </header>
 
       <main className="main">
-        {loading ? (
-          <div style={{ textAlign: "center", marginBottom: 16, backgroundColor: 'white' }}>
-            <Spin tip="Running Query..." size="large">{spinnerContent}</Spin>
-          </div>
-        ) : (
-          <div>
-            {messages.map((msg, index) => (
-              <div
-                className={`message-container ${msg.role === "user" ? "justify-start" : "justify-end"
-                  }`}
-                key={index}
-              >
-                <div
-                  className={`message ${msg.role === "user" ? "user-message" : "ai-message"
-                    }`}
-                >
+        <br />
 
-                  {msg.role === "user" ? msg.content : formatResponseContent(msg.content)}
-                </div>
-              </div>
-            ))}
+        <div className="chat-prompt">
+          <div className="input-container">
+            <TextArea
+              ref={promptCtrl}
+              className="textarea"
+              placeholder="Type your question or prompt..."
+              value={prompt}
+              onChange={(e) => { setPrompt(e.target.value); }}
+              autoSize={{ minRows: 1, maxRows: 6 }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  sendQuery();
+                }
+              }}
+            />
+            <Button type="primary" onClick={sendQuery}>
+              Submit
+            </Button>
+          </div>
+        </div>
+        <br />
+        {loading && (
+          <div style={{ textAlign: "center", marginBottom: 16, backgroundColor: 'white' }}>
+            <Spin tip="Running Query..." size="large" fullscreen />  {/* >{spinnerContent}</Spin> */}
           </div>
         )}
+        {
+          currentAnswer.current && currentAnswer.current.length > 0 && (
+            <div className="message-container">
+              <div className="user-message">
+                {currentQuestion.current}
+              </div>
+              <br />
+              <div className="ai-message">
+                <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
+                  {currentMarkdown || "Waiting for response..."}
+                </Markdown>
+              </div>
+            </div>
+          )
+        }
+        {
+          history.length > 0 && [...history].reverse().map((qaPair, index) => (
+            <div key={index} className="message-container">
+              <div className="user-message">
+                {qaPair.question}
+              </div>
+              <br />
+              <div className="ai-message">
+                <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
+                  {qaPair.answer || "No response available"}
+                </Markdown>
+                <hr />
+                <div style={{ padding: '0.5em' }}>Rate this answer: <Rate onChange={(value) => { rateAnswer(qaPair, value); }} /></div>
+              </div>
+            </div>
+          ))}
       </main>
       {error && <div style={{ color: 'red' }}>Error: {error}</div>}
-      <footer className="chat-footer">
-        <div className="input-container">
-          <TextArea
-            ref={inputRef}
-            className="textarea"
-            placeholder="Type your question or prompt..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            autoSize={{ minRows: 1, maxRows: 6 }}
-            onKeyDown={(e) => {
-              if (e.ctrlKey && e.key === 'Enter') {
-                e.preventDefault();
-                sendMessage();
-              }
-            }}
-          />
-          <Button type="primary" onClick={sendMessage}>
-            Send
-          </Button>
-        </div>
-
-      </footer>
       <br />
       <div>
         <label htmlFor="model-select">Models: </label>
@@ -270,9 +304,6 @@ const OllamaChat = () => {
         size="small"
       >
         Start a New Conversation
-      </Button>
-      <Button onClick={testStreamingResponse} type="text" size="small">
-        Test Streaming Response
       </Button>
     </div>
   );
