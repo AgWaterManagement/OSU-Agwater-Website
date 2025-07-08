@@ -220,6 +220,7 @@ const OllamaChat = () => {
 
         <div className="chat-prompt">
           <div className="input-container">
+            <span style={{ color: 'black', marginRight: '0.8em', fontSize: '0.9em' }}>Prompt: </span>
             <TextArea
               ref={promptCtrl}
               className="textarea"

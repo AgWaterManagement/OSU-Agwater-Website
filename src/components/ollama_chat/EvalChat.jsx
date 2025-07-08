@@ -174,7 +174,7 @@ const EvalChat = () => {
         try {
             setLoading(true);
             let _prompt = prompt.slice().trim()
-            setPrompt(""); // Clear the input ref
+            //setPrompt(""); // Clear the input ref
 
             currentQuestion.current = _prompt.endsWith('?') ? _prompt : `${_prompt}?`; // Update the current question
             await processUserQuery(_prompt);
@@ -188,7 +188,7 @@ const EvalChat = () => {
         }
     }
 
-    const showChat = (index) => {
+    const resultCard = (index) => {
         let _answer = answers.current[index];
         if (index === currentIndex)
             _answer = currentAnswer.current; // Use the current markdown content for the active index
@@ -259,7 +259,25 @@ const EvalChat = () => {
 
     return (
         <div className="container">
-            <header className="header">
+            <header className="header" style={{ color: 'white' }}>
+                <h3 className="header-title">Ag Water Chat Evaluation Form</h3>
+                <p style={{ color: 'white', fontSize: '0.9em' }}>
+                    This form is designed to evaluate the performance of the Ag Water Chat AI system. 
+                </p>
+                <h4>Instructions:</h4>
+                <ol style={{ color: 'white', fontSize: '0.9em' }}>
+                    <li style={{ color: 'white', fontSize: '0.9em' }}>Type your question or prompt in the input box below.</li>
+                    <li style={{ color: 'white', fontSize: '0.9em' }}>Click the "Submit" button to send your query.</li>
+                    <li style={{ color: 'white', fontSize: '0.9em' }}>Wait for the AI to respond. The response will be displayed below, with one 
+                        response from each models we are evaluating.</li>
+                    <li style={{ color: 'white', fontSize: '0.9em' }}>Rate the quality of each of the AI's response using the star rating system.</li>
+                    <li style={{ color: 'white', fontSize: '0.9em' }}>Optionally, provide additional comments about the response.</li>
+                    <li style={{ color: 'white', fontSize: '0.9em' }}>Click the "Submit Rating/Comment" button to save your feedback.</li>
+                </ol>
+
+                <p style={{ color: 'white', fontSize: '0.9em' }}>
+                    Note that you can only provide one rating per generated answer - please don't submit ratings/comments for the same answer multiple times.
+                </p>
             </header>
 
             <main className="main">
@@ -267,6 +285,7 @@ const EvalChat = () => {
 
                 <div className="chat-prompt">
                     <div className="input-container">
+                        <span style={{ color: 'black', marginRight: '0.8em', fontSize: '0.9em' }}>Prompt: </span>
                         <TextArea
                             ref={promptCtrl}
                             className="textarea"
@@ -296,7 +315,7 @@ const EvalChat = () => {
                 <Row gutter={16}>
                     {order.current.map((item, index) => (
                         <Col key={index} xs={24} sm={12} md={12} lg={12} xl={8}>
-                            {showChat(index, answers[item], contexts[item])}
+                            {resultCard(index, answers[item], contexts[item])}
                         </Col>
                     ))}
                 </Row>

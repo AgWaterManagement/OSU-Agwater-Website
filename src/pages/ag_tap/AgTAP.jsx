@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Row, Col, Card, Tabs, Button, Menu, Checkbox, Steps } from 'antd';
+import { Card } from 'antd';
 import { AndroidOutlined, AppleOutlined } from '@ant-design/icons';
 
 import { SearchOutlined, TeamOutlined, QuestionCircleOutlined, DashboardOutlined } from '@ant-design/icons';
