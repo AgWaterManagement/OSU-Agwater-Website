@@ -83,7 +83,7 @@ const VegNutrientPlan = () => {
                             </p>
 
                             <p>The guide is most helpful if you keep it, refer to it regularly, and amend your soil based on the plans
-                                you make and the things you learn in this workshop. It’s good practice to take a soil test
+                                you make. It’s good practice to take a soil test
                                 every ~2 years to see whether your nutrient management plan is working and creating the changes
                                 in your soil that you’re working towards. We recommend creating a new nutrient management plan
                                 based on your updated soil tests. If you’d like to use or adapt the template for this nutrient
@@ -94,7 +94,7 @@ const VegNutrientPlan = () => {
 
                             <p>If you have questions about this guide or your nutrient management plan, don’t hesitate to reach out to OSU Small Farms & Community Horticulture Extension Agent Evie Smith- evie.smith@oregonstate.edu.</p>
 
-                            <p>Resources you’ll use to fill out this nutrient management plan:</p>
+                            <p>Resources you'll use to fill out this nutrient management plan:</p>
                             <ul>
                                 <li>
                                     <a href="https://extension.oregonstate.edu/catalog/pub/em-9057-applying-lime-raise-soil-ph-crop-production-western-oregon" target="_blank" rel="noopener noreferrer">
@@ -185,65 +185,79 @@ const VegNutrientPlan = () => {
                                         moreIcon={null}
                                         style={{ width: "100%" }}
                                         destroyInactiveTabPane
-                                    >    <TabPane tab="Basic Info" key={1}>
+                                        onTabClick={(key) => setActiveTab(Number(key))}
+                                    >
+                                        <TabPane tab="Basic Info" key={1}>
                                             <Form.Item label="Today's date" name="date">
                                                 <DatePicker style={{ width: "100%" }} />
                                             </Form.Item>
                                             <Form.Item label="Crop(s) focus of this nutrient management plan" name="crops">
                                                 <Input />
                                             </Form.Item>
-                                            <Form.Item label="Growing environment" name="environment">
+                                            <Form.Item label="Are you growing this/these crop(s) outdoors or in a high tunnel/greenhouse?" name="environment">
                                                 <Select>
                                                     <Select.Option value="outdoors">Outdoors</Select.Option>
                                                     <Select.Option value="high_tunnel">High Tunnel/Greenhouse</Select.Option>
                                                 </Select>
                                             </Form.Item>
-                                            <Form.Item label="Acreage or area (acres or sq ft)" name="acreage">
+                                            <Form.Item label="What acreage of this crop/these crops are you growing, approximately? 
+                                                (This will help you calculate your fertilizer application rate.) 
+                                                This may be in acres or square feet, depending on the size of your farm." name="acreage">
                                                 <Input />
                                             </Form.Item>
-                                            <Form.Item label="Is your crop already established or planted this year?" name="established">
+                                            <Form.Item label="Is your crop already established? Or have you already planted this year?" name="established">
                                                 <Input />
                                             </Form.Item>
                                             <Form.Item label="Are your crops irrigated?" name="irrigated">
                                                 <Input />
                                             </Form.Item>
-                                            <Form.Item label="Approximate date for next soil test" name="next_soil_test">
-                                                <Input />
+                                            <Form.Item label="Approximate date for next soil test (Hint: at most ~2 years from your current soil test)" name="next_soil_test">
+                                                <DatePicker style={{ width: "100%" }} />
                                             </Form.Item>
                                         </TabPane>
                                         <TabPane tab="Fertilizers" key="2">
-                                            <Form.Item label="Fertilizer types (select all that apply)" name="fertilizer">
-                                                <Checkbox.Group options={FERTILIZER_OPTIONS.slice(0, 4)} onChange={onFertilizerChange} />
+                                            <Form.Item label="Which of the following best describes the kind(s) of fertilizers you plan to use in your crops? (Select all that apply)" name="fertilizer">
+                                                <Checkbox.Group options={FERTILIZER_OPTIONS} onChange={onFertilizerChange} />
                                             </Form.Item>
                                             {fertilizerChecked.includes("Other") && (
                                                 <Form.Item label="Other fertilizer (describe)" name="fertilizer_other">
                                                     <Input value={fertilizerOther} onChange={e => setFertilizerOther(e.target.value)} />
                                                 </Form.Item>
                                             )}
-                                            <Form.Item label="Other notes about fertilizers" name="fertilizer_notes">
+                                            <Form.Item label="Is there anything else you'd like to record about the fertilizers you plan to use on your farm?" name="fertilizer_notes">
                                                 <TextArea rows={2} />
                                             </Form.Item>
-                                            <Form.Item label="Nutrient application equipment available" name="equipment">
+                                            <Form.Item label="What nutrient application equipment is available on your farm" name="equipment">
                                                 <Input />
                                             </Form.Item>
                                         </TabPane>
                                         <TabPane tab="pH & Liming" key="3">
-                                            <Form.Item label="What lime source(s) will/might/could you use?" name="lime_source">
+                                            <Form.Item label={
+                                                <span>What lime source(s) will/might/could you use? <br /> 
+                                                    (See Page 7 of <a href="https://extension.oregonstate.edu/catalog/pub/em-9057-applying-lime-raise-soil-ph-crop-production-western-oregon" 
+                                                    target="_blank" rel="noopener noreferrer">
+                                                    Applying Lime to Raise Soil pH for Crop Production</a>
+                                                    )</span>
+                                                } name="lime_source">
                                                 <Input />
                                             </Form.Item>
-                                            <Form.Item label="Resources to help decide lime source" name="lime_resources">
+                                            <Form.Item label={
+                                                <span>If you’re not sure, what resources could you use to help decide the lime source? <br />
+                                                (See Table 1 of <a href="https://extension.oregonstate.edu/catalog/pub/em-9057-applying-lime-raise-soil-ph-crop-production-western-oregon" target="_blank" rel="noopener noreferrer">
+                                                    Applying Lime to Raise Soil pH for Crop Production</a>)
+                                                </span>} name="lime_resources">
                                                 <Input />
                                             </Form.Item>
-                                            <Form.Item label="Soil pH" name="soil_ph">
+                                            <Form.Item label="What is the pH of the soil you sampled?" name="soil_ph">
                                                 <Input />
                                             </Form.Item>
-                                            <Form.Item label="Buffer pH" name="buffer_ph">
+                                            <Form.Item label="What is the buffer pH of the soil you sampled?" name="buffer_ph">
                                                 <Input />
                                             </Form.Item>
-                                            <Form.Item label="Target soil pH" name="target_ph">
+                                            <Form.Item label="What is the target soil pH for your crops?" name="target_ph">
                                                 <Input />
                                             </Form.Item>
-                                            <Form.Item label="Lime needed to reach target pH" name="lime_needed">
+                                            <Form.Item label="How much lime (100 lime score) needs to be applied to reach the target pH?" name="lime_needed">
                                                 <Input />
                                             </Form.Item>
                                             <Form.Item label="Will you be tilling or top-dressing lime?" name="lime_application">
