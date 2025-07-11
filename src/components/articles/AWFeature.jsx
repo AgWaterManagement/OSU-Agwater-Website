@@ -71,10 +71,10 @@ const AWFeature = () => {
     //document.getElementById('divBodyText').innerHTML= article.body_html;
 
     useEffect(() => {
-        fetch("https://agwater.org:5556/ArticleList")
+        fetch("https://agwater.org:5556/articles/list")
             .then((res) => res.json())
             .then((articles) => {
-                for (let article of articles) {
+                for (let article of articles.articles) {
                     article['_id'] = article.title.replaceAll(' ', '_');
                     if (article['_id'] == paramsID) {
                         setArticle(article);

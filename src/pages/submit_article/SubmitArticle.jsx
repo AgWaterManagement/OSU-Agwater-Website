@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { Row, Col, Button, DatePicker, Form, Input, Select, AutoComplete } from 'antd';
+import { Row, Col, Button, DatePicker, Form, Input, Select, AutoComplete, Typography, Divider } from 'antd';
 //import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 
 import { AWFeatureDisplay } from '../../components/articles/AWFeature';
+
+
+const { Title } = Typography;
+
 
 //import Quill from "quill";
 //import QuillEditor from "./QuillEditor";
@@ -47,7 +51,7 @@ const SubmitArticle = () => {
     const quillRef = useRef();
 
     useEffect(() => {
-        fetch("https://agwater.org:5556/ArticleList")
+        fetch("https://agwater.org:5556/articles/list")
             .then((response) => {
                 if (!response.ok) throw new Error("Failed to fetch articles");
                 return response.json();
@@ -156,6 +160,12 @@ const SubmitArticle = () => {
         setIsDirty(true); // Set dirty flag whenever a form field changes
     };
 
+    const onSaveChanges = () => {
+        const values = form.getFieldsValue();
+        console.log('Saving changes for article:', values);
+        // Here you would typically send the updated article to your backend API
+    }
+
     const SubmitArticle = (values) => {
         //const values = form.getFieldsValue();
         console.log('Form values changed:', values);
@@ -180,9 +190,9 @@ const SubmitArticle = () => {
     }
 
     return (
-        <div style={{ backgroundColor: 'rgb(245,245,245)', padding: '0.9em' }}>
+        <div style={{padding: '0.9em' }}>
             {/* Article Titles Select */}
-            <h4 style={{ color: 'black' }}>Select an Article to edit, or start a new one</h4>
+            <Title level={2}>Select an Article to edit, or start a new one</Title>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Select
                     placeholder="Select an article to edit"
@@ -191,12 +201,13 @@ const SubmitArticle = () => {
                     onSelect={onSelectArticle}
                     aria-label="Select Article"
                 />
-                <Button onClick={onNewArticle}>New</Button>
+                <Button type='primary' onClick={onNewArticle}>Start a New Article</Button>
             </div>
-            <hr />
+            <Divider />
             {isDirty && (
                 <div style={{ color: 'blue', marginTop: '10px',  padding:'1em', backgroundColor: 'lightgray' }}>
-                    You have unsaved changes.
+                    You have unsaved changes. &nbsp;&nbsp;
+                    <Button type='primary' onClick={onSaveChanges}>Save Changes</Button>
                 </div>
             )}
 
@@ -383,7 +394,8 @@ const SubmitArticle = () => {
                     </Form>
                 </Col>
                 <Col sm={24} md={12}>
-                   <h5 style={{ color: 'black' }}>Article Preview</h5>
+                
+                    <Title level={5}>Article Preview</Title>
                     <div style={{ padding: '1em', color:'black', backgroundColor: '#fff', borderRadius: '8px' }}>
                         {currentArticle && (
                             <AWFeatureDisplay article={currentArticle} />

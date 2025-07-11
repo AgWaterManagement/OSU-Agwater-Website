@@ -17,14 +17,14 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
     const [selectedTag, setSelectedTag] = useState("");
 
     useEffect(() => {
-        fetch("https://agwater.org:5556/ArticleList")
+        fetch("https://agwater.org:5556/articles/list")
             .then((res) => res.json())
             .then((_articles) => {
-                for (let _article of _articles)
+                for (let _article of _articles.articles)
                     _article['_id'] = _article.title.replaceAll(' ','_');  // replace ' '
                 return _articles;
             })
-            .then((_articles) => setArticles(_articles));
+            .then((_articles) => setArticles(_articles.articles));
     }, []);
 
 
