@@ -8,7 +8,7 @@ import { LeftCircleFilled } from '@ant-design/icons';
 
 import './VegNutrientPlan.css';
 
-const { Title, Paragraph } = Typography;
+const { Title, } = Typography;
 const { TextArea } = Input;
 const { TabPane } = Tabs;
 
@@ -61,9 +61,9 @@ const VegNutrientPlan = () => {
 
     return (
         <div className="content-container" style={{ maxWidth: "90%" }}>
-            <div style={{ textAlign: "center", fontSize: "2.0rem" }}>
-                Vegetable Nutrient Management Planning Tool
-            </div>
+            <Title level={3} style={{ textAlign: "center", fontSize: "1.5rem" }}>
+                Vegetable Nutrient Management Plan
+            </Title>
 
             {
                 start ? (
@@ -158,9 +158,6 @@ const VegNutrientPlan = () => {
                     <Row justify="center" style={{ margin: 0 }}>
                         <Col xs={24} sm={22} md={20} lg={18} xl={16}>
                             <Card style={cardStyle}>
-                                <Title level={3} style={{ textAlign: "center", fontSize: "1.5rem" }}>
-                                   Vegetable Nutrient Management Plan
-                                </Title>
                                 <div style={{ textAlign: "center", fontSize: "1.2rem" }}>
                                     <LeftCircleFilled style={circleIconStyle} onClick={() => { if (activeTab > 1) setActiveTab(activeTab - 1) }} disabled={activeTab === 1} />
                                     <RightCircleFilled style={circleIconStyle} onClick={() => { if (activeTab < 10) setActiveTab(activeTab + 1) }} disabled={activeTab === 10} />
@@ -177,14 +174,15 @@ const VegNutrientPlan = () => {
                                 >
                                     <Tabs
                                         activeKey={activeTab.toString()}
-                                        type="card"
                                         tabBarStyle={tabBarStyle}
                                         tabPosition="top"
                                         centered={false}
                                         size="small"
                                         moreIcon={null}
                                         style={{ width: "100%" }}
-                                        destroyInactiveTabPane
+                                        onTabClick={(key) => {
+                                            setActiveTab(parseInt(key, 10));
+                                        }}
                                     >    <TabPane tab="Basic Info" key={1}>
                                             <Form.Item label="Today's date" name="date">
                                                 <DatePicker style={{ width: "100%" }} />

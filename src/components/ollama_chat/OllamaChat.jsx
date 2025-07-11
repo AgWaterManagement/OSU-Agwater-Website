@@ -77,11 +77,11 @@ const OllamaChat = () => {
           break;
         }
 
-        if (success) {
-          chunk = decoder.decode(value, { stream: true });
+        if (true) { //success) {
+          chunk = decoder.decode(value, { stream: false });
         } else {
           // If the previous chunk failed to parse, we skip it and continue reading
-          chunk += decoder.decode(value, { stream: true });
+          //chunk += decoder.decode(value, { stream: true });
         }
 
         //console.log(`chunk ${chunks}: ${chunk}`); // debug
@@ -90,10 +90,10 @@ const OllamaChat = () => {
           // Attempt to parse the JSON chunk
           json = JSON.parse(chunk);
           success = true;
-          //console.log(`json: ${JSON.stringify(json)}`); // debug
+          console.log(`json: ${JSON.stringify(json)}`); // debug
         } catch (error) {
           // If parsing fails, log the error and continue
-          success = false;
+          //success = false;
           console.error(`Error parsing JSON from chunk ${chunks}:`, error);
           console.error(`Chunk content: ${chunk}`);
           continue; // Skip to the next chunk
@@ -162,10 +162,7 @@ const OllamaChat = () => {
     }
   }
 
-  const openNewConv = () => {
-    //setMessages([]); // reset messages
-    setError(null); // clear previous errors
-  }
+
 
   const rateAnswer = async (qaPair, rating) => {
     // Here you can handle the rating logic, e.g., send it to a server or update the UI
@@ -297,15 +294,6 @@ const OllamaChat = () => {
           ))}
         </Select>
       </div>
-
-
-
-      <Button onClick={openNewConv}
-        type="text"
-        size="small"
-      >
-        Start a New Conversation
-      </Button>
     </div>
   );
 };

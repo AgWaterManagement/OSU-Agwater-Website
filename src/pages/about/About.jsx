@@ -7,7 +7,6 @@ import AWTeam from '../../components/team/AWTeam';
 const About = () => (
   <div className='content-container' >
 
-  <div className='topic_head-container'>
 
     <div className='content-container-header' >About This Site</div>
 
@@ -20,15 +19,10 @@ const About = () => (
       Oregon State University, to link OSU&apos;s research and Extension water community to practioners, agencies, and other interested parties
       around the state to better understand and manage our water resources.
     </p>
-    <hr/>
+    <hr />
     <p className='intro-text'>This site is developed with contributions from the following team.</p>
-        
-  </div>
 
-            <AWTeam team='website'></AWTeam>
-
-
-          
+    <AWTeam team='website'></AWTeam>
 
   </div>
 );

@@ -1,16 +1,17 @@
 import { useState } from 'react';
 
-import { Card } from 'antd';
-import { AndroidOutlined, AppleOutlined } from '@ant-design/icons';
+//import { Card } from 'antd';
+//import { AndroidOutlined, AppleOutlined } from '@ant-design/icons';
 
-import { SearchOutlined, TeamOutlined, QuestionCircleOutlined, DashboardOutlined } from '@ant-design/icons';
+//import { SearchOutlined, TeamOutlined, QuestionCircleOutlined, DashboardOutlined } from '@ant-design/icons';
+import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
-import DashboardImage from '../../assets/images/dashboard.png'
-import Dashboards from '../../apps/dashboards/Dashboards'
+//import DashboardImage from '../../assets/images/dashboard.png'
+//import Dashboards from '../../apps/dashboards/Dashboards'
 
 import './AgTAP.css';
-import { Link } from 'react-router-dom';
-import AWTeam from '../../components/team/AWTeam.jsx';
+//import { Link } from 'react-router-dom';
+//import AWTeam from '../../components/team/AWTeam.jsx';
 import AWButtonContainer from '../../components/button_container/AWButtonContainer.jsx';
 import AWGetAssistance from './ATGetAssistance.jsx';
 
@@ -51,9 +52,7 @@ const AgTAP = () => {
                 <hr/>
             </div>
             <div className="flex-item" style={{ display: current == 'assist' ? 'block' : 'none' }}>
-                <Card title="Need Technical Assistance?" bordered={true} style={{ width: '100%' }}>
-                    <AWGetAssistance />
-                </Card>
+                     <AWGetAssistance />
             </div>
 
             <div className="flex-item" style={{ display: current == 'search' ? 'block' : 'none' }}>
@@ -61,6 +60,7 @@ const AgTAP = () => {
                 
             </div>
 
+            {/*}
             <div className="flex-item" style={{ display: current == 'dashboards' ? 'block' : 'none' }}>
                 <Card title="Dashboards" bordered={true} style={{ height: '100%' }}>
                     <img src={DashboardImage} style={{ width: '100%', maxWidth: 320 }} />
@@ -72,12 +72,12 @@ const AgTAP = () => {
 
                 </Card>
             </div>
-
             <div className="flex-item" style={{ display: current == 'theTeam' ? 'block' : 'none' }}>
                 <Card title="Meet the Team" bordered={true}>
                     <AWTeam team='agtap' />
                 </Card>
             </div>
+                */}
 
         </div>
     )

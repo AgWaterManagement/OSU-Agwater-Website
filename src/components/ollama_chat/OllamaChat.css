@@ -40,6 +40,7 @@
     margin-right:1em;
   }
 
+  /*
   a {
     color: #1a0dab;
     text-decoration: none;
@@ -47,6 +48,7 @@
   a:hover {
     text-decoration: underline;
   }
+    */
 
   .chat-prompt {
     background-color: darkgrey;
@@ -72,4 +74,5 @@
     resize: none;
     overflow: hidden;
     margin-right: 1em;
+    color:black
   }

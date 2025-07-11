@@ -72,7 +72,6 @@ const irrigationItems = [
       <AWFactSheet link="factSheets/c0912.pdf" title="Determining the Gross Amount of Water Applied - Surface Irrigation&nbsp;(15 KB)" author="Thomas Ley, WSU" />
       <AWFactSheet link="factSheets/eb1305.pdf" title="Sprinkler Irrigation:  Application Rates and Depth&nbsp;(24 KB)" author="Thomas Ley, WSU" />
       <AWFactSheet link="factSheets/em4885.pdf" title="Irrigation Management Practices to Protect Groundwater and Surface Water Quality in the State of WA&nbsp;(50 KB)" author="P. Canessa and R. Hermanson, WSU" />
-   
       </div> 
     }
 ];
@@ -168,11 +167,9 @@ const items = [
 
 const AWFactSheets = () => {
   
-  //const { token } = theme.useToken();
-
   return (
   <>
-    <Collapse className='accordion-header' accordion items={items} />
+    <Collapse bordered={false} accordion items={items} />
   </>
 )};
 

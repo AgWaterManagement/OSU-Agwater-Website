@@ -6,11 +6,13 @@ import Tools from '../tools/Tools';
 import Resources from '../resources/Resources';
 import About from '../about/About';
 import Feature from '../../components/articles/AWFeature';
+
 import Dashboards from '../../apps/dashboards/Dashboards';
 import IrrigWaterUse from '../../apps/irrig_water_use/IrrigWaterUse';
 import OregonCropWaterUse from '../../apps/oregon_crop_water_use/OregonCropWaterUse';
 import VegNutrientPlan from '../../apps/veg_nutrient_plan/VegNutrientPlan';
 import CropManagementSystem from '../../apps/crop_management_system/CropManagementSystem';
+import Agrimet from '../../apps/agrimet/Agrimet';
 
 
 import SubmitArticle from '../submit_article/SubmitArticle';
@@ -35,6 +37,7 @@ const AppRoutes = () => (
         <Route path="/apps/oregonCropWaterUse" element={<OregonCropWaterUse />} />
         <Route path="/apps/vegNutrientPlan" element={<VegNutrientPlan />} />
         <Route path="/apps/cms" element={<CropManagementSystem />} />
+        <Route path="/apps/agrimet" element={<Agrimet />} />
 
         <Route path="/submitArticle/:id" element={<SubmitArticle />} />
         <Route path="/submitSource" element={<SubmitSourceForm />} />

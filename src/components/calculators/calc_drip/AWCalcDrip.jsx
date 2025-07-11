@@ -1,13 +1,17 @@
 
 import { useState, useEffect } from 'react';
+//import { Link } from "react-router-dom";
+
 
 import LikeButton from '../../like_button/LikeButton'
-import { Col, Row, Select, Input, InputNumber, Card, Divider } from 'antd';
+import { Col, Row, Select, Input, InputNumber, Card, Divider, Typography } from 'antd';
 
 import dripLine from '../../../assets/images/calculators//Irrigation-drip-line.png'
 import dripEq from '../../../assets/images/calculators/Drip_Application_Rate.gif'
 
-import '../calculators.css'
+const { Title } = Typography;
+
+// import '../calculators.css'
 
 const { Option } = Select;
 
@@ -134,15 +138,15 @@ const AWCalcDrip = () => {
       <div className='full-width'>
         <LikeButton />
 
-        <h3 className="aw-dark-accent-text">Drip Line Rate</h3>
+        <Title level={3}>Drip Line Rate</Title>
         <p>
           The drip line application rate is specific to your irrigation system and shouldn&apos;t change,
           so take a note of it. This constant rate is multiplied by all future irrigation set times to give
           the net application depths for those sets.  Use this form to calculate the water application rate
-          of <a className='dark-link' href="../../../Content/Resources/Irrigation-Glossary.php#dripIrrigation">drip irrigation</a> lines (tape, tubing) given the flow rate from individual
-          <a className='dark-link' href="../../../Content/Resources/Irrigation-Glossary.php#emitter"> emitters</a>, a constant spacing of the
-          <a className='dark-link' href="../../../Content/Resources/Irrigation-Glossary.php#emitter"> emitters</a> along the drip line, and a constant spacing between the drip lines.
-          <a className='dark-link' href="../../../Content/Resources/Irrigation-Unit-Descriptions.php">Learn more about the units used on this page. </a>
+          of <a href="../../../Content/Resources/Irrigation-Glossary.php#dripIrrigation">drip irrigation</a> lines (tape, tubing) given the flow rate from individual
+          <a href="../../../Content/Resources/Irrigation-Glossary.php#emitter"> emitters</a>, a constant spacing of the
+          <a href="../../../Content/Resources/Irrigation-Glossary.php#emitter"> emitters</a> along the drip line, and a constant spacing between the drip lines.
+          <a href="../../../Content/Resources/Irrigation-Unit-Descriptions.php">Learn more about the units used on this page. </a>
         </p>
 
         <Card label='Drip Line Calculator' className='calculator-card'>
@@ -179,7 +183,7 @@ const AWCalcDrip = () => {
 
               <br />
               <Divider orientation="left">Calculated Application Rate</Divider>
-              <Input addonAfter={resultUnits} defaultValue={""}  value={dripRate} variant="filled" style={{ width: '20em', backgroundColor: 'yellow' }} />
+              <Input addonAfter={resultUnits} defaultValue={""}  value={dripRate} variant="filled" style={{ width: '20em', color: 'black', backgroundColor: 'yellow' }} />
               <br/><br/>
             </Col>
             <Col span={12}>

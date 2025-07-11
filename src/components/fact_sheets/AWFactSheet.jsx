@@ -5,7 +5,7 @@ const AWFactSheet = ({link, title, author}) => {
   return (
     <>
     <div className="full-width" style={{paddingBottom:'0.7em'}}>
-      <a style={{color:'darkblue'}} href={assetURL} target="_blank">{ title }</a> - {author}
+      <a href={assetURL} target="_blank">{ title }</a> - {author}
     </div>
     </>
 );

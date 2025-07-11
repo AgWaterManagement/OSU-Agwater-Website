@@ -1,4 +1,4 @@
-import { Row, Col, Card, } from 'antd';
+import { Card, } from 'antd';
 
 
 import Maria from '../../assets/images/maria-150X150.jpg';
@@ -10,13 +10,14 @@ import Manuel from '../../assets/images/Jamarillo-150X150.jpg';
 import Jen from '../../assets/images/Jen-150X150.jpg';
 import Derek from '../../assets/images/DerekGodwin-150x150.jpg';
 import Sean from '../../assets/images/sean-higgens-150x150.jpg';
+import PropTypes from 'prop-types';
 
 const AWTeam = ({ team }) => {
     return (
 
         <div className="flex-container" style={{ textAlign: 'left'}}>
             <div className="flex-item" style={{ minWidth: 400 }}>
-                <Card title="Maria Zamora, Ph.D" bordered={true} style={{ height: '100%' }}>
+                <Card title="Maria Zamora, Ph.D" style={{ height: '100%' }}>
 
                     <img src={Maria} />
                     <a href="https://bee.oregonstate.edu/users/maria-zamora-re" target="_blank">Dr. Maria Zamora Re</a> is an Agricultural Water Management and Irrigation Engineering Extension
@@ -29,7 +30,7 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400 }}>
-                <Card title="Malena Orduna Alegria, Ph.D" bordered={true} style={{ height: '100%' }}>
+                <Card title="Malena Orduna Alegria, Ph.D" style={{ height: '100%' }}>
                     <img src={Malena} />
                     <a href="https://bee.oregonstate.edu/users/malena-orduna-alegria" target="_blank">Dr. Malena Orduna Alegria </a>
                     is an Assistant Professor in the <a href="https://bee.oregonstate.edu">Biological & Ecological Engineering department</a> at Oregon State University.
@@ -40,7 +41,7 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400 }}>
-                <Card title="Salini Sasidharan, Ph.D" bordered={true} style={{ height: '100%' }}>
+                <Card title="Salini Sasidharan, Ph.D" style={{ height: '100%' }}>
                     <img src={Salini} />
                     <a href="https://bee.oregonstate.edu/users/salini-sasidharan" target="_blank">Dr. Salini Sasidhran </a>
                     is an Assistant Professor in the <a href="https://bee.oregonstate.edu">Biological & Ecological Engineering department</a> at Oregon State University.
@@ -51,7 +52,7 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400 }}>
-                <Card title="Manuel Garcia-Jamarillo, Ph.D" bordered={true} style={{ height: '100%' }}>
+                <Card title="Manuel Garcia-Jamarillo, Ph.D" style={{ height: '100%' }}>
                     <img src={Manuel} />
                     <a href="https://emt.oregonstate.edu/users/manuel-garcia-jaramillo" target="_blank">Dr. Manuel Garcia-Jamarillo </a>
                     is an Assistant Professor in the <a href="https://emt.oregonstate.edu/">Environmental and Molecular Toxicology department</a> at Oregon State University.
@@ -62,7 +63,7 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400 }}>
-                <Card title="Floyid Nicolas, Ph.D" bordered={true} style={{ height: '100%' }}>
+                <Card title="Floyid Nicolas, Ph.D" style={{ height: '100%' }}>
                     <img src={Floyid} />
                     <a href="https://bee.oregonstate.edu/users/floyid-nicolas" target="_blank">Dr. Floyid Nicolas </a>
                     is an Assistant Professor in the <a href="https://bee.oregonstate.edu">Biological & Ecological Engineering department</a> at Oregon State University.
@@ -73,10 +74,10 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400 }}>
-                <Card title="Derek Godwin" bordered={true} style={{ height: '100%' }}>
+                <Card title="Derek Godwin" style={{ height: '100%' }}>
                     <img src={Derek} />
                     Derek is an Extension statewide Watershed Management faculty in the <a href="https://bee.oregonstate.edu">Department of 
-                    Biological and Ecological Engineering</a>. He is a Professor and has been working for OSU's Extension Service 
+                    Biological and Ecological Engineering</a>. He is a Professor and has been working for OSU&apos;s Extension Service 
                     since 1994 in both program and administration positions. He specializes in education and research related to 
                     minimizing impacts of urban and agriculture land use practices on surface water quality, such as the implementation of 
                     green infrastructure, low-impact development, riparian enhancement and stream restoration practices. He works with watershed 
@@ -88,7 +89,7 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400 }}>
-                <Card title="John Bolte, Ph.D" bordered={true} style={{ height: '100%' }}>
+                <Card title="John Bolte, Ph.D" style={{ height: '100%' }}>
                     <img src={Bolte} />
                     <a href="https://bee.oregonstate.edu/users/john-bolte" target="_blank">Dr. John Bolte </a>
                     is a Professor in the <a href="https://bee.oregonstate.edu">Biological & Ecological Engineering department</a> at Oregon State University.
@@ -98,7 +99,7 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
-                <Card title="Troy Peters, Ph.D" bordered={true} style={{ height: '100%' }}>
+                <Card title="Troy Peters, Ph.D" style={{ height: '100%' }}>
                     <img src='https://s3.wp.wsu.edu/uploads/sites/888/2023/03/Troy-Peters-1-396x436.jpg' />
                     <a href="https://bsyse.wsu.edu/people/faculty/peters/" target="_blank">Dr. Troy Peters</a> works in the Land, Air, Water Resources, and Environmental Engineering (LAWREE) emphasis area within
                     the <a href="https://bsyse.wsu.edu/">Biological Systems Engineering department at Washington State University</a>. His primary focus is on agricultural irrigation.
@@ -110,7 +111,7 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
-                <Card title="Jen Martin" bordered={true} style={{ height: '100%' }}>
+                <Card title="Jen Martin" style={{ height: '100%' }}>
                     <img src={Jen} />
                     <a href="https://bee.oregonstate.edu/users/jennifer-martin" target="_blank">Jen Martin </a> 
                     is a Faculty Research Assistant in the <a href="https://bee.oregonstate.edu">Biological & Ecological Engineering department </a> 
@@ -121,7 +122,7 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
-                <Card title="Sean Higgins" bordered={true} style={{ height: '100%' }}>
+                <Card title="Sean Higgins" style={{ height: '100%' }}>
                     <img src={Sean} alt="Sean Higgins" />
                     Sean Higgins has recently received his Bachelor of Science in Computer Science at Oregon State University, 
                     and he is delighted to begin utilizing his education towards the development of a Retrieval-Augmented Generation 
@@ -136,5 +137,8 @@ const AWTeam = ({ team }) => {
 };
 
 
+AWTeam.propTypes = {
+    team: PropTypes.string
+};
 export default AWTeam;
 

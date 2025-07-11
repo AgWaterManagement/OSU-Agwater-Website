@@ -10,6 +10,8 @@ import osuLogo from '../../assets/images/OSU_horizontal_2C_O_over_W.png'
 import osuLogo2 from '../../assets/images/OSU_horizontal_2C_W_over_B.png'
 
 import { MenuUnfoldOutlined, MenuFoldOutlined, SearchOutlined } from '@ant-design/icons';
+import { ConfigProvider } from 'antd';
+import theme from '../../theme.js'; // Assuming you have a theme file for Ant Design
 
 const AppLayout = () => {
     const [sideBarCollapsed, setSideBarCollapsed] = useState(true);
@@ -90,9 +92,9 @@ const AppLayout = () => {
                     </nav>
                 </div>)}
 
-                <article>
+                <ConfigProvider theme={theme}>
                     <AppRoutes />
-                </article>
+                </ConfigProvider>
 
                 {!sideBarCollapsed && (
                     <aside className="aside"><SideMenu /></aside>

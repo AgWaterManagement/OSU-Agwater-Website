@@ -27,8 +27,11 @@
 }
 
 .wrapper > * {
-  padding: 0px;
+  /* padding: 0px; */
   flex: 1 100%;
+  
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 
 .footer {
@@ -70,12 +73,8 @@ HOP BINE  HEX: #AA9D2E
   background-color: black;
   color: white;
   padding: 0.5em;
-}
-
-/* Topic head section with topic title, intro, and optional nav buttons */
-.topic_head-container {
-  padding-left: 0.5em;
-  padding-right: 0.5em;
+  max-width:1600px;
+  margin: 0 auto;
 }
 
 /* Site title on the Home page */
@@ -114,7 +113,7 @@ HOP BINE  HEX: #AA9D2E
 .intro-text a:hover {
   font-weight: 500;
   text-decoration: underline;
-  color: #535bf2;
+  color: #646cff;
 }
 
 h1 {
@@ -238,7 +237,7 @@ p {
 
 a {
   font-weight: 500;
-  /*color: #646cff;*/
+  color: #a7abef;
   text-decoration: inherit;
   /*font-family:'OSU-text'*/
 }
@@ -354,12 +353,6 @@ button:focus-visible {
   /* background-color: #C4D6A4; */
   opacity: 0.7;
 }
-
-
-.dark-link {
-  color: #213547;
-}
-
 
 .header {
   font-family: "Open Sans", sans-serif;
@@ -527,12 +520,6 @@ button:focus-visible {
   font-weight: 600;
   font-size: large;
   font-family: OSU-text;
-}
-
-.accordion-header {
-  background-color: #E9E5E4; 
-  margin: 0.5em;
-  padding: 0.5em;
 }
 
 .aw-shadow {
