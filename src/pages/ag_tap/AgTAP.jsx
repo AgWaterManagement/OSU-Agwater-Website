@@ -20,7 +20,7 @@ import Chat from '../../pages/chat/Chat.jsx';
 
 const AgTAP = () => {
 
-    const [current, setCurrent] = useState('assist');
+    const [current, setCurrent] = useState('search');
 
     const onClickMenu = (e) => {
         if (current != '') {
@@ -44,20 +44,20 @@ const AgTAP = () => {
                 </div>
                 <AWButtonContainer
                     items={[
-                        { label: 'Get Assistance', key: 'assist', type:'primary', icon: <QuestionCircleOutlined /> },
-                        { label: 'Find Information', key: 'search', type:'default', icon: <SearchOutlined /> }
+                        { label: 'Find Information', key: 'search', type:'primary', icon: <SearchOutlined /> },
+                        { label: 'Request Assistance', key: 'assist', type: 'default', icon: <QuestionCircleOutlined /> }
                     ]}
                     onClick={onClickMenu}
                 />
                 <hr/>
             </div>
-            <div className="flex-item" style={{ display: current == 'assist' ? 'block' : 'none' }}>
-                     <AWGetAssistance />
-            </div>
 
             <div className="flex-item" style={{ display: current == 'search' ? 'block' : 'none' }}>
-                    <Chat />
-                
+                <Chat />
+            </div>
+
+            <div className="flex-item" style={{ display: current == 'assist' ? 'block' : 'none' }}>
+                     <AWGetAssistance />
             </div>
 
             {/*}

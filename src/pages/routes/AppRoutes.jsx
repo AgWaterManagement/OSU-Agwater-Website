@@ -17,6 +17,7 @@ import Agrimet from '../../apps/agrimet/Agrimet';
 
 import SubmitArticle from '../submit_article/SubmitArticle';
 import SubmitSourceForm from '../../components/ollama_chat/SubmitSourceForm';
+import ShowSources from '../../components/ollama_chat/ShowSources';
 import Documentation from '../doc/Documentation';
 import Chat from '../../pages/chat/Chat';
 import EvalChat from '../../components/ollama_chat/EvalChat';
@@ -41,6 +42,8 @@ const AppRoutes = () => (
 
         <Route path="/submitArticle/:id" element={<SubmitArticle />} />
         <Route path="/submitSource" element={<SubmitSourceForm />} />
+        <Route path="/showSources" element={<ShowSources />} />
+
         <Route path="/login" element={<Home />} />
         <Route path="/dashboards" element={<Dashboards />} />
         <Route path="/doc" element={<Documentation />} />

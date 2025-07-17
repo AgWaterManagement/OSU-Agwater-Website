@@ -5,15 +5,17 @@ import Markdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 
+import readNDJSONStream from 'ndjson-readablestream';
+
 import './OllamaChat.css';
 
 
 const { TextArea } = Input;
 const { Option } = Select;
 
-const CHAT_API_URL = "https://agwater.org:5556/LLMChat";
-const MODELS_API_URL = "https://agwater.org:5556/LLMModels";
-const RATING_API_URL = "https://agwater.org:5556/LLMRating";
+const CHAT_API_URL = "https://agwater.org:5556/llm/chat";
+const MODELS_API_URL = "https://agwater.org:5556/llm/models";
+const RATING_API_URL = "https://agwater.org:5556/llm/rating";
 
 const OllamaChat = () => {
     //const input = useRef("");
@@ -44,71 +46,42 @@ const OllamaChat = () => {
         }
     };
 
-
     async function processUserQuery(_prompt) {
         try {
             console.log("input: ", _prompt); // debug
-            const encodedInput = encodeURIComponent(_prompt);
             let modelParam = '';
             if (selectedModel)
                 modelParam = `&model=${selectedModel}`;
 
-            //const chat_history = encodeURIComponent(JSON.stringify(history)); // Encode the chat history for the URL
-
-            const url = `${CHAT_API_URL}?query=${encodedInput}${modelParam}&stream=1`;  //&chat_history=${chat_history}`;
-            console.log(url);
-            const response = await fetch(url);
-
+            const response = await fetch(CHAT_API_URL, {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query: _prompt,
+                    model: selectedModel,
+                    stream: true,
+                    use_RAG: true,
+                    chat_history: history
+                })
+            });
             // Check if the response is OK
             if (!response.ok) {
                 console.log("response: ", response);
                 setError("Error fetching response from the server");
+                setLoading(false);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-
-            setLoading(false);
-            let chunks = 0;
-            let chunk = "";
-            let success = true;
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    currentAnswer.current += references.current;
-                    console.log('done streaming');
-                    break;
-                }
-
-                if (true) { //success) {
-                    chunk = decoder.decode(value, { stream: true });
-                } else {
-                    // If the previous chunk failed to parse, we skip it and continue reading
-                    //chunk += decoder.decode(value, { stream: true });
-                }
-
-                //console.log(`chunk ${chunks}: ${chunk}`); // debug
-                let json = {};
-                try {
-                    // Attempt to parse the JSON chunk
-                    json = JSON.parse(chunk);
-                    success = true;
-                    //console.log(`json: ${JSON.stringify(json)}`); // debug
-                } catch (error) {
-                    // If parsing fails, log the error and continue
-                    //success = false;
-                    console.error(`Error parsing JSON from chunk ${chunks}:`, error);
-                    console.error(`Chunk content: ${chunk}`);
-                    continue; // Skip to the next chunk
-                }
-                //accumulatedResponse += chunk;
-                chunks++;
+            for await (const json of readNDJSONStream(response.body)) {
+                //console.log('Received', json);
 
                 // Update the message UI progressively with each chunk
                 if (json.content_type[0] === 'l') {   // 'llm_response' content type
                     currentAnswer.current += json['llm_response']; // Accumulate the response
-                } else { // json.content_type == 'document_reference' 
+                } else {
                     // Finalize the response when done
                     const refs = json['referenced_documents'] || [];
                     const titles = json['referenced_titles'] || [];
@@ -117,18 +90,18 @@ const OllamaChat = () => {
                         contentStr += "\n\n#### References:\n";
                         refs.forEach((ref, index) => {
                             if (titles.length > 0 && titles[index] !== null) {
-                                contentStr += `${index + 1}. <a href='https://agwater.org:5556/LLMSource?filename=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
+                                contentStr += `${index + 1}. <a href='https://agwater.org:5556/llm/source?filename=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
                             } else {
                                 contentStr += `${index + 1}. ${ref}\n`;
                             }
                         });
                     }
-                    //currentAnswer.current += contentStr;
                     references.current = contentStr; // Store the references for later use
-                }   
+                    setLoading(false);
+                }
                 setCurrentMarkdown(currentAnswer.current); // Update the markdown content
-
-            } // end of while loop getting next chunk
+            }
+            currentAnswer.current += references.current;
 
         } catch (error) {
             setError("Unable to fetch response. Please try again later.");

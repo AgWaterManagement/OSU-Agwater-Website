@@ -25,7 +25,10 @@ const theme = {
             colorText: 'white',
         },
         Tag : {
-            colorText: 'black',
+            defaultColor: '#e89a3c',
+            defaultBg: '#2b1d11',
+            colorBorder: '#593815',
+
         },
         Divider: {
             colorSplit: '#CCC',
@@ -40,7 +43,15 @@ const theme = {
         Input: {
             colorText: 'black',
             addonBg: 'lightgrey',
-        }
+        },
+        Table : {
+            headerBg: 'darkslategray',
+            headerColor: 'white',
+            colorText: 'white',
+            colorBgContainer: 'black',
+            colorBgElevated: 'black',
+            colorBorder: '#CCC',
+        },
 
     }
 }

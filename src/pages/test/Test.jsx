@@ -1,54 +1,32 @@
 import { useState, useEffect } from "react";
 //import OllamaChat from '../../components/ollama_chat/OllamaChat'
 
-
-
+import readNDJSONStream from 'ndjson-readablestream';
 
 const Test = () => {
 
-  const [output, setOutput] = useState("");
-
-  useEffect(() => {
+//  useEffect(() => {
     fetchStream();
-  }, []);
+//  }, []);
 
-   async function fetchStream() {
+    async function fetchStream() {
 
-    const url = 'https://agwater.org:5556/stream';
-    const response = await fetch(url);
-    const readableStream = response.body;
-    const reader = readableStream.getReader();
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        var text = new TextDecoder("utf-8").decode(value);
-        console.log("Received ", text);
+        const encodedInput = encodeURIComponent("what is diazinon");
+
+        const url = `https://agwater.org:5556/llm/chat?query=${encodedInput}&stream=1`;  //&chat_history=${chat_history}`;
+        console.log(url);
+        const response = await fetch(url, {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ chat_history: [] }) // Include the chat history in the request body
+        });
+        for await (const event of readNDJSONStream(response.body)) {
+            console.log('Received', event);
+        }
     }
-
-
-/*
-    const decoder = new TextDecoder();
- 
-    const response = await fetch(url);
-    for await (const chunk of response.body) {
-
-      let _chunk = decoder.decode(chunk, { stream: true });
-      console.log("chunk: ", _chunk); // debug
-    // Do something with each "chunk"
-    } */
-  // Exit when done
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -112,8 +90,7 @@ const Test = () => {
   return (
   <div className='content-container' >
 
-<h2 className='content-title'>Test Page</h2>
-<div id="output">{output}</div>
+        <h2 className='content-title'>Test Page</h2>
 
   </div>
 )};

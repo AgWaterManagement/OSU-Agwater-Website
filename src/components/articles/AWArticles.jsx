@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMediaQuery } from 'react-responsive';
 import PropTypes from 'prop-types';
-import { Row, Col, Input, Select, Pagination, Image, Tag } from "antd";
+import { Row, Col, Input, Select, Pagination, Image, Tag, Divider, Spin } from "antd";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -15,16 +15,22 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedAuthor, setSelectedAuthor] = useState("");
     const [selectedTag, setSelectedTag] = useState("");
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+
+        setLoading(true);
         fetch("https://agwater.org:5556/articles/list")
             .then((res) => res.json())
             .then((_articles) => {
                 for (let _article of _articles.articles)
-                    _article['_id'] = _article.title.replaceAll(' ','_');  // replace ' '
+                    _article['_id'] = _article.title.replaceAll(' ', '_');  // replace ' '
                 return _articles;
             })
-            .then((_articles) => setArticles(_articles.articles));
+            .then((_articles) => {
+                setArticles(_articles.articles);
+                setLoading(false);
+            })
     }, []);
 
 
@@ -64,6 +70,12 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
 
     return (
         <>
+            { loading && (
+                <div style={{ textAlign: "center", marginBottom: 16, backgroundColor: 'white' }}>
+                    <Spin tip="Loading Articles..." size="large" fullscreen />
+                </div>
+            )}
+
             <div style={{ width: '100%', marginLeft: 'auto', marginRight: 'auto', display: 'inline-block' }}>
                 {showSearch && (
                     <Search placeholder="type your search text here..." allowClear
@@ -139,6 +151,7 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
                         </Col>
                     ))}
                 </Row>
+                <Divider/>
                 <div className="flex justify-center">
                     <Pagination
                         current={currentPage}
