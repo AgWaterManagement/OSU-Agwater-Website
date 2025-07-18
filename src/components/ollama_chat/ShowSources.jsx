@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Input, Tag } from "antd";
+import { Input, Tag, Typography } from 'antd';
+import Loading from "../../components/loading/Loading"; // Adjust the import path as necessary
+const { Title } = Typography;
 
 const SOURCES_URL = "https://agwater.org:5556/llm/sources";
-const FILE_URL = "https://agwater.org:5556/llm/get_source?filename=";
+const FILE_URL = "https://agwater.org:5556/llm/source?filename=";
 
 const ShowSources = () => {
     const [allSources, setAllSources] = useState([]);
@@ -36,7 +38,6 @@ const ShowSources = () => {
             });
     }, []);
 
-    if (loading) return <div>Loading...</div>;
     if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
 
     // Filter sources by search string (case-insensitive)
@@ -50,9 +51,11 @@ const ShowSources = () => {
 
     return (
         <div>
-            <label htmlFor="source-search" style={{ display: "block", marginBottom: 4, fontWeight: 500 }}>
-                Search Sources:
-            </label>
+            {loading && <Loading tip="Loading sources..."/> }
+            <Title level={2}>The Following Sources are Used in the AgWater Chat Large Language Model</Title>
+
+            <div>Specify a search term below or click on a tag to filter the list.</div>
+
             <Input
                 id="source-search"
                 placeholder="Search titles..."

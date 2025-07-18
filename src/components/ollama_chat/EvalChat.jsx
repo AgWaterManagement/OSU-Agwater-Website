@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Input, Button, Spin, Select, message, Rate, Row, Col } from "antd";
+import { Input, Button, Select, message, Rate, Row, Col } from "antd";
+
+import { Loading } from "../../components/loading/Loading";
 
 import Markdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
@@ -239,18 +241,6 @@ const EvalChat = () => {
         }
     }
 
-
-    // Style for the content area in the loading spinner
-    //const spinnerContentStyle = {
-    //  padding: 50,
-    //  color: '#fff',
-    //  /*background: 'rgba(0, 0, 0, 0.05)',*/
-    //  borderRadius: 'white',
-    //  width: '12em'
-    //};
-
-    //const spinnerContent = <div style={spinnerContentStyle} />;
-
     return (
         <div className="container">
             <header className="header" style={{ color: 'white' }}>
@@ -300,11 +290,7 @@ const EvalChat = () => {
                     </div>
                 </div>
                 <br />
-                {loading && (
-                    <div style={{ textAlign: "center", marginBottom: 16, backgroundColor: 'white' }}>
-                        <Spin tip="Running Query..." size="large" fullscreen />  {/* >{spinnerContent}</Spin> */}
-                    </div>
-                )}
+                {loading && (<Loading tip='Running Query...' />)}
 
                 <Row gutter={16}>
                     {order.current.map((item, index) => (

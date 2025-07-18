@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { Select, Button, Input, Upload, message, Spin } from "antd";
+import { Select, Button, Input, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+
+import Loading from "../../components/loading/Loading"; // Adjust the import path as necessary
 
 const { Option } = Select;
 
@@ -25,16 +27,6 @@ const SubmitSourceForm = () => {
             console.error('Error fetching tabs', error);
         }
     };
-
-    // Style for the content area in the loading spinner
-    const contentStyle = {
-        padding: 50,
-        background: 'rgba(0, 0, 0, 0.05)',
-        borderRadius: 4,
-    };
-
-    const spinnerContent = <div style={contentStyle} />;
-
 
     const handleFileChange = (info) => {
         if (info.file.status === "removed") {
@@ -136,15 +128,12 @@ const SubmitSourceForm = () => {
                     </ul>
                     <p>Once submitted, the article will be processed and added to the corpus.
                         The article will be available for use in the AgWaterLLM chat interface.
-                </p>
+                        You can view the list of all articles currently used in the
+                        corpus <a style={{ color: 'blue' }} href='https://agwater.org/ShowSources' target='_blank'>at this link</a>.
+                    </p>
                 <hr />
 
-
-                {loading && (
-                    <div style={{ textAlign: "center", marginBottom: 16 }}>
-                        <Spin tip="Saving source information..." size="large">{spinnerContent}</Spin>
-                    </div>
-                )}
+                {loading && (<Loading tip='Saving Source information'/>)}
 
                 <div style={{ marginBottom: 16 }}>
                     <label htmlFor="title">Title of source document (required)</label><br></br>
