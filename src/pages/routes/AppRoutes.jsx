@@ -2,7 +2,6 @@ import { Route, Routes } from 'react-router-dom';
 import Home from '../home/Home';
 import SearchPage from '../search_page/SearchPage';
 import AgTAP from '../ag_tap/AgTAP';
-import Tools from '../tools/Tools';
 import Resources from '../resources/Resources';
 import About from '../about/About';
 import Feature from '../../components/articles/AWFeature';
@@ -13,7 +12,7 @@ import OregonCropWaterUse from '../../apps/oregon_crop_water_use/OregonCropWater
 import VegNutrientPlan from '../../apps/veg_nutrient_plan/VegNutrientPlan';
 import CropManagementSystem from '../../apps/crop_management_system/CropManagementSystem';
 import Agrimet from '../../apps/agrimet/Agrimet';
-
+import Calculators from '../../pages/calculators/Calculators';
 
 import SubmitArticle from '../submit_article/SubmitArticle';
 import SubmitSourceForm from '../../components/ollama_chat/SubmitSourceForm';
@@ -28,12 +27,12 @@ const AppRoutes = () => (
     <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/agTap" element={<AgTAP />} />
-        <Route path="/tools" element={<Tools />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/about" element={<About />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/feature/:id" element={<Feature />} />
 
+        <Route path="/pages/calculators" element={<Calculators />} />
         <Route path="/apps/irrigWaterUse" element={<IrrigWaterUse />} />
         <Route path="/apps/oregonCropWaterUse" element={<OregonCropWaterUse />} />
         <Route path="/apps/vegNutrientPlan" element={<VegNutrientPlan />} />

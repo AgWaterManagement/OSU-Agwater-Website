@@ -1,9 +1,159 @@
 import { useState, useEffect } from "react";
 //import OllamaChat from '../../components/ollama_chat/OllamaChat'
+import { Typography } from "antd";
+import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, CartesianGrid, Tooltip, Legend  } from "recharts";
 
-import readNDJSONStream from 'ndjson-readablestream';
+const { Title } = Typography;
+
+//import readNDJSONStream from 'ndjson-readablestream';
 
 const Test = () => {
+
+
+
+    const styles = {
+        fontFamily: "sans-serif",
+        textAlign: "center"
+    };
+
+
+    const data = [];
+
+    const maxBudget = 300;
+    for (let i = 0; i < 8; i++) {
+        let d = {
+            //Date: new Date('2025-07-0' + (i + 1)),
+            Date: '2025-07-0' + (i + 1),
+            value: Math.random() * (maxBudget + 50) + 100
+        };
+
+        data.push(d);
+    }
+
+    const testline = [{ day: 16, y: 300 }, { day: 25, y: 0 }]
+
+
+    const chartData = [
+        {
+            "Date": "2025-07-12",
+            "ETc": 0.056,
+            "Evapotranspiration ASCE-EWRI Alfalfa (in)": 28,
+            "Evapotranspiration ASCE-EWRI Grass (in)": 0.24,
+            "Evapotranspiration Kimberly-Penman (in)": 0.31,
+            "Growing Degree Days (base 50F)": 22.27
+        },
+        {
+            "Date": "2025-07-13",
+            "ETc": 0.068,
+            "Evapotranspiration ASCE-EWRI Alfalfa (in)": 34,
+            "Evapotranspiration ASCE-EWRI Grass (in)": 0.28,
+            "Evapotranspiration Kimberly-Penman (in)": 0.36,
+            "Growing Degree Days (base 50F)": 23.35,
+        },
+        {
+            "Date": "2025-07-14",
+            "ETc": 0.058,
+            "Evapotranspiration ASCE-EWRI Alfalfa (in)": 29,
+            "Evapotranspiration ASCE-EWRI Grass (in)": 0.24,
+            "Evapotranspiration Kimberly-Penman (in)": 0.33,
+            "Growing Degree Days (base 50F)": 22.31,
+        },
+        {
+            "Date": "2025-07-15",
+            "ETc": 0.062,
+            "Evapotranspiration ASCE-EWRI Alfalfa (in)": 31,
+            "Evapotranspiration ASCE-EWRI Grass (in)": 0.25,
+            "Evapotranspiration Kimberly-Penman (in)": 0.35,
+            "Growing Degree Days (base 50F)": 18.77,
+        }
+    ];
+
+
+
+    return (
+        <div style={styles}>
+
+
+            <ResponsiveContainer width="100%" height={320} style={{ backgroundColor: 'white' }}>
+                <Title level={4} style={{ color: 'black', textAlign: 'center' }}>Crop Water Use - Last Five Days</Title>
+                <LineChart
+                    width='100%'
+                    height='340'
+                    data={chartData}
+                    margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 25,
+                    }}
+                >
+                    <Line key='ETr' type="monotone" dataKey='ETc' stroke={"black"} />
+
+
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="Date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+
+                </LineChart>            </ResponsiveContainer>
+
+
+            {/*
+            <ResponsiveContainer width="100%" height={320} style={{ backgroundColor: 'white' }}>
+                <LineChart
+                    width='500'
+                    height='400'
+                    data={data}
+                >
+                    <Line key='value' type="monotone" dataKey='value' stroke={"black"} />
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="Date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+
+
+                </LineChart>
+            </ResponsiveContainer>
+            */}
+
+        </div>
+    );
+}
+
+
+
+
+    /*
+
+            <LineChart
+                width={500}
+                height={300}
+
+                margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+            >
+                <Line type="monotone" data={data} dataKey="value" stroke="#8884d8" dot={false} />
+                <Line type="linear" data={testline} dataKey="y" stroke="#FF3333" dot={false} strokeWidth={2} />
+                <XAxis dataKey="day" type="number" tickCount={11} />
+                <YAxis />
+                <ReferenceLine
+                    y={maxBudget}
+                    label={{
+                        position: "center",
+                        value: "Max budget"
+                    }}
+                    strokeDasharray="5 5"
+                />
+            </LineChart>
+
+
+
+
+
+
+
+
 
 //  useEffect(() => {
     fetchStream();
@@ -27,7 +177,7 @@ const Test = () => {
             console.log('Received', event);
         }
     }
-
+    */
 
 
    /*
@@ -87,13 +237,7 @@ const Test = () => {
     }
   */
   
-  return (
-  <div className='content-container' >
 
-        <h2 className='content-title'>Test Page</h2>
-
-  </div>
-)};
 
 export default Test;
 

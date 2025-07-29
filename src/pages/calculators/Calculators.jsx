@@ -23,14 +23,14 @@ const items = [
 ];
 
 
-const Tools = () => (
+const Calculators = () => (
   <div className='content-container'>
 
     <div className='topic_head-container'>
 
-      <div className='content-container-header'>Tools</div>
+      <div className='content-container-header'>Calculators</div>
 
-      <p className='intro-text'>Below are a collection of <quote>calculators</quote> for determining flow rates and other
+      <p className='intro-text'>Below are a collection of <strong>calculators</strong> for determining flow rates and other
         aspects of irrigation planning and water resource analyses.</p>
 
       <div className='section-header'>Irrigation Calculators</div>
@@ -43,4 +43,4 @@ const Tools = () => (
 );
 
 
-export default Tools;
+export default Calculators;

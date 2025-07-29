@@ -1,4 +1,4 @@
-import { useState } from 'react';
+    import { useState } from 'react';
 //import { Input } from 'antd';
 import { Link } from 'react-router-dom';
 import { useMediaQuery } from 'react-responsive';
@@ -10,8 +10,24 @@ import osuLogo from '../../assets/images/OSU_horizontal_2C_O_over_W.png'
 import osuLogo2 from '../../assets/images/OSU_horizontal_2C_W_over_B.png'
 
 import { MenuUnfoldOutlined, MenuFoldOutlined, SearchOutlined } from '@ant-design/icons';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, Dropdown, Menu } from 'antd';
 import theme from '../../theme.js'; // Assuming you have a theme file for Ant Design
+
+const toolsMenuItems = [
+    {
+        key: 'chat',
+        label: <Link to="/Chat">AgWater Chat</Link>,
+    },
+    {
+        key: 'agrimet',
+        label: <Link to="/apps/agrimet">Agrimet</Link>,
+    },
+    {
+        key: 'calculators',
+        label: <Link to="/pages/calculators">Water Calculators</Link>,
+    },
+    // Add more tool links as needed
+];
 
 const AppLayout = () => {
     const [sideBarCollapsed, setSideBarCollapsed] = useState(true);
@@ -35,9 +51,19 @@ const AppLayout = () => {
     isMobile ? console.log('on mobile') : isTabletOrMobile ? console.log('on tablet') : console.log('on laptop/desktop');
 
 
+    const toolsDropdown = (
+        <Dropdown
+            menu={{ items: toolsMenuItems }}
+            placement="bottomLeft"
+            arrow
+        >
+            <span className='nav-item' style={{ cursor: 'pointer' }}>Tools</span>
+        </Dropdown>
+    );
+
     const topMenu = (<>
         <Link className='nav-item' to="/agTap" >AgTAP</Link>
-        <Link className='nav-item' to="/tools">Tools</Link>
+        {toolsDropdown}
         <Link className='nav-item' to="/resources">Resources</Link>
         <Link className='nav-item' to="/about">About</Link>
         {/* <Link className='nav-item' to="/login">Login</Link> */}

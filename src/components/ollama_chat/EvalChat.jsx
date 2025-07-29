@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Input, Button, Select, message, Rate, Row, Col } from "antd";
+import { Input, Button, Select, Divider,message, Rate, Row, Col } from "antd";
 
 import { Loading } from "../../components/loading/Loading";
 
@@ -29,7 +29,7 @@ const EvalChat = () => {
     const [currentMarkdown, setCurrentMarkdown] = useState(""); // to keep track of the current markdown content
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const availableModels = ['llama3.2', 'deepseek-r1', 'gemma3'];
+    const availableModels = ['llama3.2', 'gemma3', 'orca2']; //, 'deepseek-r1', 'gemma3']; REMOVE NOT deepseek-r1
     const references = useRef(""); // to keep track of the references
 
     const order = useRef([]); // Order of questions to display
@@ -37,12 +37,29 @@ const EvalChat = () => {
     const contexts = useRef([]); // Context for each question, used for rating
     const comments = useRef([]); // Comments for each question, used for rating
     const ratings = useRef([]); // Ratings for each question, used for rating
-    const evaluated = useRef([]); // To keep track of which answers have been rated
-    //const list = [...Array(2).keys()];
-    //const inputRef = useRef([]);
-
+    //const evaluated = useRef([]); // To keep track of which answers have been rated
+    const [evaluated, setEvaluated] = useState([]); // To keep track of which answers have been rated 
     useEffect(() => {
         setModelInfo();
+    }, []);
+
+    // Warn user if not all answers are evaluated before leaving
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (evaluated.some(v => v === false)) {
+                const message = "Some answers have not been evaluated. Are you sure you want to leave?";
+                e.preventDefault();
+                e.returnValue = message; // For most browsers
+                return message; // For some older browsers
+            }
+            // No return needed if all are evaluated
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
     }, []);
 
     const setModelInfo = () => {
@@ -51,11 +68,12 @@ const EvalChat = () => {
         contexts.current = [];
         comments.current = [];
         ratings.current = [];
-        evaluated.current = [];
-
+        //evaluated.current = [];
+        const _evaluated = []
         availableModels.forEach((model, index) => {
             order.current.push(2 * index);
             order.current.push(2 * index + 1);
+            answers.current.push("");
             answers.current.push("");
             answers.current.push("");
             contexts.current.push(`RAG+${model}`);
@@ -64,10 +82,13 @@ const EvalChat = () => {
             comments.current.push("");
             ratings.current.push(0);
             ratings.current.push(0);
-            evaluated.current.push(false);
-            evaluated.current.push(false);
+            //evaluated.current.push(false);
+            //evaluated.current.push(false);
+            _evaluated.push(false);
+            _evaluated.push(false);
         });
 
+        setEvaluated(_evaluated); // Initialize evaluated state
         // randomize?
     };
 
@@ -177,7 +198,10 @@ const EvalChat = () => {
         const btnID = 'submit_' + index; // Unique ID for the submit button
         const commentID = 'comment_' + index; // Unique ID for the comment textarea
         const ratingID = 'rating_' + index; // Unique ID for the rating
-        
+
+        const isSubmitted = evaluated[index] ? 'Response has been submitted! ' : ''; // Check if the answer has been submitted
+        const btnText = evaluated[index] ? "Re-Submit Rating/Comment" : "Submit Rating/Comment";
+
         return (
             <div key={index} className="message-container">
                 <div className="ai-message" style={{marginLeft: '1em'}}>
@@ -185,15 +209,16 @@ const EvalChat = () => {
                         {_answer || "No response available yet"}
                     </Markdown>
                     <hr />
-                    <div style={{ padding: '0.5em' }}>Rate this answer: <Rate key={ratingID} id={ratingID}
-                        onChange={(value) => rateAnswer(e.currentTarget.id)} /></div>
+                    <div style={{ padding: '0.5em' }}><b>Rate this answer:</b> <Rate key={ratingID} id={ratingID} defaultValue={ratings.current[index]} style={{ marginLeft: '0.5em' }}
+                        onChange={(value) => rateAnswer(value, ratingID)} /></div>
                     <hr/>
-                    <div>Add any comment you&apos;d like about the quality of this answer in the box below:</div>
-                    <TextArea key={commentID} id={commentID} onChange={(e)=>commentAnswer(e.currentTarget.id) } />
-                    <br/>
-                    <Button key={btnID} id={btnID} disabled={evaluated.current[index]} type="primary" style={{ margin: '0.5em' }}
+                    <div><b>Add any comment you&apos;d like about the quality of this answer in the box below:</b></div>
+                    <TextArea key={commentID} id={commentID} onChange={(e) => commentAnswer(e.currentTarget.id)} defaultValue={comments.current[index]} />
+                    <br />
+                    <span>{isSubmitted}</span>
+                    <Button key={btnID} id={btnID} disabled={false/*evaluated.current[index]*/} type="primary" style={{ margin: '0.5em' }}
                         onClick={(e) => submitEvaluation(e.currentTarget.id)}>
-                        Submit Rating/Comment
+                        {btnText}
                     </Button>
                     <br/>
                 </div>
@@ -203,15 +228,37 @@ const EvalChat = () => {
 
     // onClick={(e) => submitEvaluation(e.currentTarget.id, _answer, 0, contexts.current[index], promptCtrl.current.value)}>
     // NEEDS WORK, NEED same for TEXTAREA COmment
-    const rateAnswer = (btnID) => {
+    const rateAnswer = (rating, id) => {
+        const index = parseInt(id.split('_')[1]); // Extract the index from the button ID
+        const ratingID = 'rating_' + index; // Unique ID for the rating
+        //const rating = document.getElementById(ratingID).value; // Get the rating value from the Rate component
+        ratings.current[index] = rating; // Store the rating in the ratings array
+    }
+
+    const commentAnswer = (btnID) => {
         const index = parseInt(btnID.split('_')[1]); // Extract the index from the button ID
-        //ratings.current[index]; // Get the current rating for this answer
+        const commentID = 'comment_' + index; // Unique ID for the rating
+        const comment = document.getElementById(commentID).value; // Get the rating value from the Rate component
+        comments.current[index] = comment; // Store the rating in the ratings array
     }
 
     const submitEvaluation = async (btnID) => { //, answer, rating, context, comment) => {
         // Here you can handle the rating logic, e.g., send it to a server or update the UI
         const index = parseInt(btnID.split('_')[1]); // Extract the index from the button ID
-        console.log(`Rating for answer ${id}: ${rating}, ${comment}`);
+
+        const model = contexts.current[index][0] === 'R' ? contexts.current[index].slice(4) : contexts.current[index]; // Extract model name from context if it starts with 'RAG+'
+        const useRAG = contexts.current[index][0] === 'R' ? true : false; // Determine if RAG is used based on context
+
+        //const ratingID = 'rating_' + index; // Unique ID for the rating
+        //const rating = document.getElementById(ratingID).value; // Get the rating value from the Rate component
+        //ratings.current[index] = rating; // Store the rating in the ratings array
+        //
+        //const commentID = 'comment_' + index; // Unique ID for the rating
+        //const comment = document.getElementById(commentID).value; // Get the rating value from the Rate component
+        //comments.current[index] = comment; // Store the rating in the ratings array
+
+        const submitted_by = document.getElementById('submitter').value || "Anonymous"; // Get the submitter's name from the input field
+        console.log(`Rating for answer ${index}: ${ratings.current[index]}, ${comments.current[index]}`);
 
         try {
             const response = await fetch(RATING_API_URL, {
@@ -223,14 +270,22 @@ const EvalChat = () => {
                     question: currentQuestion.current,
                     answer: answers.current[index],
                     rating: ratings.current[index],
-                    context: contexts.current[index],
-                    comment: comments.current[index]
+                    model: contexts.current[index],
+                    comment: comments.current[index],
+                    submitted_by: submitted_by
                 })
             });
+            console.log("response: ", response); // debug
             const result = await response.json();
+            console.log("response (json): ", response); // debug
+
+            const _evaluated = [...evaluated]; // Create a copy of the evaluated state
+
             if (result.success == true) {
-                evaluated.current[id] = true; // Mark this answer as evaluated
-                message.success(`Thank you for evaluation! Your rating was ${rating}, your comments was ${comment}`);
+                //evaluated.current[index] = true; // Mark this answer as evaluated
+                _evaluated[index] = true; // Mark this answer as evaluated
+                setEvaluated(_evaluated); // Update the evaluated state)
+                message.success(`Thank you for evaluation! Your rating was ${ratings.current[index]}, your comment was ${comments.current[index]}`);
             }
             else
                 message.error("Failed to submit rating. Please try again later.");
@@ -259,9 +314,74 @@ const EvalChat = () => {
                     <li style={{ color: 'white', fontSize: '0.9em' }}>Click the "Submit Rating/Comment" button to save your feedback.</li>
                 </ol>
 
-                <p style={{ color: 'white', fontSize: '0.9em' }}>
-                    Note that you can only provide one rating per generated answer - please don't submit ratings/comments for the same answer multiple times.
-                </p>
+      
+                 <h4>LLM Evaluation Rubric and Rating Outline:</h4>
+                 <table style={{ color: 'white', fontSize: '0.9em', fontWeight: '400', width: '100%', borderCollapse: 'collapse', marginTop: '0.5em', marginBottom: '0.5em' }}>
+                    <thead>
+                        <tr>
+                            <th style={{ border: '1px solid #ccc', padding: '6px', background: '#222', color: 'white', width:'10em' }}>Rating</th>
+                            <th style={{ border: '1px solid #ccc', padding: '6px', background: '#222', color: 'white' }}>Summary</th>
+                            <th style={{ border: '1px solid #ccc', padding: '6px', background: '#222', color: 'white' }}>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>No Stars</td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>Unacceptably Bad</td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px' }}>
+                                The LLM's response is completely incorrect and provides completely fabricated statistics and examples, or even conflicting information and examples. The LLM is confident in its wrong answer.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>
+                                <Rate disabled defaultValue={1}/><br/>One Star
+                            </td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>Very Bad</td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px' }}>
+                                The LLM's response is incorrect and misleading, but there aren't any precise details included in the response. The answer is general and vague, but still incorrect. The LLM is not confident in its wrong answer.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>
+                                <Rate disabled defaultValue={2} /><br />2 Stars</td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>Bad</td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px' }}>
+                                The LLM's response contains around the same amount of correct and incorrect information, which might or might not conflict. This answer is confusing and misleading.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>
+                                <Rate disabled defaultValue={3} /><br />3 Stars<br />
+                            </td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>Good</td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px' }}>
+                                The LLM's response is technically correct, but not very detailed. The answer may or may not include additional references or details, but if included, that additional information might not be relevant to the question itself.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>
+                                <Rate disabled defaultValue={4} /><br />4 Stars<br />
+                            </td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>Very Good</td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px' }}>
+                                The LLM's response is correct, but it doesn't provide much additional information or details that are related to the question. The LLM is somewhat confident in its correct answer.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>
+                                <Rate disabled defaultValue={5} /><br />5 Stars<br />
+                            </td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px', textAlign: 'center' }}>Exceptionally Good</td>
+                            <td style={{ border: '1px solid #ccc', padding: '6px' }}>
+                                The LLM's response is accurate, very detailed, and provides accurate extra information related to the question to ensure the user gains a more detailed understanding of the solution and the original question itself. The LLM is confident in its correct answer.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <Divider />
+                Your Name: <Input id='submitter' style={{ width: '30em' }} placeholder="Your name here please!" />
+                <Divider/>
+
             </header>
 
             <main className="main">

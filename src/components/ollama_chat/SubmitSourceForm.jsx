@@ -131,57 +131,57 @@ const SubmitSourceForm = () => {
                         You can view the list of all articles currently used in the
                         corpus <a style={{ color: 'blue' }} href='https://agwater.org/ShowSources' target='_blank'>at this link</a>.
                     </p>
-                <hr />
+                    <hr />
 
-                {loading && (<Loading tip='Saving Source information'/>)}
+                    {loading && (<Loading tip='Saving Source information' />)}
 
-                <div style={{ marginBottom: 16 }}>
-                    <label htmlFor="title">Title of source document (required)</label><br></br>
-                    <Input
-                        id="title"
-                        placeholder="Title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                    />
-                </div>
-                <div style={{ marginBottom: 16 }}>
-                    <label htmlFor="pdfFile">Upload a PDF of the source document (required)</label><br></br>
-                    <Upload
-                        id="pdfFile"
-                        accept="application/pdf"
-                        beforeUpload={() => false}
-                        maxCount={1}
-                        onChange={handleFileChange}
-                        onRemove={() => setPdfFile(null)}
-                    >
-                        <Button icon={<UploadOutlined />}>Select PDF File</Button>
-                    </Upload>
-                </div>
-                <div style={{ marginBottom: 16 }}>
-                    <label htmlFor="tags">Select tags for the source document (at least one required)</label><br></br>
-                    <Select
-                        id="tags"
-                        mode="multiple"
-                        allowClear
-                        placeholder="Select tags"
-                        value={tags}
-                        onChange={(value) => setTags(value)}
-                        style={{ width: "100%" }}
-                    >
-                        {availableTags.map((tag) => (
-                            <Option key={tag} value={tag}>
-                                {tag}
-                            </Option>
-                        ))}
-                    </Select>
-                </div>
-                <Button type="primary" htmlType="submit" >
-                    Submit
-                </Button>
-            </form>
-        </div >
-    </>
-  );
+                    <div style={{ marginBottom: 16 }}>
+                        <label htmlFor="title">Title of source document (required)</label><br></br>
+                        <Input
+                            id="title"
+                            placeholder="Title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                        />
+                    </div>
+                    <div style={{ marginBottom: 16 }}>
+                        <label htmlFor="pdfFile">Upload a PDF of the source document (required)</label><br></br>
+                        <Upload
+                            id="pdfFile"
+                            accept="application/pdf"
+                            beforeUpload={() => false}
+                            maxCount={1}
+                            onChange={handleFileChange}
+                            onRemove={() => setPdfFile(null)}
+                        >
+                            <Button style={{ color: 'black' }} icon={<UploadOutlined />}>Select PDF File</Button>
+                        </Upload>
+                    </div>
+                    <div style={{ marginBottom: 16 }}>
+                        <label htmlFor="tags">Select tags for the source document (at least one required)</label><br></br>
+                        <Select
+                            id="tags"
+                            mode="multiple"
+                            allowClear
+                            placeholder="Select tags"
+                            value={tags}
+                            onChange={(value) => setTags(value)}
+                            style={{ width: "100%" }}
+                        >
+                            {availableTags.map((tag) => (
+                                <Option key={tag} value={tag}>
+                                    {tag}
+                                </Option>
+                            ))}
+                        </Select>
+                    </div>
+                    <Button type="primary" htmlType="submit" >
+                        Submit
+                    </Button>
+                </form>
+            </div >
+        </>
+    );
 }
 
 

@@ -52,7 +52,10 @@ const theme = {
             colorBgElevated: 'black',
             colorBorder: '#CCC',
         },
+        Typography: {
+            colorText: 'white',
 
+        }
     }
 }
 
