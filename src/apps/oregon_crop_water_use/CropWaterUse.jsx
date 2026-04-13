@@ -13,6 +13,7 @@ import 'leaflet/dist/leaflet.css';
 
 const CropWaterUse = () => {
     const districtData = useRef(null);
+    const [selectedGeometry, setSelectedGeometry] = useState('Watermaster_District.json');
     const [cropData, setCropData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [chartData, setChartData] = useState([]); // State for line chart data
@@ -46,12 +47,14 @@ const CropWaterUse = () => {
     ];
 
 
-    
+
+    const resolveGeometryFile = (file) => (file === 'Watermaster_District.json' ? 'Watermaster_Districts' : file);
+
     const fetchGeometry = useCallback(async (file) => {
         setLoading(true);
-        
+
         try {
-            const apiUrl = `https://agwater.org:5556/json?path=oregon_crop_water_use&file=${file}`;
+            const apiUrl = `https://agwater.org:5556/json?path=oregon_crop_water_use&file=${resolveGeometryFile(file)}`;
             const response = await fetch(apiUrl, {
                 headers: {
                     'Accept': 'application/json',
@@ -85,7 +88,7 @@ const CropWaterUse = () => {
         const MIN_LEVEL = 50; // Minimum level to include a crop in the analysis (at least 5% of fields in the district and at least 10 inches of seasonal ET)
         console.log('Fetching crops for district:', district);
         setLoading(true);
-        
+
         try {
             const apiUrl = `https://agwater.org:5556/crop_management/crops/district_crops?district=${district}&min_level=${MIN_LEVEL}`;
 
@@ -106,7 +109,7 @@ const CropWaterUse = () => {
             if (data.error) {
                 console.error('Error fetching district crops data:', data.error);
                 throw new Error('Failed to fetch district crops data');
-            }   
+            }
 
             const _cropData = data.crops;
             // sort the crops by seasonal_et_total in descending order
@@ -119,7 +122,7 @@ const CropWaterUse = () => {
             districtCropsData.current = _cropData;
             setCropSelectItems(_cropSelectItems);
             setSelectedCrop(_cropSelectItems.length > 0 ? _cropSelectItems[0].value : null);
-            console.log('Fetched district crops data for district:', district, 'Crops:', _cropData );
+            console.log('Fetched district crops data for district:', district, 'Crops:', _cropData);
             setLoading(false);
             return data;
         } catch (error) {
@@ -139,7 +142,7 @@ const CropWaterUse = () => {
             setLoading(false);
             return;
         }
-        
+
         try {
             const apiUrl = `https://agwater.org:5556/crop_management/crops/cwu_summary_data?district=${district}&crop=${crop}`;
 
@@ -175,14 +178,14 @@ const CropWaterUse = () => {
 
                 _chartData.push({
                     Month: month,
-                    "Actual ET (in)": etValue, 
-                    "Potential ET (in)": etoValue, 
-                    "Precipitation (in)": pptValue, 
+                    "Actual ET (in)": etValue,
+                    "Potential ET (in)": etoValue,
+                    "Precipitation (in)": pptValue,
                     "NIWR (in)": niwrValue,
                     "ET Fraction": etfrac,
-                    et_ci: etCiValues, 
-                    ppt_ci: pptCiValues, 
-                    eto_ci: etoCiValues, 
+                    et_ci: etCiValues,
+                    ppt_ci: pptCiValues,
+                    eto_ci: etoCiValues,
                     niwr_ci: niwrCiValues,
                     etfrac_ci: etfracCiValues
                 });
@@ -207,7 +210,7 @@ const CropWaterUse = () => {
             message.error('Unable to process crop water use data for chart');
             setLoading(false);
             return;
-        }       
+        }
     }, []);
 
     const handleCropChange = (value) => {
@@ -226,6 +229,11 @@ const CropWaterUse = () => {
 
     const handlePanelChange = (key) => {
         setActivePanel(key);
+    };
+
+    const handleMapChange = async (value) => {
+        setSelectedGeometry(value);
+        districtData.current = await fetchGeometry(value);
     };
 
     // initialization
@@ -321,7 +329,7 @@ const CropWaterUse = () => {
         const diff = new Date() - start;
         const oneDay = 1000 * 60 * 60 * 24;
         const day = Math.floor(diff / oneDay) + 1;
-       return day;
+        return day;
     };
 
     //const ratioData = chartData?.map(d => ({
@@ -344,20 +352,22 @@ const CropWaterUse = () => {
                     decisions about irrigation scheduling and water resource management based on the expected water use of crops
                     throughout the growing season.
                 </p>
-                <br/>
+                <br />
 
                 <Row gutter={16}>
                     <Col xs={24} sm={6}>
                         <Card title="My Location" size="small">
                             <div style={{ height: '500px', width: '100%', marginBottom: '16px' }}>
                                 <Select
-                                    style={{width: '100%', marginBottom: '8px'}}
+                                    value={selectedGeometry}
+                                    style={{ width: '100%', marginBottom: '8px' }}
                                     placeholder="Select a location layer"
                                     options={[
-                                        { value: 'water_master_districts', label: 'Water Master Districts' },
-                                        { value: 'huc8_watersheds', label: 'HUC 8 Watersheds' },
-                                        { value: 'counties', label: 'Counties' },
+                                        { value: 'Watermaster_District.json', label: 'Water Master Districts' },
+                                        { value: 'OR_HUC8s.geojson', label: 'HUC 8 Watersheds' },
+                                        { value: 'OR_Counties.geojson', label: 'Counties' },
                                     ]}
+                                    onChange={handleMapChange}
                                 />
                                 <MapContainer
                                     center={[44.0, -120.5]}
@@ -374,10 +384,10 @@ const CropWaterUse = () => {
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                         attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
                                     />
-                                   
-                                    { districtData.current && (
-                                        <GeoJSON 
-                                            data={districtData.current} 
+
+                                    {districtData.current && (
+                                        <GeoJSON
+                                            data={districtData.current}
                                             onEachFeature={onEachDistrict}
                                             style={{ getDistrictStyle }}
                                         />
@@ -411,67 +421,67 @@ const CropWaterUse = () => {
                                         items={[{
                                             key: 'cwu', label: 'Crop Water Use Chart', children: (<>
                                                 <span style={{ paddingLeft: "10%", fontSize: "20px" }}>{`Monthly Crop Water Use for ${selectedCropLabel.current}`}</span>
-                                            
-                                                { chartData.some(d => d["Actual ET (in)"] !== null) ? (
-                                                <ResponsiveContainer width="100%" height={300}>
-                                                    <ComposedChart
-                                                        data={chartData}
-                                                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                                                    >
-                                                        <CartesianGrid strokeDasharray="3 3" fill='#181818' />
-                                                        <XAxis dataKey="Month" />
-                                                        <XAxis xAxisId="date" hide={true} type="number" domain={[15, 350]} />
-                                                        <YAxis />
 
-                                                        <Legend />
+                                                {chartData.some(d => d["Actual ET (in)"] !== null) ? (
+                                                    <ResponsiveContainer width="100%" height={300}>
+                                                        <ComposedChart
+                                                            data={chartData}
+                                                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                                        >
+                                                            <CartesianGrid strokeDasharray="3 3" fill='#181818' />
+                                                            <XAxis dataKey="Month" />
+                                                            <XAxis xAxisId="date" hide={true} type="number" domain={[15, 350]} />
+                                                            <YAxis />
 
-                                                        <ReferenceLine
-                                                            x={getCurrentDayOfYear()}
-                                                            xAxisId="date"
-                                                            stroke="yellow"
-                                                            label={{ value: 'Today', position: 'left', fill: 'yellow' }}
-                                                        />
+                                                            <Legend />
 
-                                                        <Area
-                                                            type="monotone"
-                                                            dataKey="et_ci"
-                                                            stroke="none"
-                                                            fill="rgba(44, 162, 236, 0.4)"
-                                                            legendType="none"
-                                                        />
+                                                            <ReferenceLine
+                                                                x={getCurrentDayOfYear()}
+                                                                xAxisId="date"
+                                                                stroke="yellow"
+                                                                label={{ value: 'Today', position: 'left', fill: 'yellow' }}
+                                                            />
 
-                                                        <Area
-                                                            type="monotone"
-                                                            dataKey="ppt_ci"
-                                                            stroke="none"
-                                                            fill="rgba(29, 204, 37, 0.4)"
-                                                            legendType="none"
-                                                        />
+                                                            <Area
+                                                                type="monotone"
+                                                                dataKey="et_ci"
+                                                                stroke="none"
+                                                                fill="rgba(44, 162, 236, 0.4)"
+                                                                legendType="none"
+                                                            />
 
-                                                        <Area
-                                                            type="monotone"
-                                                            dataKey="eto_ci"
-                                                            stroke="none"
-                                                            fill="rgba(255, 238, 0, 0.6)"
-                                                            legendType="none"
-                                                        />
+                                                            <Area
+                                                                type="monotone"
+                                                                dataKey="ppt_ci"
+                                                                stroke="none"
+                                                                fill="rgba(29, 204, 37, 0.4)"
+                                                                legendType="none"
+                                                            />
 
-                                                        <Area
-                                                            type="monotone"
-                                                            dataKey="niwr_ci"
-                                                            stroke="none"
-                                                            fill="rgba(20, 61, 242, 0.4)"
-                                                            legendType="none"
-                                                        />
+                                                            <Area
+                                                                type="monotone"
+                                                                dataKey="eto_ci"
+                                                                stroke="none"
+                                                                fill="rgba(255, 238, 0, 0.6)"
+                                                                legendType="none"
+                                                            />
 
-                                                        <Line type="monotone" dataKey="Actual ET (in)" stroke="#8884d8" strokeWidth={2} />
-                                                        <Line type="monotone" dataKey="Potential ET (in)" stroke="#ff7300" strokeWidth={2} />
-                                                        <Line type="monotone" dataKey="Precipitation (in)" stroke="#82ca9d" strokeWidth={2} />
-                                                        <Line type="monotone" dataKey="NIWR (in)" stroke="#143df2ff" strokeWidth={2} />
-                                                    </ComposedChart>
-                                                </ResponsiveContainer>
+                                                            <Area
+                                                                type="monotone"
+                                                                dataKey="niwr_ci"
+                                                                stroke="none"
+                                                                fill="rgba(20, 61, 242, 0.4)"
+                                                                legendType="none"
+                                                            />
+
+                                                            <Line type="monotone" dataKey="Actual ET (in)" stroke="#8884d8" strokeWidth={2} />
+                                                            <Line type="monotone" dataKey="Potential ET (in)" stroke="#ff7300" strokeWidth={2} />
+                                                            <Line type="monotone" dataKey="Precipitation (in)" stroke="#82ca9d" strokeWidth={2} />
+                                                            <Line type="monotone" dataKey="NIWR (in)" stroke="#143df2ff" strokeWidth={2} />
+                                                        </ComposedChart>
+                                                    </ResponsiveContainer>
                                                 ) : <p style={{ color: 'red', paddingLeft: "10%" }}>No crop water use data available for this crop in this district.</p>}
-                                                
+
 
                                                 <p>This chart shows the actual and potential evapotranspiration (ET) along with precipitation over time.
                                                     Actual ET (in) is a measure of the water a crop needs to grow optimally.
@@ -533,49 +543,50 @@ const CropWaterUse = () => {
                                         }, {
                                             key: 'mlta', label: 'Monthly Long-term Averages Table', children: (
                                                 <Table dataSource={tableData.current} pagination={{ pageSize: 13, placement: ['none'] }} columns={tableCols} />
-                                            )},
-                                            {
-                                            key: 'methods', label: 'Methods', children: ( <>
+                                            )
+                                        },
+                                        {
+                                            key: 'methods', label: 'Methods', children: (<>
                                                 <p>
                                                     The crop water use data presented in this tool is derived a state-wide effort to collect and analyze agricultural water use data involving OSU, DRI, OpenET and OWRD.
                                                     This information is available in <a href="https://www.dri.edu/project/owrd-et/" target="_blank" rel="noopener noreferrer">this report</a>.  This analysis characterized
                                                     cropping patterns and associated water use and related variables (precipitation rates, irrigation rates, etc.) for approximately 260,000 agricultural fields across the state,
-                                                    The source dataset described above contains roughly 115 million individual records of monthly field-scale crop water 
+                                                    The source dataset described above contains roughly 115 million individual records of monthly field-scale crop water
                                                     use data across the state, which serves as the basis for the analysis presented in this tool.
-                                                </p>  
+                                                </p>
                                                 <p>
-                                                    This field-scale data, covering the period 1983 to 2022, was aggregated within each Water Master district. 
+                                                    This field-scale data, covering the period 1983 to 2022, was aggregated within each Water Master district.
                                                     Crops grown in each district were included in the analysis if there were at least 500 monthly samples for that crop
                                                     in a given region were present in the datasets were present in dataset.  The number and type of crops included in a given district
-                                                    varied based on cropping patterns, but typically include around 10-20 crops per district.  Crop specific water use data was then 
+                                                    varied based on cropping patterns, but typically include around 10-20 crops per district.  Crop specific water use data was then
                                                     summarized by calculating the average monthly actual ET, potential ET, precipitation, and net irrigation water and other Parameters
                                                     affecting crop water use for each crop in each district.  The average monthly values were calculated by taking the weighted mean
-                                                    of the field-scale data for each crop in each district, where the weights were based on the number of observations available for 
-                                                    each month over the 1983-2022 period. 95% confidence intervals were also calculated for each monthly variable to provide 
+                                                    of the field-scale data for each crop in each district, where the weights were based on the number of observations available for
+                                                    each month over the 1983-2022 period. 95% confidence intervals were also calculated for each monthly variable to provide
                                                     insight into the variability and uncertainty in the measurements.
                                                 </p>
                                                 <p>
-                                                  For more information, please contact: {" "}
-                                                  <a href="mailto:john.bolte@oregonstate.edu">John Bolte</a> at Oregon State University.
+                                                    For more information, please contact: {" "}
+                                                    <a href="mailto:john.bolte@oregonstate.edu">John Bolte</a> at Oregon State University.
                                                 </p>
                                                 <p>
-                                                References:
-                                                <ul>
-                                                    <li style={{textAlign: 'left', color: 'white'}}>
-                                                       <a href="https://www.dri.edu/project/owrd-et/" target="_blank"
-                                                        rel="noopener noreferrer">Crop Evapotranspiration, Consumptive Use, and Open Water Evaporation for Oregon</a>.  2024.
-                                                       J Huntington,B Minor, M Bromley, C Pearson, J Beamer, K Ingwersen, K Carrara, J Atkin, J Brito,
-                                                       C Morton, C Dunkerly, J Volk, T Ott, P ReVelle, A Fellows, M Hoskinson.                                                       
-                                                       Report prepared by Desert Research Institute for the Oregon Water Resources Department.  
-                                                    </li>
-                                                    <li style={{textAlign: 'left', color: 'white'}}>
+                                                    References:
+                                                    <ul>
+                                                        <li style={{ textAlign: 'left', color: 'white' }}>
+                                                            <a href="https://www.dri.edu/project/owrd-et/" target="_blank"
+                                                                rel="noopener noreferrer">Crop Evapotranspiration, Consumptive Use, and Open Water Evaporation for Oregon</a>.  2024.
+                                                            J Huntington,B Minor, M Bromley, C Pearson, J Beamer, K Ingwersen, K Carrara, J Atkin, J Brito,
+                                                            C Morton, C Dunkerly, J Volk, T Ott, P ReVelle, A Fellows, M Hoskinson.
+                                                            Report prepared by Desert Research Institute for the Oregon Water Resources Department.
+                                                        </li>
+                                                        <li style={{ textAlign: 'left', color: 'white' }}>
                                                             <a href='https://extension.oregonstate.edu/sites/extd8/files/documents/em8530.pdf' target="_blank" rel="noopener noreferrer">
-                                                            Oregon Crop Water Use and Irrigation </a>Requirements. 1992. R. Cuenca, J. Nuss, A. Martinez-Cob, and G. Katul.  
+                                                                Oregon Crop Water Use and Irrigation </a>Requirements. 1992. R. Cuenca, J. Nuss, A. Martinez-Cob, and G. Katul.
                                                             Extension Miscellaneous Publication 8530. Oregon State University Extension Service.
-                                                    </li>
-                                                </ul>
+                                                        </li>
+                                                    </ul>
                                                 </p>
-                                                </>
+                                            </>
                                             )
                                         }]}
                                     />

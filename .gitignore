@@ -1,4 +1,6 @@
 .env
 /.vs
+/.vscode
 /dist
 /node_modules
+/src/secrets.js
