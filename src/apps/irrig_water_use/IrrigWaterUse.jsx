@@ -14,7 +14,7 @@ const IrrigWaterUse = () => {
   const [metric, setMetric ] = useState('gwd_total');
   const [year, setYear ] = useState(2008);
   const [field, setField ] = useState('gwd_total_2008');
-  const [fipsCode, setFIPSCode ] = useState(41)
+  const [fipsCode, setFIPSCode ] = useState(41);
   const [ stateGeoJsonURL, setStateGeoJsonURL ] = useState('/articles/IrrigWaterUse/data/ST' + fipsCode + '_IrrigUseByCounty.geojson');
 
   const usDataURL = '/articles/IrrigWaterUse/data/US_IrrigUseByState.geojson';

@@ -12,6 +12,15 @@ const NWSForecast = ({ lat, lng, locationName, forecastData }) => {
     // Current period (first in array)
     const current = forecastData[0];
 
+    // get the current date as day name, month name, and day number as a string
+    const currentDate = new Date(current.startTime).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+    });
+
+
+
     // Refs and state for equal card heights
     const cardRefs = useRef([]);
     const [maxHeight, setMaxHeight] = useState(undefined);
@@ -47,6 +56,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData }) => {
                 </Col>
                 <Col xs={24} md={18}>
                     <Title level={4} style={{ marginBottom: 0 }}>{locationName}</Title>
+                    <Text>Forecast for {currentDate}</Text>
                     <Text>
                         { lat && lng && ( 'Lat: ' + lat.toFixed(4) + ' Lng: ' + lng.toFixed(4) ) }
                     </Text>

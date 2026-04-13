@@ -42,10 +42,16 @@ const CropWaterUseChart = ({
                     }}
                 >
                     {chartData && chartData.length > 0 && 'Evapotranspiration ASCE-EWRI Alfalfa (in)' in chartData[0] && (
-                        <Line key='ETr' type="monotone" dataKey='Evapotranspiration ASCE-EWRI Alfalfa (in)' stroke={"#202020"} />
+                        <Line key='ETr' name='Reference ET' type="monotone" dataKey='Evapotranspiration ASCE-EWRI Alfalfa (in)'
+                            formatter={(value, name, props) => value.toFixed(2)}  unit=' in/day' stroke={"#202020"} />
                     )}
                     {chartData && chartData.length > 0 && selectedCrop && ("ETc (" + selectedCrop + ")" in chartData[0]) && (
-                        <Line key='ETc' type="monotone" dataKey={"ETc (" + selectedCrop + ")"} stroke={"#2020EE"} />
+                        <Line key='ETc' type="monotone" dataKey={"ETc (" + selectedCrop + ")"}
+                            formatter={(value, name, props) => value.toFixed(2)} unit=' in/day' stroke={"#2020EE"} />
+                    )}
+                    {chartData && chartData.length > 0 && selectedCrop && (selectedCrop + " (historical)" in chartData[0]) && (
+                        <Line key='ETc' type="monotone" dataKey={selectedCrop + " (historical)"} formatter={(value, name, props) => value.toFixed(2)}
+                            unit=' in/day' stroke={"#EE2020"} />
                     )}
 
                     <CartesianGrid strokeDasharray="3 3" />

@@ -106,6 +106,7 @@ const EvalChat = () => {
                 const response = await fetch(CHAT_API_URL, {
                     method: 'post',
                     headers: {
+                        "X-API-Key": "agwater-web-app",
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
@@ -139,12 +140,13 @@ const EvalChat = () => {
                             contentStr += "\n\n#### References:\n";
                             refs.forEach((ref, index) => {
                                 if (titles.length > 0 && titles[index] !== null) {
-                                    contentStr += `${index + 1}. <a href='https://agwater.org:5556/llm/source?filename=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
+                                    contentStr += `${index + 1}. <a href='https://agwater.org:5556/llm/source?filename=${ref}&api_key=agwater-web-app' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
                                 } else {
                                     contentStr += `${index + 1}. ${ref}\n`;
                                 }
                             });
                         }
+
                         references.current = contentStr; // Store the references for later use
                         //setLoading(false);
                     }
@@ -264,6 +266,7 @@ const EvalChat = () => {
             const response = await fetch(RATING_API_URL, {
                 method: 'POST',
                 headers: {
+                    "X-API-Key": "agwater-web-app",
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({

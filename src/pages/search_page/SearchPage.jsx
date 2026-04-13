@@ -4,6 +4,10 @@ import { Link } from "react-router-dom";
 const { Search } = Input;
 
 
+// API endpoints for fetching articles, factsheets, and relevant AgTAP tools and resources
+const ARTICLE_API_URL = "https://agwater.org:5556/articles/list"; // Original URL for production
+//const ARTICLE_API_URL = "http://localhost:3000/articles/list";  // Use this for debugging
+
 const SearchPage = () => {
 
   const OnClickAbstract = (e) => {
@@ -52,7 +56,11 @@ const SearchPage = () => {
     const url = 'https://agwater.org:5556/SearchArticles?' + new URLSearchParams({ keywords: keywords });
     console.log('Search URL:', url);
 
-    fetch(url)
+      fetch(url, {
+          headers: {
+              "X-API-Key": "agwater-web-app",
+          }
+      })
       .then(response => response.json())
       .then(data => {
         setLoading(false);

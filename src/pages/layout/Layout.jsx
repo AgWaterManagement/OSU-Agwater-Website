@@ -1,4 +1,4 @@
-    import { useState } from 'react';
+import { useState } from 'react';
 //import { Input } from 'antd';
 import { Link } from 'react-router-dom';
 import { useMediaQuery } from 'react-responsive';
@@ -8,26 +8,12 @@ import AppRoutes from '../routes/AppRoutes';
 //import awLogo from '../../assets/images/AgWaterLogo.jpg'
 import osuLogo from '../../assets/images/OSU_horizontal_2C_O_over_W.png'
 import osuLogo2 from '../../assets/images/OSU_horizontal_2C_W_over_B.png'
+import agTapLogo from '../../assets/images/AgTAPLogo2.png'
+
 
 import { MenuUnfoldOutlined, MenuFoldOutlined, SearchOutlined } from '@ant-design/icons';
-import { ConfigProvider, Dropdown, Menu } from 'antd';
+import { ConfigProvider, Row, Col } from 'antd';
 import theme from '../../theme.js'; // Assuming you have a theme file for Ant Design
-
-const toolsMenuItems = [
-    {
-        key: 'chat',
-        label: <Link to="/Chat">AgWater Chat</Link>,
-    },
-    {
-        key: 'agrimet',
-        label: <Link to="/apps/agrimet">Agrimet</Link>,
-    },
-    {
-        key: 'calculators',
-        label: <Link to="/pages/calculators">Water Calculators</Link>,
-    },
-    // Add more tool links as needed
-];
 
 const AppLayout = () => {
     const [sideBarCollapsed, setSideBarCollapsed] = useState(true);
@@ -50,20 +36,10 @@ const AppLayout = () => {
     //const isDesktopDevice = useMediaQuery({ query: "(min-device-width: 1200px)", });  
     isMobile ? console.log('on mobile') : isTabletOrMobile ? console.log('on tablet') : console.log('on laptop/desktop');
 
-
-    const toolsDropdown = (
-        <Dropdown
-            menu={{ items: toolsMenuItems }}
-            placement="bottomLeft"
-            arrow
-        >
-            <span className='nav-item' style={{ cursor: 'pointer' }}>Tools</span>
-        </Dropdown>
-    );
-
     const topMenu = (<>
         <Link className='nav-item' to="/agTap" >AgTAP</Link>
-        {toolsDropdown}
+        {/*<Link className='nav-item' to="/apps/agWqPlanAdminPanel" >Ag WQPlan Admin</Link> */}
+        <Link className='nav-item' to="/tools" >Tools</Link>
         <Link className='nav-item' to="/resources">Resources</Link>
         <Link className='nav-item' to="/about">About</Link>
         {/* <Link className='nav-item' to="/login">Login</Link> */}
@@ -77,10 +53,11 @@ const AppLayout = () => {
 
                 {/* Set up page top banner/top navigation menu */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'left', backgroundColor: 'rgb(215,63,9)', 'paddingLeft': '3px' }}>
-                    <span style={{ paddingLeft: '0.2em', paddingRight: '0.4em' }}>
+                    {/* Sidebar menu is commented out for testing */}
+                    {/* <span style={{ paddingLeft: '0.2em', paddingRight: '0.4em' }}>
                         {sideBarCollapsed ? (<MenuUnfoldOutlined style={{ fontSize: 'x-large', color: 'black' }} onClick={openSidebar} />)
                             : (<MenuFoldOutlined style={{ fontSize: 'x-large' }} onClick={closeSidebar} />)}
-                    </span>
+                    </span> */}
 
                     <Link className='top-link' to="/">
                         <img src={osuLogo2} className="logo" alt="logo" />
@@ -128,12 +105,41 @@ const AppLayout = () => {
 
                 <footer className="footer clearfix">
                     <hr />
-                    <a href='http://oregonstate.edu'>
-                        <img src={osuLogo} className="osu-logo" alt="Oregon State University" />
-                    </a>
+                    <Row>
+                        <Col xs={24} sm={12}>
+                            <Row>
+                                <Col xs={24} style={{ textAlign: 'left' }}>
+                                <a href='http://oregonstate.edu'>
+                                    <img src={osuLogo} className="osu-logo" alt="Oregon State University" />
+                                </a>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col xs={24} style={{ textAlign: 'left' }}>
+                                <p style={{ fontSize: '0.9em' }}>
+                                    &copy; {new Date().getFullYear()} Oregon State University. All rights reserved.
+                                </p>
+                                </Col>
+                            </Row>
+                        </Col>
+                        <Col xs={24} sm={12} >
+                            <a href='https://agwater.oregonstate.edu'>
+                                <img src={agTapLogo} alt="AgTAP Logo" style={{ width: '480px', height: 'auto', float: 'right' }} />
+                            </a>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col xs={24}>
+                            <p style={{ textAlign: 'center', marginTop: '3em', fontSize: '0.9em' }}>
+                                This site developed by the Agricultural Water Team at Oregon State University.
+                                <br />
+                                For questions or feedback, please <a href='/contact'>contact us</a>.
+                            </p>
+                        </Col>
+                    </Row>
                 </footer>
             </div>
-            
+
         </>
 
     )

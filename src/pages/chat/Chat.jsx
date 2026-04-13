@@ -13,7 +13,7 @@ const Chat = () => (
         </i></p>
 
     <p><i>Note: The chat is currently in beta testing, and may not always work as expected.  If you have any issues, please contact us at
-        <a style={{ color: 'yellow', textDecoration: 'none' }} href="mailto:ag-water@oregonstate.edu"> agwater support</a>.</i></p>
+        <a style={{ textDecoration: 'none' }} href="mailto:ag-water@oregonstate.edu"> agwater support</a>.</i></p>
     <OllamaChat />
    </div>
 );

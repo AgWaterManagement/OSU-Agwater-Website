@@ -1,0 +1,19 @@
+.ant-slider-mark {
+	width: 100%;
+}
+
+.ant-statistic-title {
+	margin-bottom: 0;
+}
+
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+	color: white;
+}
+
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
+	color: white;
+}
+
+.ant-radio-button-wrapper:hover {
+	color: black;
+}

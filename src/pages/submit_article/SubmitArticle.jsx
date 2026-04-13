@@ -51,8 +51,11 @@ const SubmitArticle = () => {
     const quillRef = useRef();
 
     useEffect(() => {
-        fetch("https://agwater.org:5556/articles/list")
-            .then((response) => {
+        fetch("https://agwater.org:5556/articles/list", {
+            headers: {
+                "X-API-Key": "agwater-web-app",
+            }
+        }).then((response) => {
                 if (!response.ok) throw new Error("Failed to fetch articles");
                 return response.json();
             })

@@ -4,37 +4,30 @@ const theme = {
         colorTextHeading: 'yellow'
     },
     components: {
-        Form: {
-            labelColor: 'white',
-        },
-        Tabs: {
-            itemActiveColor: 'yellow',
-            itemColor: 'white',
-            itemHoverColor: '#4096ff',
-            itemSelectedColor: '#4096ff'
-        },
-        Collapse: {
-            labelColor: 'white',
-            headerBg: 'rgba(1, 1, 1, 0.5)',
-            contentBg: 'black',
-        },
         Card: { 
             headerBg: 'darkslategray',
             actionsBg: 'darkslategray',
             colorBgContainer: 'black',
             colorText: 'white',
         },
-        Tag : {
-            defaultColor: '#e89a3c',
-            defaultBg: '#2b1d11',
-            colorBorder: '#593815',
-
+        Collapse: {
+            labelColor: 'white',
+            headerBg: 'rgba(1, 1, 1, 0.5)',
+            contentBg: 'black',
+        },
+        DatePicker: {
+            colorText: 'black',
+            colorBgElevated: '#ECECEC',
+            colorIcon: 'black',
+            cellHoverBg: 'lightgray',
+            colorTextDisabled: '#666666',
+            colorTextHeading: 'black',     
         },
         Divider: {
             colorSplit: '#CCC',
         },
-        Select : {
-            colorText: 'black',
+        Form: {
+            labelColor: 'white',
         },
         InputNumber: {
             colorText: 'black',
@@ -44,6 +37,36 @@ const theme = {
             colorText: 'black',
             addonBg: 'lightgrey',
         },
+        Modal: {
+            colorText: 'white',
+            contentBg: 'darkslategray',
+            colorBgElevated: 'darkslategray',
+        },
+        Radio: {
+            buttonColor: 'grey',
+            //buttonBg: '#262626',
+            //buttonBorderColor: '#1677ff',
+            //buttonHoverColor: 'white',
+            //buttonHoverBorderColor: '#4096ff',
+            buttonCheckedBg: '#1677ff',
+            buttonSolidCheckedBg: '#1677ff',
+            //buttonSolidCheckedColor: 'white',
+            //colorBgContainer: '#ECECEC',
+        },
+
+        Rate: { starBg: 'rgba(245,242,242,0.2)', starColor: 'gold' },
+
+        Popover: { colorTextHeading: 'darkslategray', colorText: 'black', colorBgElevated: '#82b3f7ff' },
+
+        Select : {
+            colorText: 'black',
+        },
+
+        Slider: { railBg: '#6884f6ec', railHoverBg: '#7871f6ff', trackBg: '#ae300dff', handleBg: '#fff', handleBorderColor: '#4096ff' },
+        
+        Statistic: {
+            colorTextDescription: 'white',
+        },
         Table : {
             headerBg: 'darkslategray',
             headerColor: 'white',
@@ -52,10 +75,27 @@ const theme = {
             colorBgElevated: 'black',
             colorBorder: '#CCC',
         },
+        Tabs: {
+            itemActiveColor: 'yellow',
+            itemColor: 'white',
+            itemHoverColor: '#4096ff',
+            itemSelectedColor: '#4096ff'
+        },
+        Tag : {
+            defaultColor: '#e89a3c',
+            defaultBg: '#2b1d11',
+            colorBorder: '#593815',
+        },
+
+        TreeSelect: {
+            colorText: 'black',
+
+        },    
+
         Typography: {
             colorText: 'white',
-
-        }
+        },
+   
     }
 }
 

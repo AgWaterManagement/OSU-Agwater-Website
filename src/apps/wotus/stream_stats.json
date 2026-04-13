@@ -1,0 +1,2368 @@
+{
+  "CONUS": {
+    "total_stream_length": 11279732.924218543,
+    "total_stream_count": 20263192,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 54696.09344029,
+        "total_stream_order_count": 36066
+      },
+      "1": {
+        "total_stream_order_length": 6255600.34997801,
+        "total_stream_order_count": 10265017
+      },
+      "2": {
+        "total_stream_order_length": 2287459.6427490413,
+        "total_stream_order_count": 4576961
+      },
+      "3": {
+        "total_stream_order_length": 1259601.1576976404,
+        "total_stream_order_count": 2533296
+      },
+      "4": {
+        "total_stream_order_length": 689209.08396576,
+        "total_stream_order_count": 1411632
+      },
+      "5": {
+        "total_stream_order_length": 363351.1532419601,
+        "total_stream_order_count": 736011
+      },
+      "6": {
+        "total_stream_order_length": 188228.94819338,
+        "total_stream_order_count": 374958
+      },
+      "7": {
+        "total_stream_order_length": 95408.69581419001,
+        "total_stream_order_count": 182092
+      },
+      "8": {
+        "total_stream_order_length": 59071.46267501001,
+        "total_stream_order_count": 104796
+      },
+      "9": {
+        "total_stream_order_length": 20875.6469895,
+        "total_stream_order_count": 36503
+      },
+      "10": {
+        "total_stream_order_length": 6040.1700797,
+        "total_stream_order_count": 5609
+      },
+      "11": {
+        "total_stream_order_length": 190.51939407,
+        "total_stream_order_count": 251
+      }
+    }
+  },
+  "AK": {
+    "total_stream_length": 69675.55324184,
+    "total_stream_count": 131778,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 4967.925876679999,
+        "total_stream_order_count": 3422
+      },
+      "3": {
+        "total_stream_order_length": 29358.014092340003,
+        "total_stream_order_count": 62966
+      },
+      "4": {
+        "total_stream_order_length": 16562.048748020003,
+        "total_stream_order_count": 32433
+      },
+      "5": {
+        "total_stream_order_length": 9524.519074430002,
+        "total_stream_order_count": 17562
+      },
+      "6": {
+        "total_stream_order_length": 5779.32185049,
+        "total_stream_order_count": 9980
+      },
+      "7": {
+        "total_stream_order_length": 2189.0725908599998,
+        "total_stream_order_count": 3427
+      },
+      "8": {
+        "total_stream_order_length": 811.32929251,
+        "total_stream_order_count": 1462
+      },
+      "9": {
+        "total_stream_order_length": 483.32171651,
+        "total_stream_order_count": 526
+      }
+    }
+  },
+  "AL": {
+    "total_stream_length": 213263.80547655,
+    "total_stream_count": 350192,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 636.07019376,
+        "total_stream_order_count": 481
+      },
+      "1": {
+        "total_stream_order_length": 122763.39212098997,
+        "total_stream_order_count": 194654
+      },
+      "2": {
+        "total_stream_order_length": 41687.73720187,
+        "total_stream_order_count": 76361
+      },
+      "3": {
+        "total_stream_order_length": 22571.10055109,
+        "total_stream_order_count": 39250
+      },
+      "4": {
+        "total_stream_order_length": 12204.85657642,
+        "total_stream_order_count": 20373
+      },
+      "5": {
+        "total_stream_order_length": 7349.37924357,
+        "total_stream_order_count": 11444
+      },
+      "6": {
+        "total_stream_order_length": 3055.0879627000004,
+        "total_stream_order_count": 4390
+      },
+      "7": {
+        "total_stream_order_length": 1189.2670632200002,
+        "total_stream_order_count": 1362
+      },
+      "8": {
+        "total_stream_order_length": 1475.3197728000002,
+        "total_stream_order_count": 1478
+      },
+      "9": {
+        "total_stream_order_length": 331.59479013,
+        "total_stream_order_count": 399
+      }
+    }
+  },
+  "AR": {
+    "total_stream_length": 213470.83232130003,
+    "total_stream_count": 301790,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 121351.14423238001,
+        "total_stream_order_count": 157927
+      },
+      "2": {
+        "total_stream_order_length": 41676.088481759994,
+        "total_stream_order_count": 63998
+      },
+      "3": {
+        "total_stream_order_length": 22250.059978780002,
+        "total_stream_order_count": 33669
+      },
+      "4": {
+        "total_stream_order_length": 12515.04883213,
+        "total_stream_order_count": 22023
+      },
+      "5": {
+        "total_stream_order_length": 7365.90956436,
+        "total_stream_order_count": 13714
+      },
+      "6": {
+        "total_stream_order_length": 4370.557148430001,
+        "total_stream_order_count": 6760
+      },
+      "7": {
+        "total_stream_order_length": 1640.17563048,
+        "total_stream_order_count": 2231
+      },
+      "8": {
+        "total_stream_order_length": 1138.55136971,
+        "total_stream_order_count": 859
+      },
+      "9": {
+        "total_stream_order_length": 592.6733644699999,
+        "total_stream_order_count": 296
+      },
+      "10": {
+        "total_stream_order_length": 570.6237188,
+        "total_stream_order_count": 313
+      }
+    }
+  },
+  "AS": {
+    "total_stream_length": 253.85813059999998,
+    "total_stream_count": 350,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 222.60732016,
+        "total_stream_order_count": 257
+      },
+      "3": {
+        "total_stream_order_length": 30.86540545,
+        "total_stream_order_count": 89
+      },
+      "4": {
+        "total_stream_order_length": 0.38540498999999995,
+        "total_stream_order_count": 4
+      }
+    }
+  },
+  "AZ": {
+    "total_stream_length": 469240.6587731201,
+    "total_stream_count": 541144,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 278854.75192222995,
+        "total_stream_order_count": 246442
+      },
+      "2": {
+        "total_stream_order_length": 98034.60052666001,
+        "total_stream_order_count": 135381
+      },
+      "3": {
+        "total_stream_order_length": 48934.625216140004,
+        "total_stream_order_count": 78312
+      },
+      "4": {
+        "total_stream_order_length": 23618.76356625,
+        "total_stream_order_count": 44372
+      },
+      "5": {
+        "total_stream_order_length": 10130.72224782,
+        "total_stream_order_count": 19177
+      },
+      "6": {
+        "total_stream_order_length": 4540.120605849999,
+        "total_stream_order_count": 8287
+      },
+      "7": {
+        "total_stream_order_length": 2633.0074200999998,
+        "total_stream_order_count": 5037
+      },
+      "8": {
+        "total_stream_order_length": 2256.85987227,
+        "total_stream_order_count": 3756
+      },
+      "9": {
+        "total_stream_order_length": 237.20739580000003,
+        "total_stream_order_count": 380
+      }
+    }
+  },
+  "CA": {
+    "total_stream_length": 787595.8750998897,
+    "total_stream_count": 1862112,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 3905.7239106099996,
+        "total_stream_order_count": 2576
+      },
+      "1": {
+        "total_stream_order_length": 460442.58920105,
+        "total_stream_order_count": 938282
+      },
+      "2": {
+        "total_stream_order_length": 158572.05651380002,
+        "total_stream_order_count": 444090
+      },
+      "3": {
+        "total_stream_order_length": 81086.12126523,
+        "total_stream_order_count": 225541
+      },
+      "4": {
+        "total_stream_order_length": 41370.38689135,
+        "total_stream_order_count": 119911
+      },
+      "5": {
+        "total_stream_order_length": 21388.98690036,
+        "total_stream_order_count": 66385
+      },
+      "6": {
+        "total_stream_order_length": 10010.94629086,
+        "total_stream_order_count": 32990
+      },
+      "7": {
+        "total_stream_order_length": 5508.47175166,
+        "total_stream_order_count": 19547
+      },
+      "8": {
+        "total_stream_order_length": 3944.4882165500003,
+        "total_stream_order_count": 10954
+      },
+      "9": {
+        "total_stream_order_length": 1199.21649067,
+        "total_stream_order_count": 1709
+      },
+      "10": {
+        "total_stream_order_length": 166.88766774999996,
+        "total_stream_order_count": 127
+      }
+    }
+  },
+  "CO": {
+    "total_stream_length": 446108.21711012995,
+    "total_stream_count": 988272,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 241559.23395436007,
+        "total_stream_order_count": 500076
+      },
+      "2": {
+        "total_stream_order_length": 93076.63803812001,
+        "total_stream_order_count": 232242
+      },
+      "3": {
+        "total_stream_order_length": 49848.251181370004,
+        "total_stream_order_count": 119566
+      },
+      "4": {
+        "total_stream_order_length": 27127.34873004,
+        "total_stream_order_count": 61934
+      },
+      "5": {
+        "total_stream_order_length": 15625.7832385,
+        "total_stream_order_count": 33388
+      },
+      "6": {
+        "total_stream_order_length": 8800.79705404,
+        "total_stream_order_count": 17137
+      },
+      "7": {
+        "total_stream_order_length": 5072.64728727,
+        "total_stream_order_count": 10998
+      },
+      "8": {
+        "total_stream_order_length": 2933.07922285,
+        "total_stream_order_count": 5741
+      },
+      "9": {
+        "total_stream_order_length": 2064.43840358,
+        "total_stream_order_count": 7190
+      }
+    }
+  },
+  "CT": {
+    "total_stream_length": 21070.066988180002,
+    "total_stream_count": 78692,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 11023.54278595,
+        "total_stream_order_count": 44912
+      },
+      "2": {
+        "total_stream_order_length": 4659.10329585,
+        "total_stream_order_count": 18256
+      },
+      "3": {
+        "total_stream_order_length": 2605.4385473,
+        "total_stream_order_count": 8783
+      },
+      "4": {
+        "total_stream_order_length": 1475.2528419900002,
+        "total_stream_order_count": 4365
+      },
+      "5": {
+        "total_stream_order_length": 774.7413440800001,
+        "total_stream_order_count": 1487
+      },
+      "6": {
+        "total_stream_order_length": 266.32501615,
+        "total_stream_order_count": 467
+      },
+      "7": {
+        "total_stream_order_length": 139.2349185,
+        "total_stream_order_count": 234
+      },
+      "8": {
+        "total_stream_order_length": 126.42823836000001,
+        "total_stream_order_count": 188
+      }
+    }
+  },
+  "DC": {
+    "total_stream_length": 122.4060978,
+    "total_stream_count": 184,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 47.84816392,
+        "total_stream_order_count": 90
+      },
+      "2": {
+        "total_stream_order_length": 16.631999999999998,
+        "total_stream_order_count": 13
+      },
+      "3": {
+        "total_stream_order_length": 2.155,
+        "total_stream_order_count": 5
+      },
+      "4": {
+        "total_stream_order_length": 14.689,
+        "total_stream_order_count": 18
+      },
+      "5": {
+        "total_stream_order_length": 15.13,
+        "total_stream_order_count": 24
+      },
+      "8": {
+        "total_stream_order_length": 25.951933880000002,
+        "total_stream_order_count": 34
+      }
+    }
+  },
+  "DE": {
+    "total_stream_length": 8850.340736740001,
+    "total_stream_count": 25154,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 237.51499523,
+        "total_stream_order_count": 207
+      },
+      "1": {
+        "total_stream_order_length": 4712.8012360600005,
+        "total_stream_order_count": 13110
+      },
+      "2": {
+        "total_stream_order_length": 1976.06340995,
+        "total_stream_order_count": 6429
+      },
+      "3": {
+        "total_stream_order_length": 1012.07016903,
+        "total_stream_order_count": 3087
+      },
+      "4": {
+        "total_stream_order_length": 531.20745199,
+        "total_stream_order_count": 1565
+      },
+      "5": {
+        "total_stream_order_length": 228.82962873,
+        "total_stream_order_count": 520
+      },
+      "6": {
+        "total_stream_order_length": 89.58094827,
+        "total_stream_order_count": 147
+      },
+      "7": {
+        "total_stream_order_length": 3.88158412,
+        "total_stream_order_count": 2
+      },
+      "8": {
+        "total_stream_order_length": 58.39131336,
+        "total_stream_order_count": 87
+      }
+    }
+  },
+  "FL": {
+    "total_stream_length": 99317.10159564002,
+    "total_stream_count": 248685,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 10795.10532925,
+        "total_stream_order_count": 6750
+      },
+      "1": {
+        "total_stream_order_length": 44101.06898751,
+        "total_stream_order_count": 138777
+      },
+      "2": {
+        "total_stream_order_length": 21599.06035214,
+        "total_stream_order_count": 59923
+      },
+      "3": {
+        "total_stream_order_length": 11204.984110860001,
+        "total_stream_order_count": 24752
+      },
+      "4": {
+        "total_stream_order_length": 5656.55217495,
+        "total_stream_order_count": 9992
+      },
+      "5": {
+        "total_stream_order_length": 2606.2112304400002,
+        "total_stream_order_count": 3954
+      },
+      "6": {
+        "total_stream_order_length": 1972.4703080100003,
+        "total_stream_order_count": 2982
+      },
+      "7": {
+        "total_stream_order_length": 775.56924235,
+        "total_stream_order_count": 959
+      },
+      "8": {
+        "total_stream_order_length": 606.07986013,
+        "total_stream_order_count": 596
+      }
+    }
+  },
+  "GA": {
+    "total_stream_length": 189111.69440595998,
+    "total_stream_count": 373128,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 210.13196511,
+        "total_stream_order_count": 41
+      },
+      "1": {
+        "total_stream_order_length": 104035.23895854001,
+        "total_stream_order_count": 217052
+      },
+      "2": {
+        "total_stream_order_length": 38559.17719010999,
+        "total_stream_order_count": 77347
+      },
+      "3": {
+        "total_stream_order_length": 21280.438929170003,
+        "total_stream_order_count": 37756
+      },
+      "4": {
+        "total_stream_order_length": 12383.913459890002,
+        "total_stream_order_count": 21108
+      },
+      "5": {
+        "total_stream_order_length": 6768.320132729999,
+        "total_stream_order_count": 11609
+      },
+      "6": {
+        "total_stream_order_length": 2930.13523893,
+        "total_stream_order_count": 4444
+      },
+      "7": {
+        "total_stream_order_length": 2397.7929958900004,
+        "total_stream_order_count": 2760
+      },
+      "8": {
+        "total_stream_order_length": 546.5455355900001,
+        "total_stream_order_count": 1011
+      }
+    }
+  },
+  "GU": {
+    "total_stream_length": 321.67482815999995,
+    "total_stream_count": 215,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 218.36799452000002,
+        "total_stream_order_count": 65
+      },
+      "3": {
+        "total_stream_order_length": 75.91093135999999,
+        "total_stream_order_count": 115
+      },
+      "4": {
+        "total_stream_order_length": 26.090339200000003,
+        "total_stream_order_count": 33
+      },
+      "5": {
+        "total_stream_order_length": 1.3055630800000002,
+        "total_stream_order_count": 2
+      }
+    }
+  },
+  "HI": {
+    "total_stream_length": 3478.3905333700004,
+    "total_stream_count": 3132,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 1963.9097883000002,
+        "total_stream_order_count": 1049
+      },
+      "3": {
+        "total_stream_order_length": 1177.50165343,
+        "total_stream_order_count": 1453
+      },
+      "4": {
+        "total_stream_order_length": 313.68230297,
+        "total_stream_order_count": 588
+      },
+      "5": {
+        "total_stream_order_length": 23.296788669999998,
+        "total_stream_order_count": 42
+      }
+    }
+  },
+  "IA": {
+    "total_stream_length": 183195.70522463997,
+    "total_stream_count": 233476,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 108308.76488826002,
+        "total_stream_order_count": 130210
+      },
+      "2": {
+        "total_stream_order_length": 34981.80974023,
+        "total_stream_order_count": 47640
+      },
+      "3": {
+        "total_stream_order_length": 19266.2579804,
+        "total_stream_order_count": 24921
+      },
+      "4": {
+        "total_stream_order_length": 10317.343518730002,
+        "total_stream_order_count": 15930
+      },
+      "5": {
+        "total_stream_order_length": 5646.766559400001,
+        "total_stream_order_count": 8671
+      },
+      "6": {
+        "total_stream_order_length": 2840.0483859,
+        "total_stream_order_count": 3880
+      },
+      "7": {
+        "total_stream_order_length": 1431.05363749,
+        "total_stream_order_count": 1672
+      },
+      "8": {
+        "total_stream_order_length": 262.24766049,
+        "total_stream_order_count": 371
+      },
+      "9": {
+        "total_stream_order_length": 141.41285374,
+        "total_stream_order_count": 181
+      }
+    }
+  },
+  "ID": {
+    "total_stream_length": 281808.5666377699,
+    "total_stream_count": 345528,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 164415.42438382996,
+        "total_stream_order_count": 169719
+      },
+      "2": {
+        "total_stream_order_length": 55373.89099155,
+        "total_stream_order_count": 78787
+      },
+      "3": {
+        "total_stream_order_length": 28874.11485041,
+        "total_stream_order_count": 42483
+      },
+      "4": {
+        "total_stream_order_length": 14821.000762210002,
+        "total_stream_order_count": 23140
+      },
+      "5": {
+        "total_stream_order_length": 7579.684713319999,
+        "total_stream_order_count": 12232
+      },
+      "6": {
+        "total_stream_order_length": 4765.63936732,
+        "total_stream_order_count": 8716
+      },
+      "7": {
+        "total_stream_order_length": 3044.27049023,
+        "total_stream_order_count": 5732
+      },
+      "8": {
+        "total_stream_order_length": 2805.45780023,
+        "total_stream_order_count": 3983
+      },
+      "9": {
+        "total_stream_order_length": 129.08327867,
+        "total_stream_order_count": 736
+      }
+    }
+  },
+  "IL": {
+    "total_stream_length": 191884.44521255,
+    "total_stream_count": 273170,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 108968.33538516001,
+        "total_stream_order_count": 149132
+      },
+      "2": {
+        "total_stream_order_length": 38292.887112259996,
+        "total_stream_order_count": 60861
+      },
+      "3": {
+        "total_stream_order_length": 21055.72358715,
+        "total_stream_order_count": 30977
+      },
+      "4": {
+        "total_stream_order_length": 11076.486217000001,
+        "total_stream_order_count": 16601
+      },
+      "5": {
+        "total_stream_order_length": 6158.32806179,
+        "total_stream_order_count": 8921
+      },
+      "6": {
+        "total_stream_order_length": 3540.3077826000003,
+        "total_stream_order_count": 4290
+      },
+      "7": {
+        "total_stream_order_length": 1530.62949303,
+        "total_stream_order_count": 1237
+      },
+      "8": {
+        "total_stream_order_length": 449.74665354,
+        "total_stream_order_count": 416
+      },
+      "9": {
+        "total_stream_order_length": 695.4949014000001,
+        "total_stream_order_count": 620
+      },
+      "10": {
+        "total_stream_order_length": 116.50601862000002,
+        "total_stream_order_count": 115
+      }
+    }
+  },
+  "IN": {
+    "total_stream_length": 119259.17962754001,
+    "total_stream_count": 610569,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 359.57428512,
+        "total_stream_order_count": 965
+      },
+      "2": {
+        "total_stream_order_length": 16760.40823485,
+        "total_stream_order_count": 93149
+      },
+      "3": {
+        "total_stream_order_length": 47473.31843266001,
+        "total_stream_order_count": 242681
+      },
+      "4": {
+        "total_stream_order_length": 26760.575282619997,
+        "total_stream_order_count": 138664
+      },
+      "5": {
+        "total_stream_order_length": 13957.605209790003,
+        "total_stream_order_count": 72517
+      },
+      "6": {
+        "total_stream_order_length": 7418.89955615,
+        "total_stream_order_count": 36211
+      },
+      "7": {
+        "total_stream_order_length": 3653.1670119400005,
+        "total_stream_order_count": 15951
+      },
+      "8": {
+        "total_stream_order_length": 1913.6877974400002,
+        "total_stream_order_count": 7560
+      },
+      "9": {
+        "total_stream_order_length": 625.5353952400001,
+        "total_stream_order_count": 1907
+      },
+      "10": {
+        "total_stream_order_length": 336.40842173,
+        "total_stream_order_count": 964
+      }
+    }
+  },
+  "KS": {
+    "total_stream_length": 296147.41881173,
+    "total_stream_count": 359712,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 169160.57541759996,
+        "total_stream_order_count": 222311
+      },
+      "2": {
+        "total_stream_order_length": 60526.08694551999,
+        "total_stream_order_count": 70802
+      },
+      "3": {
+        "total_stream_order_length": 33426.396006740004,
+        "total_stream_order_count": 34404
+      },
+      "4": {
+        "total_stream_order_length": 17647.91895562,
+        "total_stream_order_count": 18010
+      },
+      "5": {
+        "total_stream_order_length": 8102.47386263,
+        "total_stream_order_count": 8325
+      },
+      "6": {
+        "total_stream_order_length": 3735.32235444,
+        "total_stream_order_count": 3249
+      },
+      "7": {
+        "total_stream_order_length": 1904.5397493,
+        "total_stream_order_count": 1393
+      },
+      "8": {
+        "total_stream_order_length": 596.30604126,
+        "total_stream_order_count": 612
+      },
+      "9": {
+        "total_stream_order_length": 1047.79947862,
+        "total_stream_order_count": 606
+      }
+    }
+  },
+  "KY": {
+    "total_stream_length": 163337.76508425007,
+    "total_stream_count": 273209,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 92574.12105035,
+        "total_stream_order_count": 151135
+      },
+      "2": {
+        "total_stream_order_length": 31327.341651970008,
+        "total_stream_order_count": 57749
+      },
+      "3": {
+        "total_stream_order_length": 17108.47387715,
+        "total_stream_order_count": 30299
+      },
+      "4": {
+        "total_stream_order_length": 9847.88859908,
+        "total_stream_order_count": 16326
+      },
+      "5": {
+        "total_stream_order_length": 5851.32693711,
+        "total_stream_order_count": 8840
+      },
+      "6": {
+        "total_stream_order_length": 3087.72661274,
+        "total_stream_order_count": 4087
+      },
+      "7": {
+        "total_stream_order_length": 1832.95641177,
+        "total_stream_order_count": 2465
+      },
+      "8": {
+        "total_stream_order_length": 1041.9096736000001,
+        "total_stream_order_count": 1228
+      },
+      "9": {
+        "total_stream_order_length": 623.81324865,
+        "total_stream_order_count": 1062
+      },
+      "10": {
+        "total_stream_order_length": 42.20702183,
+        "total_stream_order_count": 18
+      }
+    }
+  },
+  "LA": {
+    "total_stream_length": 214930.38402325002,
+    "total_stream_count": 406685,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 3601.4029682900004,
+        "total_stream_order_count": 483
+      },
+      "1": {
+        "total_stream_order_length": 107429.26496145,
+        "total_stream_order_count": 205123
+      },
+      "2": {
+        "total_stream_order_length": 46705.80177486,
+        "total_stream_order_count": 96760
+      },
+      "3": {
+        "total_stream_order_length": 25920.423030680005,
+        "total_stream_order_count": 50210
+      },
+      "4": {
+        "total_stream_order_length": 13996.828725010002,
+        "total_stream_order_count": 25842
+      },
+      "5": {
+        "total_stream_order_length": 7674.8629084,
+        "total_stream_order_count": 14253
+      },
+      "6": {
+        "total_stream_order_length": 4660.534296520001,
+        "total_stream_order_count": 8350
+      },
+      "7": {
+        "total_stream_order_length": 2340.10074492,
+        "total_stream_order_count": 3298
+      },
+      "8": {
+        "total_stream_order_length": 1090.37970307,
+        "total_stream_order_count": 1285
+      },
+      "9": {
+        "total_stream_order_length": 534.6133621399999,
+        "total_stream_order_count": 465
+      },
+      "10": {
+        "total_stream_order_length": 976.1715479100001,
+        "total_stream_order_count": 616
+      }
+    }
+  },
+  "MA": {
+    "total_stream_length": 29583.079562229996,
+    "total_stream_count": 102243,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 2398.69787763,
+        "total_stream_order_count": 3771
+      },
+      "1": {
+        "total_stream_order_length": 14129.3544954,
+        "total_stream_order_count": 55180
+      },
+      "2": {
+        "total_stream_order_length": 6122.220198000001,
+        "total_stream_order_count": 23409
+      },
+      "3": {
+        "total_stream_order_length": 3330.05697733,
+        "total_stream_order_count": 11360
+      },
+      "4": {
+        "total_stream_order_length": 1790.48204426,
+        "total_stream_order_count": 5401
+      },
+      "5": {
+        "total_stream_order_length": 1191.37863612,
+        "total_stream_order_count": 2366
+      },
+      "6": {
+        "total_stream_order_length": 396.82954014000006,
+        "total_stream_order_count": 483
+      },
+      "7": {
+        "total_stream_order_length": 50.20446964,
+        "total_stream_order_count": 66
+      },
+      "8": {
+        "total_stream_order_length": 173.85532371,
+        "total_stream_order_count": 207
+      }
+    }
+  },
+  "MD": {
+    "total_stream_length": 38654.51251708999,
+    "total_stream_count": 91992,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 519.289348,
+        "total_stream_order_count": 1428
+      },
+      "1": {
+        "total_stream_order_length": 20006.6646139,
+        "total_stream_order_count": 49202
+      },
+      "2": {
+        "total_stream_order_length": 8167.92044107,
+        "total_stream_order_count": 21813
+      },
+      "3": {
+        "total_stream_order_length": 4620.62474283,
+        "total_stream_order_count": 10304
+      },
+      "4": {
+        "total_stream_order_length": 2470.1667342299997,
+        "total_stream_order_count": 4823
+      },
+      "5": {
+        "total_stream_order_length": 1395.88604366,
+        "total_stream_order_count": 2547
+      },
+      "6": {
+        "total_stream_order_length": 724.45363289,
+        "total_stream_order_count": 1185
+      },
+      "7": {
+        "total_stream_order_length": 248.54367759000002,
+        "total_stream_order_count": 367
+      },
+      "8": {
+        "total_stream_order_length": 500.96328292,
+        "total_stream_order_count": 323
+      }
+    }
+  },
+  "ME": {
+    "total_stream_length": 87096.68924330999,
+    "total_stream_count": 160511,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 2455.8667115100006,
+        "total_stream_order_count": 723
+      },
+      "1": {
+        "total_stream_order_length": 44054.95398058,
+        "total_stream_order_count": 86356
+      },
+      "2": {
+        "total_stream_order_length": 19137.083916050004,
+        "total_stream_order_count": 38702
+      },
+      "3": {
+        "total_stream_order_length": 10611.429695179999,
+        "total_stream_order_count": 18560
+      },
+      "4": {
+        "total_stream_order_length": 5608.97910116,
+        "total_stream_order_count": 8853
+      },
+      "5": {
+        "total_stream_order_length": 2823.94520721,
+        "total_stream_order_count": 4191
+      },
+      "6": {
+        "total_stream_order_length": 1474.74402195,
+        "total_stream_order_count": 1749
+      },
+      "7": {
+        "total_stream_order_length": 650.89130016,
+        "total_stream_order_count": 937
+      },
+      "8": {
+        "total_stream_order_length": 278.79530951000004,
+        "total_stream_order_count": 440
+      }
+    }
+  },
+  "MI": {
+    "total_stream_length": 135669.39846684,
+    "total_stream_count": 173807,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 66490.86747034999,
+        "total_stream_order_count": 91672
+      },
+      "2": {
+        "total_stream_order_length": 29768.712447190002,
+        "total_stream_order_count": 42606
+      },
+      "3": {
+        "total_stream_order_length": 17052.36111658,
+        "total_stream_order_count": 19813
+      },
+      "4": {
+        "total_stream_order_length": 9562.74279625,
+        "total_stream_order_count": 10358
+      },
+      "5": {
+        "total_stream_order_length": 5513.709635720001,
+        "total_stream_order_count": 5034
+      },
+      "6": {
+        "total_stream_order_length": 3187.72019016,
+        "total_stream_order_count": 2611
+      },
+      "7": {
+        "total_stream_order_length": 629.0004532,
+        "total_stream_order_count": 504
+      },
+      "8": {
+        "total_stream_order_length": 3046.17299863,
+        "total_stream_order_count": 1006
+      },
+      "9": {
+        "total_stream_order_length": 315.55176871000003,
+        "total_stream_order_count": 92
+      },
+      "10": {
+        "total_stream_order_length": 102.55959005000001,
+        "total_stream_order_count": 111
+      }
+    }
+  },
+  "MN": {
+    "total_stream_length": 165538.32842411997,
+    "total_stream_count": 190426,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 82785.06008548001,
+        "total_stream_order_count": 102897
+      },
+      "2": {
+        "total_stream_order_length": 37125.61409395,
+        "total_stream_order_count": 43109
+      },
+      "3": {
+        "total_stream_order_length": 22044.09968208,
+        "total_stream_order_count": 21316
+      },
+      "4": {
+        "total_stream_order_length": 13507.55538195,
+        "total_stream_order_count": 13046
+      },
+      "5": {
+        "total_stream_order_length": 6611.28732464,
+        "total_stream_order_count": 6921
+      },
+      "6": {
+        "total_stream_order_length": 2376.78883441,
+        "total_stream_order_count": 2143
+      },
+      "7": {
+        "total_stream_order_length": 671.91343516,
+        "total_stream_order_count": 557
+      },
+      "8": {
+        "total_stream_order_length": 326.99462796,
+        "total_stream_order_count": 291
+      },
+      "9": {
+        "total_stream_order_length": 89.01495849,
+        "total_stream_order_count": 146
+      }
+    }
+  },
+  "MO": {
+    "total_stream_length": 294632.18146448006,
+    "total_stream_count": 444301,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 174862.62855802,
+        "total_stream_order_count": 248335
+      },
+      "2": {
+        "total_stream_order_length": 56182.76055586,
+        "total_stream_order_count": 88047
+      },
+      "3": {
+        "total_stream_order_length": 28818.530216940002,
+        "total_stream_order_count": 46041
+      },
+      "4": {
+        "total_stream_order_length": 16065.40782602,
+        "total_stream_order_count": 30283
+      },
+      "5": {
+        "total_stream_order_length": 9956.42006076,
+        "total_stream_order_count": 18660
+      },
+      "6": {
+        "total_stream_order_length": 4785.46380472,
+        "total_stream_order_count": 8272
+      },
+      "7": {
+        "total_stream_order_length": 2095.84941803,
+        "total_stream_order_count": 2693
+      },
+      "8": {
+        "total_stream_order_length": 914.69723918,
+        "total_stream_order_count": 1137
+      },
+      "9": {
+        "total_stream_order_length": 1.3310156499999999,
+        "total_stream_order_count": 5
+      },
+      "10": {
+        "total_stream_order_length": 949.0927693000001,
+        "total_stream_order_count": 828
+      }
+    }
+  },
+  "MP": {
+    "total_stream_length": 95.71245122999999,
+    "total_stream_count": 82,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 83.67712288,
+        "total_stream_order_count": 50
+      },
+      "3": {
+        "total_stream_order_length": 9.785300720000004,
+        "total_stream_order_count": 29
+      },
+      "4": {
+        "total_stream_order_length": 2.25002763,
+        "total_stream_order_count": 3
+      }
+    }
+  },
+  "MS": {
+    "total_stream_length": 263635.63412839,
+    "total_stream_count": 552235,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 484.75394709,
+        "total_stream_order_count": 476
+      },
+      "1": {
+        "total_stream_order_length": 146728.54335952003,
+        "total_stream_order_count": 301626
+      },
+      "2": {
+        "total_stream_order_length": 55596.743446839995,
+        "total_stream_order_count": 126578
+      },
+      "3": {
+        "total_stream_order_length": 29603.261971369997,
+        "total_stream_order_count": 63715
+      },
+      "4": {
+        "total_stream_order_length": 15020.61988605,
+        "total_stream_order_count": 32159
+      },
+      "5": {
+        "total_stream_order_length": 7775.70814652,
+        "total_stream_order_count": 14759
+      },
+      "6": {
+        "total_stream_order_length": 4644.66885482,
+        "total_stream_order_count": 7876
+      },
+      "7": {
+        "total_stream_order_length": 1800.73403413,
+        "total_stream_order_count": 2853
+      },
+      "8": {
+        "total_stream_order_length": 1268.44229017,
+        "total_stream_order_count": 1513
+      },
+      "9": {
+        "total_stream_order_length": 544.49470522,
+        "total_stream_order_count": 532
+      },
+      "10": {
+        "total_stream_order_length": 167.66348666,
+        "total_stream_order_count": 148
+      }
+    }
+  },
+  "MT": {
+    "total_stream_length": 618461.6457584599,
+    "total_stream_count": 842415,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 352392.4565271599,
+        "total_stream_order_count": 414187
+      },
+      "2": {
+        "total_stream_order_length": 118643.83686571,
+        "total_stream_order_count": 197473
+      },
+      "3": {
+        "total_stream_order_length": 67146.25941565,
+        "total_stream_order_count": 104804
+      },
+      "4": {
+        "total_stream_order_length": 38417.325662710005,
+        "total_stream_order_count": 57442
+      },
+      "5": {
+        "total_stream_order_length": 20541.82155513,
+        "total_stream_order_count": 31078
+      },
+      "6": {
+        "total_stream_order_length": 10733.61331669,
+        "total_stream_order_count": 18224
+      },
+      "7": {
+        "total_stream_order_length": 5847.451371800002,
+        "total_stream_order_count": 11344
+      },
+      "8": {
+        "total_stream_order_length": 2826.34677834,
+        "total_stream_order_count": 4165
+      },
+      "9": {
+        "total_stream_order_length": 1618.92532577,
+        "total_stream_order_count": 3252
+      },
+      "10": {
+        "total_stream_order_length": 293.6089395,
+        "total_stream_order_count": 446
+      }
+    }
+  },
+  "NC": {
+    "total_stream_length": 174270.76390269998,
+    "total_stream_count": 426820,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 4407.81154552,
+        "total_stream_order_count": 2541
+      },
+      "1": {
+        "total_stream_order_length": 97577.50920297,
+        "total_stream_order_count": 221590
+      },
+      "2": {
+        "total_stream_order_length": 42407.80240721001,
+        "total_stream_order_count": 115317
+      },
+      "3": {
+        "total_stream_order_length": 3472.7967348000006,
+        "total_stream_order_count": 20798
+      },
+      "4": {
+        "total_stream_order_length": 12846.55020206,
+        "total_stream_order_count": 33501
+      },
+      "5": {
+        "total_stream_order_length": 7112.824142650001,
+        "total_stream_order_count": 18362
+      },
+      "6": {
+        "total_stream_order_length": 3135.98720194,
+        "total_stream_order_count": 7470
+      },
+      "7": {
+        "total_stream_order_length": 2064.53361512,
+        "total_stream_order_count": 4870
+      },
+      "8": {
+        "total_stream_order_length": 1244.94885043,
+        "total_stream_order_count": 2371
+      }
+    }
+  },
+  "ND": {
+    "total_stream_length": 144854.02418853002,
+    "total_stream_count": 191628,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 78162.65868896,
+        "total_stream_order_count": 95692
+      },
+      "2": {
+        "total_stream_order_length": 29590.166374500004,
+        "total_stream_order_count": 43758
+      },
+      "3": {
+        "total_stream_order_length": 16988.30568471,
+        "total_stream_order_count": 25638
+      },
+      "4": {
+        "total_stream_order_length": 9431.03021198,
+        "total_stream_order_count": 14721
+      },
+      "5": {
+        "total_stream_order_length": 5817.27749562,
+        "total_stream_order_count": 7156
+      },
+      "6": {
+        "total_stream_order_length": 3126.50172206,
+        "total_stream_order_count": 2976
+      },
+      "7": {
+        "total_stream_order_length": 1089.1132791999999,
+        "total_stream_order_count": 1039
+      },
+      "9": {
+        "total_stream_order_length": 6.322796439999999,
+        "total_stream_order_count": 11
+      },
+      "10": {
+        "total_stream_order_length": 642.64793506,
+        "total_stream_order_count": 637
+      }
+    }
+  },
+  "NE": {
+    "total_stream_length": 197066.34749235993,
+    "total_stream_count": 252142,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 109901.79278655002,
+        "total_stream_order_count": 148409
+      },
+      "2": {
+        "total_stream_order_length": 39326.075413310005,
+        "total_stream_order_count": 55414
+      },
+      "3": {
+        "total_stream_order_length": 22927.862827,
+        "total_stream_order_count": 25332
+      },
+      "4": {
+        "total_stream_order_length": 12468.0658428,
+        "total_stream_order_count": 12065
+      },
+      "5": {
+        "total_stream_order_length": 6678.6288331900005,
+        "total_stream_order_count": 5994
+      },
+      "6": {
+        "total_stream_order_length": 2687.8255474400003,
+        "total_stream_order_count": 2301
+      },
+      "7": {
+        "total_stream_order_length": 1797.4170594600002,
+        "total_stream_order_count": 1937
+      },
+      "8": {
+        "total_stream_order_length": 137.18476891999998,
+        "total_stream_order_count": 161
+      },
+      "9": {
+        "total_stream_order_length": 640.0266634999999,
+        "total_stream_order_count": 356
+      },
+      "10": {
+        "total_stream_order_length": 501.46775018999995,
+        "total_stream_order_count": 173
+      }
+    }
+  },
+  "NH": {
+    "total_stream_length": 29646.71336613,
+    "total_stream_count": 67083,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 19.028,
+        "total_stream_order_count": 9
+      },
+      "1": {
+        "total_stream_order_length": 16618.288526710003,
+        "total_stream_order_count": 37185
+      },
+      "2": {
+        "total_stream_order_length": 6050.55401428,
+        "total_stream_order_count": 16011
+      },
+      "3": {
+        "total_stream_order_length": 3477.43313749,
+        "total_stream_order_count": 7699
+      },
+      "4": {
+        "total_stream_order_length": 1823.8011833,
+        "total_stream_order_count": 3457
+      },
+      "5": {
+        "total_stream_order_length": 896.1645227800001,
+        "total_stream_order_count": 1628
+      },
+      "6": {
+        "total_stream_order_length": 428.58367909,
+        "total_stream_order_count": 659
+      },
+      "7": {
+        "total_stream_order_length": 217.83893024,
+        "total_stream_order_count": 262
+      },
+      "8": {
+        "total_stream_order_length": 115.02137224,
+        "total_stream_order_count": 173
+      }
+    }
+  },
+  "NJ": {
+    "total_stream_length": 38360.890749679995,
+    "total_stream_count": 254590,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 220.47493989000003,
+        "total_stream_order_count": 36
+      },
+      "1": {
+        "total_stream_order_length": 17238.02800645,
+        "total_stream_order_count": 127977
+      },
+      "2": {
+        "total_stream_order_length": 9319.358872679999,
+        "total_stream_order_count": 68393
+      },
+      "3": {
+        "total_stream_order_length": 5389.273335,
+        "total_stream_order_count": 31382
+      },
+      "4": {
+        "total_stream_order_length": 3172.91475231,
+        "total_stream_order_count": 15537
+      },
+      "5": {
+        "total_stream_order_length": 1814.06328054,
+        "total_stream_order_count": 7691
+      },
+      "6": {
+        "total_stream_order_length": 758.91806125,
+        "total_stream_order_count": 2724
+      },
+      "7": {
+        "total_stream_order_length": 278.28774207,
+        "total_stream_order_count": 593
+      },
+      "8": {
+        "total_stream_order_length": 169.57175949,
+        "total_stream_order_count": 257
+      }
+    }
+  },
+  "NM": {
+    "total_stream_length": 384120.07633257017,
+    "total_stream_count": 482377,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 228334.91467152,
+        "total_stream_order_count": 236825
+      },
+      "2": {
+        "total_stream_order_length": 76879.04854014001,
+        "total_stream_order_count": 115241
+      },
+      "3": {
+        "total_stream_order_length": 40285.237546020006,
+        "total_stream_order_count": 61315
+      },
+      "4": {
+        "total_stream_order_length": 20158.652737340002,
+        "total_stream_order_count": 31778
+      },
+      "5": {
+        "total_stream_order_length": 9304.003918800001,
+        "total_stream_order_count": 15698
+      },
+      "6": {
+        "total_stream_order_length": 4417.791765710001,
+        "total_stream_order_count": 8937
+      },
+      "7": {
+        "total_stream_order_length": 2174.80617478,
+        "total_stream_order_count": 4819
+      },
+      "8": {
+        "total_stream_order_length": 1512.07856098,
+        "total_stream_order_count": 5604
+      },
+      "9": {
+        "total_stream_order_length": 1053.5424172799999,
+        "total_stream_order_count": 2160
+      }
+    }
+  },
+  "NV": {
+    "total_stream_length": 506698.4832265301,
+    "total_stream_count": 567524,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 300277.99643860996,
+        "total_stream_order_count": 263808
+      },
+      "2": {
+        "total_stream_order_length": 109450.85248694,
+        "total_stream_order_count": 147626
+      },
+      "3": {
+        "total_stream_order_length": 54645.820169720006,
+        "total_stream_order_count": 82813
+      },
+      "4": {
+        "total_stream_order_length": 22866.20332284,
+        "total_stream_order_count": 39596
+      },
+      "5": {
+        "total_stream_order_length": 11002.15495953,
+        "total_stream_order_count": 19400
+      },
+      "6": {
+        "total_stream_order_length": 5384.209436629999,
+        "total_stream_order_count": 8624
+      },
+      "7": {
+        "total_stream_order_length": 1408.8214971000002,
+        "total_stream_order_count": 3042
+      },
+      "8": {
+        "total_stream_order_length": 1609.0490243,
+        "total_stream_order_count": 2497
+      },
+      "9": {
+        "total_stream_order_length": 53.37589086,
+        "total_stream_order_count": 118
+      }
+    }
+  },
+  "NY": {
+    "total_stream_length": 158247.88361480003,
+    "total_stream_count": 259582,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 348.38494299999996,
+        "total_stream_order_count": 38
+      },
+      "1": {
+        "total_stream_order_length": 84330.68056634002,
+        "total_stream_order_count": 140762
+      },
+      "2": {
+        "total_stream_order_length": 34808.09971534,
+        "total_stream_order_count": 59339
+      },
+      "3": {
+        "total_stream_order_length": 18216.52196168,
+        "total_stream_order_count": 27412
+      },
+      "4": {
+        "total_stream_order_length": 9926.24892632,
+        "total_stream_order_count": 16154
+      },
+      "5": {
+        "total_stream_order_length": 5457.90883922,
+        "total_stream_order_count": 9141
+      },
+      "6": {
+        "total_stream_order_length": 2970.9592446,
+        "total_stream_order_count": 4267
+      },
+      "7": {
+        "total_stream_order_length": 1351.2246698,
+        "total_stream_order_count": 1830
+      },
+      "8": {
+        "total_stream_order_length": 782.4664169800001,
+        "total_stream_order_count": 611
+      },
+      "9": {
+        "total_stream_order_length": 51.88506025,
+        "total_stream_order_count": 25
+      },
+      "10": {
+        "total_stream_order_length": 3.5032712700000004,
+        "total_stream_order_count": 3
+      }
+    }
+  },
+  "OH": {
+    "total_stream_length": 147196.29529692,
+    "total_stream_count": 190762,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 85035.24977538,
+        "total_stream_order_count": 102746
+      },
+      "2": {
+        "total_stream_order_length": 29357.95452983,
+        "total_stream_order_count": 42375
+      },
+      "3": {
+        "total_stream_order_length": 15110.886839830002,
+        "total_stream_order_count": 21599
+      },
+      "4": {
+        "total_stream_order_length": 8573.75233556,
+        "total_stream_order_count": 12694
+      },
+      "5": {
+        "total_stream_order_length": 4931.2850875700005,
+        "total_stream_order_count": 6765
+      },
+      "6": {
+        "total_stream_order_length": 2315.01510201,
+        "total_stream_order_count": 2905
+      },
+      "7": {
+        "total_stream_order_length": 992.72851817,
+        "total_stream_order_count": 989
+      },
+      "8": {
+        "total_stream_order_length": 871.0267620699999,
+        "total_stream_order_count": 680
+      },
+      "9": {
+        "total_stream_order_length": 8.3963465,
+        "total_stream_order_count": 9
+      }
+    }
+  },
+  "OK": {
+    "total_stream_length": 267292.73013425,
+    "total_stream_count": 438519,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 156270.19585291998,
+        "total_stream_order_count": 266996
+      },
+      "2": {
+        "total_stream_order_length": 52568.904928690004,
+        "total_stream_order_count": 79690
+      },
+      "3": {
+        "total_stream_order_length": 27706.0758236,
+        "total_stream_order_count": 38287
+      },
+      "4": {
+        "total_stream_order_length": 13513.339351490002,
+        "total_stream_order_count": 20342
+      },
+      "5": {
+        "total_stream_order_length": 6663.529197129999,
+        "total_stream_order_count": 9502
+      },
+      "6": {
+        "total_stream_order_length": 4254.18805312,
+        "total_stream_order_count": 12013
+      },
+      "7": {
+        "total_stream_order_length": 3205.64590349,
+        "total_stream_order_count": 5307
+      },
+      "8": {
+        "total_stream_order_length": 2627.05578133,
+        "total_stream_order_count": 5851
+      },
+      "9": {
+        "total_stream_order_length": 406.90451863,
+        "total_stream_order_count": 464
+      },
+      "10": {
+        "total_stream_order_length": 76.89072385,
+        "total_stream_order_count": 67
+      }
+    }
+  },
+  "OR": {
+    "total_stream_length": 505937.18536573986,
+    "total_stream_count": 1475301,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 637.04385713,
+        "total_stream_order_count": 639
+      },
+      "1": {
+        "total_stream_order_length": 284694.8597111999,
+        "total_stream_order_count": 748365
+      },
+      "2": {
+        "total_stream_order_length": 106994.95858814995,
+        "total_stream_order_count": 344193
+      },
+      "3": {
+        "total_stream_order_length": 54811.59574145999,
+        "total_stream_order_count": 181799
+      },
+      "4": {
+        "total_stream_order_length": 28142.943977280003,
+        "total_stream_order_count": 100167
+      },
+      "5": {
+        "total_stream_order_length": 14376.286959530002,
+        "total_stream_order_count": 49514
+      },
+      "6": {
+        "total_stream_order_length": 8899.83384763,
+        "total_stream_order_count": 28112
+      },
+      "7": {
+        "total_stream_order_length": 4215.00684781,
+        "total_stream_order_count": 13630
+      },
+      "8": {
+        "total_stream_order_length": 1998.8085550200003,
+        "total_stream_order_count": 5601
+      },
+      "9": {
+        "total_stream_order_length": 1051.61019742,
+        "total_stream_order_count": 3139
+      },
+      "10": {
+        "total_stream_order_length": 64.04130372,
+        "total_stream_order_count": 80
+      },
+      "11": {
+        "total_stream_order_length": 50.195779390000006,
+        "total_stream_order_count": 62
+      }
+    }
+  },
+  "PA": {
+    "total_stream_length": 138121.01178873,
+    "total_stream_count": 214401,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 77108.2735135,
+        "total_stream_order_count": 115461
+      },
+      "2": {
+        "total_stream_order_length": 28726.538230250004,
+        "total_stream_order_count": 45820
+      },
+      "3": {
+        "total_stream_order_length": 15372.58419229,
+        "total_stream_order_count": 24412
+      },
+      "4": {
+        "total_stream_order_length": 8390.46384763,
+        "total_stream_order_count": 14874
+      },
+      "5": {
+        "total_stream_order_length": 4385.42257608,
+        "total_stream_order_count": 8062
+      },
+      "6": {
+        "total_stream_order_length": 2295.77594888,
+        "total_stream_order_count": 3707
+      },
+      "7": {
+        "total_stream_order_length": 1046.87659429,
+        "total_stream_order_count": 1192
+      },
+      "8": {
+        "total_stream_order_length": 772.08717229,
+        "total_stream_order_count": 851
+      },
+      "9": {
+        "total_stream_order_length": 22.98971352,
+        "total_stream_order_count": 22
+      }
+    }
+  },
+  "PR": {
+    "total_stream_length": 3516.1835688700003,
+    "total_stream_count": 3888,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 967.01567716,
+        "total_stream_order_count": 587
+      },
+      "3": {
+        "total_stream_order_length": 1464.75539004,
+        "total_stream_order_count": 1739
+      },
+      "4": {
+        "total_stream_order_length": 703.06338904,
+        "total_stream_order_count": 1036
+      },
+      "5": {
+        "total_stream_order_length": 318.69918938,
+        "total_stream_order_count": 452
+      },
+      "6": {
+        "total_stream_order_length": 62.64992325,
+        "total_stream_order_count": 74
+      }
+    }
+  },
+  "RI": {
+    "total_stream_length": 3651.32170915,
+    "total_stream_count": 11785,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 580.09891425,
+        "total_stream_order_count": 983
+      },
+      "1": {
+        "total_stream_order_length": 1597.0894594700003,
+        "total_stream_order_count": 6237
+      },
+      "2": {
+        "total_stream_order_length": 746.73478832,
+        "total_stream_order_count": 2666
+      },
+      "3": {
+        "total_stream_order_length": 340.60480667,
+        "total_stream_order_count": 1124
+      },
+      "4": {
+        "total_stream_order_length": 198.42643197,
+        "total_stream_order_count": 493
+      },
+      "5": {
+        "total_stream_order_length": 141.46199344000001,
+        "total_stream_order_count": 240
+      },
+      "6": {
+        "total_stream_order_length": 46.905315030000004,
+        "total_stream_order_count": 42
+      }
+    }
+  },
+  "SC": {
+    "total_stream_length": 108820.40604172001,
+    "total_stream_count": 301568,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 2083.10711818,
+        "total_stream_order_count": 3403
+      },
+      "1": {
+        "total_stream_order_length": 63585.80954397999,
+        "total_stream_order_count": 177289
+      },
+      "2": {
+        "total_stream_order_length": 26089.779060630004,
+        "total_stream_order_count": 76548
+      },
+      "3": {
+        "total_stream_order_length": 300.83496582,
+        "total_stream_order_count": 1264
+      },
+      "4": {
+        "total_stream_order_length": 7792.200274209999,
+        "total_stream_order_count": 20467
+      },
+      "5": {
+        "total_stream_order_length": 4308.17182294,
+        "total_stream_order_count": 11578
+      },
+      "6": {
+        "total_stream_order_length": 2332.37677404,
+        "total_stream_order_count": 6109
+      },
+      "7": {
+        "total_stream_order_length": 1125.40283417,
+        "total_stream_order_count": 3216
+      },
+      "8": {
+        "total_stream_order_length": 880.8874351700001,
+        "total_stream_order_count": 1281
+      },
+      "9": {
+        "total_stream_order_length": 321.83621258000005,
+        "total_stream_order_count": 413
+      }
+    }
+  },
+  "SD": {
+    "total_stream_length": 263275.42138187005,
+    "total_stream_count": 376416,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 142403.11688775002,
+        "total_stream_order_count": 201879
+      },
+      "2": {
+        "total_stream_order_length": 52696.67020135,
+        "total_stream_order_count": 87542
+      },
+      "3": {
+        "total_stream_order_length": 31505.704894799997,
+        "total_stream_order_count": 43517
+      },
+      "4": {
+        "total_stream_order_length": 18822.614717340002,
+        "total_stream_order_count": 24474
+      },
+      "5": {
+        "total_stream_order_length": 9420.864726479998,
+        "total_stream_order_count": 10609
+      },
+      "6": {
+        "total_stream_order_length": 3684.9074746100005,
+        "total_stream_order_count": 4124
+      },
+      "7": {
+        "total_stream_order_length": 2562.32071872,
+        "total_stream_order_count": 1750
+      },
+      "8": {
+        "total_stream_order_length": 953.8011853400001,
+        "total_stream_order_count": 695
+      },
+      "9": {
+        "total_stream_order_length": 620.79425234,
+        "total_stream_order_count": 1238
+      },
+      "10": {
+        "total_stream_order_length": 604.6263231400001,
+        "total_stream_order_count": 588
+      }
+    }
+  },
+  "TN": {
+    "total_stream_length": 180667.96095553998,
+    "total_stream_count": 300324,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 105181.56767243998,
+        "total_stream_order_count": 159386
+      },
+      "2": {
+        "total_stream_order_length": 35686.46034919,
+        "total_stream_order_count": 67153
+      },
+      "3": {
+        "total_stream_order_length": 18136.98203224,
+        "total_stream_order_count": 34630
+      },
+      "4": {
+        "total_stream_order_length": 9847.55210946,
+        "total_stream_order_count": 18499
+      },
+      "5": {
+        "total_stream_order_length": 5078.81162923,
+        "total_stream_order_count": 9691
+      },
+      "6": {
+        "total_stream_order_length": 3035.25738569,
+        "total_stream_order_count": 5339
+      },
+      "7": {
+        "total_stream_order_length": 2016.9220581999998,
+        "total_stream_order_count": 3557
+      },
+      "8": {
+        "total_stream_order_length": 953.54868487,
+        "total_stream_order_count": 1196
+      },
+      "9": {
+        "total_stream_order_length": 641.6065876,
+        "total_stream_order_count": 834
+      },
+      "10": {
+        "total_stream_order_length": 89.25244661999999,
+        "total_stream_order_count": 39
+      }
+    }
+  },
+  "TX": {
+    "total_stream_length": 833097.4264797304,
+    "total_stream_count": 1423647,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 7033.49137091,
+        "total_stream_order_count": 1089
+      },
+      "1": {
+        "total_stream_order_length": 462735.77842,
+        "total_stream_order_count": 825960
+      },
+      "2": {
+        "total_stream_order_length": 172753.26489753003,
+        "total_stream_order_count": 290193
+      },
+      "3": {
+        "total_stream_order_length": 94147.36771711,
+        "total_stream_order_count": 145880
+      },
+      "4": {
+        "total_stream_order_length": 48101.98486057999,
+        "total_stream_order_count": 76008
+      },
+      "5": {
+        "total_stream_order_length": 23137.54383727,
+        "total_stream_order_count": 39873
+      },
+      "6": {
+        "total_stream_order_length": 11557.704863,
+        "total_stream_order_count": 21346
+      },
+      "7": {
+        "total_stream_order_length": 6648.63466599,
+        "total_stream_order_count": 9938
+      },
+      "8": {
+        "total_stream_order_length": 5336.60861603,
+        "total_stream_order_count": 11030
+      },
+      "9": {
+        "total_stream_order_length": 1645.04723131,
+        "total_stream_order_count": 2330
+      }
+    }
+  },
+  "UT": {
+    "total_stream_length": 298280.58230724,
+    "total_stream_count": 301362,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 174861.92066382,
+        "total_stream_order_count": 148298
+      },
+      "2": {
+        "total_stream_order_length": 60869.29971836,
+        "total_stream_order_count": 71865
+      },
+      "3": {
+        "total_stream_order_length": 31231.2340528,
+        "total_stream_order_count": 37446
+      },
+      "4": {
+        "total_stream_order_length": 15353.26956213,
+        "total_stream_order_count": 20097
+      },
+      "5": {
+        "total_stream_order_length": 7693.7084578799995,
+        "total_stream_order_count": 10846
+      },
+      "6": {
+        "total_stream_order_length": 3671.53641147,
+        "total_stream_order_count": 5464
+      },
+      "7": {
+        "total_stream_order_length": 1989.49261717,
+        "total_stream_order_count": 3048
+      },
+      "8": {
+        "total_stream_order_length": 1290.35518624,
+        "total_stream_order_count": 2087
+      },
+      "9": {
+        "total_stream_order_length": 1094.20340194,
+        "total_stream_order_count": 2010
+      },
+      "10": {
+        "total_stream_order_length": 225.56223543,
+        "total_stream_order_count": 201
+      }
+    }
+  },
+  "VA": {
+    "total_stream_length": 174526.58615693,
+    "total_stream_count": 372860,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 1152.678433,
+        "total_stream_order_count": 1205
+      },
+      "1": {
+        "total_stream_order_length": 99670.57389218999,
+        "total_stream_order_count": 208409
+      },
+      "2": {
+        "total_stream_order_length": 33923.87224084,
+        "total_stream_order_count": 81323
+      },
+      "3": {
+        "total_stream_order_length": 18394.02553352,
+        "total_stream_order_count": 40486
+      },
+      "4": {
+        "total_stream_order_length": 10392.557646430001,
+        "total_stream_order_count": 21317
+      },
+      "5": {
+        "total_stream_order_length": 5837.30555651,
+        "total_stream_order_count": 10719
+      },
+      "6": {
+        "total_stream_order_length": 2866.10041774,
+        "total_stream_order_count": 5382
+      },
+      "7": {
+        "total_stream_order_length": 1814.69838933,
+        "total_stream_order_count": 3512
+      },
+      "8": {
+        "total_stream_order_length": 457.42752055,
+        "total_stream_order_count": 504
+      },
+      "9": {
+        "total_stream_order_length": 17.34652682,
+        "total_stream_order_count": 3
+      }
+    }
+  },
+  "VI": {
+    "total_stream_length": 333.73294810000004,
+    "total_stream_count": 110,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 321.17290902,
+        "total_stream_order_count": 92
+      },
+      "3": {
+        "total_stream_order_length": 12.560039080000001,
+        "total_stream_order_count": 18
+      }
+    }
+  },
+  "VT": {
+    "total_stream_length": 42000.813496740004,
+    "total_stream_count": 103985,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 21964.39504004,
+        "total_stream_order_count": 57503
+      },
+      "2": {
+        "total_stream_order_length": 9712.316586570001,
+        "total_stream_order_count": 26395
+      },
+      "3": {
+        "total_stream_order_length": 5190.5995100400005,
+        "total_stream_order_count": 11215
+      },
+      "4": {
+        "total_stream_order_length": 2587.52158669,
+        "total_stream_order_count": 4666
+      },
+      "5": {
+        "total_stream_order_length": 1526.3999063,
+        "total_stream_order_count": 2529
+      },
+      "6": {
+        "total_stream_order_length": 650.4326958400001,
+        "total_stream_order_count": 1174
+      },
+      "7": {
+        "total_stream_order_length": 320.92122481,
+        "total_stream_order_count": 475
+      },
+      "8": {
+        "total_stream_order_length": 37.875626649999994,
+        "total_stream_order_count": 21
+      },
+      "9": {
+        "total_stream_order_length": 10.3513198,
+        "total_stream_order_count": 7
+      }
+    }
+  },
+  "WA": {
+    "total_stream_length": 391414.36707963,
+    "total_stream_count": 1132331,
+    "by_stream_order": {
+      "-9": {
+        "total_stream_order_length": 4224.74038321,
+        "total_stream_order_count": 3665
+      },
+      "1": {
+        "total_stream_order_length": 222747.09883935004,
+        "total_stream_order_count": 563422
+      },
+      "2": {
+        "total_stream_order_length": 79841.35364243998,
+        "total_stream_order_count": 269204
+      },
+      "3": {
+        "total_stream_order_length": 40104.538155220005,
+        "total_stream_order_count": 142718
+      },
+      "4": {
+        "total_stream_order_length": 20865.46493325,
+        "total_stream_order_count": 77535
+      },
+      "5": {
+        "total_stream_order_length": 11213.91531708,
+        "total_stream_order_count": 40424
+      },
+      "6": {
+        "total_stream_order_length": 6118.12366354,
+        "total_stream_order_count": 20379
+      },
+      "7": {
+        "total_stream_order_length": 3186.1280580400003,
+        "total_stream_order_count": 8969
+      },
+      "8": {
+        "total_stream_order_length": 2110.02377644,
+        "total_stream_order_count": 4513
+      },
+      "9": {
+        "total_stream_order_length": 752.2077881099999,
+        "total_stream_order_count": 1178
+      },
+      "10": {
+        "total_stream_order_length": 110.44890827,
+        "total_stream_order_count": 135
+      },
+      "11": {
+        "total_stream_order_length": 140.32361468,
+        "total_stream_order_count": 189
+      }
+    }
+  },
+  "WI": {
+    "total_stream_length": 139146.22860143,
+    "total_stream_count": 173000,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 73130.64286667999,
+        "total_stream_order_count": 90532
+      },
+      "2": {
+        "total_stream_order_length": 29593.04564593,
+        "total_stream_order_count": 38541
+      },
+      "3": {
+        "total_stream_order_length": 16898.91621719,
+        "total_stream_order_count": 20835
+      },
+      "4": {
+        "total_stream_order_length": 10215.50242285,
+        "total_stream_order_count": 12957
+      },
+      "5": {
+        "total_stream_order_length": 4492.79538526,
+        "total_stream_order_count": 5482
+      },
+      "6": {
+        "total_stream_order_length": 3174.53321013,
+        "total_stream_order_count": 3188
+      },
+      "7": {
+        "total_stream_order_length": 1284.8446002800001,
+        "total_stream_order_count": 1124
+      },
+      "8": {
+        "total_stream_order_length": 249.93356577,
+        "total_stream_order_count": 208
+      },
+      "9": {
+        "total_stream_order_length": 106.01468734,
+        "total_stream_order_count": 133
+      }
+    }
+  },
+  "WV": {
+    "total_stream_length": 87594.92483859,
+    "total_stream_count": 122431,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 50514.527000409995,
+        "total_stream_order_count": 64751
+      },
+      "2": {
+        "total_stream_order_length": 16901.21929789,
+        "total_stream_order_count": 27392
+      },
+      "3": {
+        "total_stream_order_length": 8779.55272575,
+        "total_stream_order_count": 13260
+      },
+      "4": {
+        "total_stream_order_length": 5207.53372373,
+        "total_stream_order_count": 7917
+      },
+      "5": {
+        "total_stream_order_length": 3194.0328835600003,
+        "total_stream_order_count": 4866
+      },
+      "6": {
+        "total_stream_order_length": 1828.47049075,
+        "total_stream_order_count": 2714
+      },
+      "7": {
+        "total_stream_order_length": 613.2495273,
+        "total_stream_order_count": 923
+      },
+      "8": {
+        "total_stream_order_length": 370.35457478,
+        "total_stream_order_count": 399
+      },
+      "9": {
+        "total_stream_order_length": 185.98461442,
+        "total_stream_order_count": 209
+      }
+    }
+  },
+  "WY": {
+    "total_stream_length": 455783.4412169199,
+    "total_stream_count": 853567,
+    "by_stream_order": {
+      "1": {
+        "total_stream_order_length": 260099.18092561004,
+        "total_stream_order_count": 426163
+      },
+      "2": {
+        "total_stream_order_length": 88595.0367925,
+        "total_stream_order_count": 203437
+      },
+      "3": {
+        "total_stream_order_length": 46890.43374834,
+        "total_stream_order_count": 103417
+      },
+      "4": {
+        "total_stream_order_length": 27093.62777645,
+        "total_stream_order_count": 55680
+      },
+      "5": {
+        "total_stream_order_length": 15963.552905020002,
+        "total_stream_order_count": 31166
+      },
+      "6": {
+        "total_stream_order_length": 8336.25698275,
+        "total_stream_order_count": 16018
+      },
+      "7": {
+        "total_stream_order_length": 4723.354105810001,
+        "total_stream_order_count": 8444
+      },
+      "8": {
+        "total_stream_order_length": 3172.31967106,
+        "total_stream_order_count": 7502
+      },
+      "9": {
+        "total_stream_order_length": 909.67830938,
+        "total_stream_order_count": 1740
+      }
+    }
+  }
+}

@@ -1,5 +1,13 @@
 import { useState, } from 'react';
-import Plot from 'react-plotly.js';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from 'recharts';
 
 
 import LikeButton from '../../like_button/LikeButton'
@@ -27,9 +35,9 @@ const AWCalcCropCoeff = () => {
 
   const _cropsList = cropsList();
 
-  const [, setCropCode] = useState(_cropsList[0].value);  // sppecies code, used to update 
-  const [cropName, setCropName] = useState(_cropsList[0].text);   // sppecies code, used to update 
-  const [plotData, setPlotData] = useState([{ y: [0, 1], type: 'line', mode: 'lines+markers', marker: { color: 'red' } }]);
+  const [, setCropCode] = useState(_cropsList[0].value);
+  const [cropName, setCropName] = useState(_cropsList[0].label);
+  const [coeffs, setCoeffs] = useState(getCropCoeffs(_cropsList[0].value));
 
   function getCropCoeffs(cropCode) {
     const cropInfo = cropCoeffs.find(obj => obj['code'] === cropCode);
@@ -43,7 +51,7 @@ const AWCalcCropCoeff = () => {
 
   function updatePlot(cropCode) {
     const _yData = getCropCoeffs(cropCode);
-    setPlotData([{ y: _yData, type: 'line', mode: 'lines+markers', marker: { color: 'red' } }])
+    setCoeffs(_yData)
   }
 
   const onCropChange = (cropCode) => {
@@ -51,6 +59,11 @@ const AWCalcCropCoeff = () => {
     setCropName(getCropName(cropCode))
     updatePlot(cropCode);
   }
+
+  const chartData = coeffs.map((value, index) => ({
+    period: index + 1,
+    coefficient: value,
+  }));
 
   return (
     <>
@@ -79,12 +92,33 @@ const AWCalcCropCoeff = () => {
             <Col xs={24} sm={24} md={16} lg={16} xl={16} className='no-padding'>
               <div className='full-width no-padding'>
               
-                <Plot
-                  className = "calculator-plot"
-                  data={plotData}
-                  layout={{ title: { text: 'Crop Coefficient Curve', subtitle: {text: cropName}}}}
-                  style={{width:'100%', height: 420, minHeight:320, maxHeight:800,}}
-                />
+                <div className="calculator-plot" style={{ width: '100%', height: 420, minHeight: 320, maxHeight: 800 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 20, right: 24, left: 8, bottom: 12 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="period"
+                        label={{ value: 'Period', position: 'insideBottom', offset: -6 }}
+                      />
+                      <YAxis
+                        domain={[0, 1.2]}
+                        label={{ value: 'Kc', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip
+                        formatter={(value) => [value, 'Kc']}
+                        labelFormatter={(label) => `${cropName} - Period ${label}`}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="coefficient"
+                        stroke="#ff4d4f"
+                        strokeWidth={2}
+                        dot={{ r: 2 }}
+                        activeDot={{ r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               
               </div>
             </Col>

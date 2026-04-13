@@ -8,6 +8,9 @@ import AWAuthor from './AWAuthor'
 // AWFeatureDisplay show the full areticle details including the cover image, title, subtitle, authors, publication date, and body text.
 // It is used by AWFeature to display the article details.
 
+const ARTICLE_API_URL = "https://agwater.org:5556/articles/list";
+//const ARTICLE_API_URL = "http://localhost:5000/articles/list";  // Use this for debugging
+
 const AWFeatureDisplay = ({ article = null }) => {
     const overlayStyle = {
         position: 'absolute',
@@ -71,7 +74,11 @@ const AWFeature = () => {
     //document.getElementById('divBodyText').innerHTML= article.body_html;
 
     useEffect(() => {
-        fetch("https://agwater.org:5556/articles/list")
+        fetch(ARTICLE_API_URL, {
+                headers: {
+                    "X-API-Key": "agwater-web-app"
+                }
+            })
             .then((res) => res.json())
             .then((articles) => {
                 for (let article of articles.articles) {

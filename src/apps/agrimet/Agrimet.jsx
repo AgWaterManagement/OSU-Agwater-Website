@@ -96,7 +96,11 @@ const Agrimet = () => {
         console.log("Fetching CWU data for station:", selectedStation);
         const url = 'https://agwater.org:5556/agrimet/cwu_chart_data?station=' + selectedStation;
         try {
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                headers: {
+                    "X-API-Key": "agwater-web-app"
+                }
+            });
             if (!response.ok) throw new Error(`Failed to fetch ${selectedStation} data`);
             const json = await response.json();
 
@@ -160,60 +164,7 @@ const Agrimet = () => {
         setCookie('agrimet_crop', selectedCrop);
     }, [selectedCrop]);
 
-    ///////////////////////////
-    // <Select> Station Options
-    ///////////////////////////
-    //function selectStationOptions(features, state) {
-    //    const stations = [];
-    //    let i = 0;
-    //    features.forEach((feature) => {
-    //        const props = feature.properties;
-    //        if (props.state === state) {
-    //            stations.push({
-    //                key: i,
-    //                value: props.siteid,
-    //                label: `${props.title} (${props.siteid})`
-    //            });
-    //        }
-    //        i += 1;
-    //    });
-    //    return stations;
-    //}
-
-    /*
-    const options = [
-        {
-            value: 'zhejiang',
-            label: 'Zhejiang',
-            children: [
-                {
-                    value: 'hangzhou',
-                    label: 'Hangzhou',
-                    children: [
-                        {
-                            value: 'xihu',
-                            label: 'West Lake',
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            value: 'jiangsu',
-            label: 'Jiangsu',
-            children: [
-                {
-                    value: 'nanjing',
-                    label: 'Nanjing',
-                    children: [
-                        {
-                            value: 'zhonghuamen',
-                            label: 'Zhong Hua Men',
-                        },
-                    ],
-                },
-            ], */
-
+   
     function selectStationOptions(features) {
         const stations = {};
         let i = 0

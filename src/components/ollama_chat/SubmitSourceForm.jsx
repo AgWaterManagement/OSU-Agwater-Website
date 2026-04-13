@@ -19,7 +19,11 @@ const SubmitSourceForm = () => {
 
     const fetchTags = async () => {
         try {
-            const response = await fetch('https://agwater.org:5556/tags');
+            const response = await fetch('https://agwater.org:5556/tags', {
+                headers: {
+                    "X-API-Key": "agwater-web-app",
+                }
+            });
             const result = await response.json();
             setAvailableTags(result.tags);
         } catch (error) {
@@ -62,6 +66,9 @@ const SubmitSourceForm = () => {
         try {
             const response = await fetch("https://agwater.org:5556/llm/submit_source", {
                 method: "POST",
+                headers: {
+                   "X-API-Key": "agwater-web-app",
+                },
                 body: formData,
             });
 

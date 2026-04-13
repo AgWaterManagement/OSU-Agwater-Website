@@ -24,18 +24,20 @@
   text-align: left; 
   top:0;
   background-color: black;
+  width:100%;
+
 }
 
 .wrapper > * {
   /* padding: 0px; */
   flex: 1 100%;
   
-  padding-left: 0.5em;
-  padding-right: 0.5em;
+  /*padding-left: 0.5em;
+  padding-right: 0.5em;*/
 }
 
 .footer {
-  text-align: center;
+  /*text-align: center; */
   background-color: #242424;
 }
 
@@ -99,21 +101,6 @@ HOP BINE  HEX: #AA9D2E
   font-family: 'Open Sans', sans-serif;
   margin: 0;
   padding: 0
-}
-
-.intro-text a {
-  font-weight: 500;
-  text-decoration: underline;
-}
-.intro-text a:visited {
-  font-weight: 500;
-  text-decoration: underline;
-  color: white;
-}
-.intro-text a:hover {
-  font-weight: 500;
-  text-decoration: underline;
-  color: #646cff;
 }
 
 h1 {
@@ -237,7 +224,7 @@ p {
 
 a {
     font-weight: 500;
-    color: #efeca7;
+    color: yellow;
     text-decoration: inherit;
     /*font-family:'OSU-text'*/
 }
@@ -694,30 +681,6 @@ button:focus-visible {
   clear: both;
   display: block;
 }
-
-/* To Do: add styles for light mode
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a {
-    color: #747bff;
-  }
-  a:hover {
-    color: #747bff;
-    text-decoration: underline;
-  }
-  a:visited {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-*/
-
-
 
 
 @font-face {

@@ -1,0 +1,1652 @@
+{
+  "CONUS": {
+    "total_wetlands_area": 308808487.88044417,
+    "total_wetlands_count": 36847150,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 38612815.79591128,
+        "total_wetlands_type_count": 208371
+      },
+      "2.0": {
+        "total_wetlands_type_area": 6569413.227551993,
+        "total_wetlands_type_count": 484440
+      },
+      "3.0": {
+        "total_wetlands_type_area": 28157158.36619036,
+        "total_wetlands_type_count": 10317987
+      },
+      "4.0": {
+        "total_wetlands_type_area": 72380236.71611103,
+        "total_wetlands_type_count": 8064562
+      },
+      "5.0": {
+        "total_wetlands_type_area": 6580128.743046321,
+        "total_wetlands_type_count": 7088215
+      },
+      "6.0": {
+        "total_wetlands_type_area": 132699080.77627,
+        "total_wetlands_type_count": 218388
+      },
+      "7.0": {
+        "total_wetlands_type_area": 641256.318098037,
+        "total_wetlands_type_count": 637960
+      },
+      "8.0": {
+        "total_wetlands_type_area": 23168282.172997504,
+        "total_wetlands_type_count": 9827221
+      }
+    }
+  },
+  "AL": {
+    "total_wetlands_area": 5241136.151813079,
+    "total_wetlands_count": 597013,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 597128.3646361799,
+        "total_wetlands_type_count": 812
+      },
+      "2.0": {
+        "total_wetlands_type_area": 43833.85582459911,
+        "total_wetlands_type_count": 3274
+      },
+      "3.0": {
+        "total_wetlands_type_area": 144508.75506303384,
+        "total_wetlands_type_count": 34732
+      },
+      "4.0": {
+        "total_wetlands_type_area": 3486846.58763171,
+        "total_wetlands_type_count": 183305
+      },
+      "5.0": {
+        "total_wetlands_type_area": 147752.2389248656,
+        "total_wetlands_type_count": 107620
+      },
+      "6.0": {
+        "total_wetlands_type_area": 531844.960373001,
+        "total_wetlands_type_count": 3693
+      },
+      "7.0": {
+        "total_wetlands_type_area": 42.27081148021607,
+        "total_wetlands_type_count": 12
+      },
+      "8.0": {
+        "total_wetlands_type_area": 289179.11854821106,
+        "total_wetlands_type_count": 263565
+      }
+    }
+  },
+  "AR": {
+    "total_wetlands_area": 4005930.980802915,
+    "total_wetlands_count": 487646,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 266959.9012104879,
+        "total_wetlands_type_count": 31698
+      },
+      "4.0": {
+        "total_wetlands_type_area": 2432604.9827872114,
+        "total_wetlands_type_count": 111863
+      },
+      "5.0": {
+        "total_wetlands_type_area": 151490.97514599698,
+        "total_wetlands_type_count": 181561
+      },
+      "6.0": {
+        "total_wetlands_type_area": 508952.1098934497,
+        "total_wetlands_type_count": 4708
+      },
+      "7.0": {
+        "total_wetlands_type_area": 9244.995106593524,
+        "total_wetlands_type_count": 1412
+      },
+      "8.0": {
+        "total_wetlands_type_area": 636678.016659176,
+        "total_wetlands_type_count": 156404
+      }
+    }
+  },
+  "AZ": {
+    "total_wetlands_area": 1564244.171845971,
+    "total_wetlands_count": 186905,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 39754.49941781314,
+        "total_wetlands_type_count": 9088
+      },
+      "4.0": {
+        "total_wetlands_type_area": 281927.98369780765,
+        "total_wetlands_type_count": 28973
+      },
+      "5.0": {
+        "total_wetlands_type_area": 40297.29568673727,
+        "total_wetlands_type_count": 33653
+      },
+      "6.0": {
+        "total_wetlands_type_area": 323432.54671001795,
+        "total_wetlands_type_count": 1064
+      },
+      "8.0": {
+        "total_wetlands_type_area": 878831.846333595,
+        "total_wetlands_type_count": 114127
+      }
+    }
+  },
+  "CA": {
+    "total_wetlands_area": 8806142.658285744,
+    "total_wetlands_count": 885688,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 3584831.145037571,
+        "total_wetlands_type_count": 1043
+      },
+      "2.0": {
+        "total_wetlands_type_area": 139815.61418143884,
+        "total_wetlands_type_count": 18953
+      },
+      "3.0": {
+        "total_wetlands_type_area": 1143280.6309003383,
+        "total_wetlands_type_count": 193686
+      },
+      "4.0": {
+        "total_wetlands_type_area": 519408.29067769076,
+        "total_wetlands_type_count": 146636
+      },
+      "5.0": {
+        "total_wetlands_type_area": 160867.75524280427,
+        "total_wetlands_type_count": 126716
+      },
+      "6.0": {
+        "total_wetlands_type_area": 1933324.3271724381,
+        "total_wetlands_type_count": 11661
+      },
+      "7.0": {
+        "total_wetlands_type_area": 81026.11415072744,
+        "total_wetlands_type_count": 69
+      },
+      "8.0": {
+        "total_wetlands_type_area": 1243588.7809227363,
+        "total_wetlands_type_count": 386924
+      }
+    }
+  },
+  "CO": {
+    "total_wetlands_area": 1929935.8250673092,
+    "total_wetlands_count": 795185,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 682170.4960124698,
+        "total_wetlands_type_count": 212171
+      },
+      "4.0": {
+        "total_wetlands_type_area": 289076.00433326245,
+        "total_wetlands_type_count": 89686
+      },
+      "5.0": {
+        "total_wetlands_type_area": 98569.63773593876,
+        "total_wetlands_type_count": 160393
+      },
+      "6.0": {
+        "total_wetlands_type_area": 213903.8101144166,
+        "total_wetlands_type_count": 3208
+      },
+      "7.0": {
+        "total_wetlands_type_area": 10848.43750042115,
+        "total_wetlands_type_count": 3428
+      },
+      "8.0": {
+        "total_wetlands_type_area": 635367.4393708003,
+        "total_wetlands_type_count": 326299
+      }
+    }
+  },
+  "CT": {
+    "total_wetlands_area": 1112662.4236285673,
+    "total_wetlands_count": 170964,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 721367.624868141,
+        "total_wetlands_type_count": 1527
+      },
+      "2.0": {
+        "total_wetlands_type_area": 19351.346469732238,
+        "total_wetlands_type_count": 4703
+      },
+      "3.0": {
+        "total_wetlands_type_area": 40707.67789044889,
+        "total_wetlands_type_count": 17526
+      },
+      "4.0": {
+        "total_wetlands_type_area": 195573.89216717813,
+        "total_wetlands_type_count": 63018
+      },
+      "5.0": {
+        "total_wetlands_type_area": 27164.52559331299,
+        "total_wetlands_type_count": 29082
+      },
+      "6.0": {
+        "total_wetlands_type_area": 67143.72997817074,
+        "total_wetlands_type_count": 1934
+      },
+      "7.0": {
+        "total_wetlands_type_area": 61.36998504572383,
+        "total_wetlands_type_count": 47
+      },
+      "8.0": {
+        "total_wetlands_type_area": 41292.25667653814,
+        "total_wetlands_type_count": 53127
+      }
+    }
+  },
+  "DE": {
+    "total_wetlands_area": 868303.3045219398,
+    "total_wetlands_count": 78597,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 494889.82067219727,
+        "total_wetlands_type_count": 1847
+      },
+      "2.0": {
+        "total_wetlands_type_area": 103989.47252793009,
+        "total_wetlands_type_count": 7517
+      },
+      "3.0": {
+        "total_wetlands_type_area": 17374.298020384274,
+        "total_wetlands_type_count": 7831
+      },
+      "4.0": {
+        "total_wetlands_type_area": 215310.90545203295,
+        "total_wetlands_type_count": 35642
+      },
+      "5.0": {
+        "total_wetlands_type_area": 9444.407313389398,
+        "total_wetlands_type_count": 11700
+      },
+      "6.0": {
+        "total_wetlands_type_area": 7428.224154053322,
+        "total_wetlands_type_count": 257
+      },
+      "7.0": {
+        "total_wetlands_type_area": 3213.049509949342,
+        "total_wetlands_type_count": 2513
+      },
+      "8.0": {
+        "total_wetlands_type_area": 16653.126872003613,
+        "total_wetlands_type_count": 11290
+      }
+    }
+  },
+  "FL": {
+    "total_wetlands_area": 19195024.85613923,
+    "total_wetlands_count": 1061515,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 5719782.609028755,
+        "total_wetlands_type_count": 39733
+      },
+      "2.0": {
+        "total_wetlands_type_area": 1416672.820739256,
+        "total_wetlands_type_count": 78052
+      },
+      "3.0": {
+        "total_wetlands_type_area": 3249046.579034431,
+        "total_wetlands_type_count": 236670
+      },
+      "4.0": {
+        "total_wetlands_type_area": 6933009.011575235,
+        "total_wetlands_type_count": 395411
+      },
+      "5.0": {
+        "total_wetlands_type_area": 335867.39690078376,
+        "total_wetlands_type_count": 160123
+      },
+      "6.0": {
+        "total_wetlands_type_area": 1276443.5886326341,
+        "total_wetlands_type_count": 9624
+      },
+      "7.0": {
+        "total_wetlands_type_area": 50.610624960482184,
+        "total_wetlands_type_count": 15
+      },
+      "8.0": {
+        "total_wetlands_type_area": 264152.23960317683,
+        "total_wetlands_type_count": 141887
+      }
+    }
+  },
+  "GA": {
+    "total_wetlands_area": 6988391.707728437,
+    "total_wetlands_count": 836046,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 537303.1099526783,
+        "total_wetlands_type_count": 1321
+      },
+      "2.0": {
+        "total_wetlands_type_area": 395969.1416986841,
+        "total_wetlands_type_count": 11472
+      },
+      "3.0": {
+        "total_wetlands_type_area": 291231.34387073305,
+        "total_wetlands_type_count": 68100
+      },
+      "4.0": {
+        "total_wetlands_type_area": 4863279.826507706,
+        "total_wetlands_type_count": 379563
+      },
+      "5.0": {
+        "total_wetlands_type_area": 234184.7938260103,
+        "total_wetlands_type_count": 125374
+      },
+      "6.0": {
+        "total_wetlands_type_area": 433240.3709614702,
+        "total_wetlands_type_count": 3696
+      },
+      "7.0": {
+        "total_wetlands_type_area": 6.217806631516916,
+        "total_wetlands_type_count": 2
+      },
+      "8.0": {
+        "total_wetlands_type_area": 233176.90310452518,
+        "total_wetlands_type_count": 246518
+      }
+    }
+  },
+  "IA": {
+    "total_wetlands_area": 1668524.0808189812,
+    "total_wetlands_count": 707847,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 353855.56797262345,
+        "total_wetlands_type_count": 212801
+      },
+      "4.0": {
+        "total_wetlands_type_area": 446880.9858740585,
+        "total_wetlands_type_count": 116459
+      },
+      "5.0": {
+        "total_wetlands_type_area": 134087.90516961514,
+        "total_wetlands_type_count": 161071
+      },
+      "6.0": {
+        "total_wetlands_type_area": 202807.26700844002,
+        "total_wetlands_type_count": 2024
+      },
+      "7.0": {
+        "total_wetlands_type_area": 18.56828816080503,
+        "total_wetlands_type_count": 5
+      },
+      "8.0": {
+        "total_wetlands_type_area": 530873.7865060834,
+        "total_wetlands_type_count": 215487
+      }
+    }
+  },
+  "ID": {
+    "total_wetlands_area": 2050747.7375097605,
+    "total_wetlands_count": 618346,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 631190.3187149777,
+        "total_wetlands_type_count": 159567
+      },
+      "4.0": {
+        "total_wetlands_type_area": 249893.64294127727,
+        "total_wetlands_type_count": 124497
+      },
+      "5.0": {
+        "total_wetlands_type_area": 44600.975298317804,
+        "total_wetlands_type_count": 51021
+      },
+      "6.0": {
+        "total_wetlands_type_area": 532780.3502540002,
+        "total_wetlands_type_count": 3119
+      },
+      "7.0": {
+        "total_wetlands_type_area": 291.0469733963168,
+        "total_wetlands_type_count": 41
+      },
+      "8.0": {
+        "total_wetlands_type_area": 591991.4033277924,
+        "total_wetlands_type_count": 280101
+      }
+    }
+  },
+  "IL": {
+    "total_wetlands_area": 3471785.423347535,
+    "total_wetlands_count": 538229,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 260615.22104280538,
+        "total_wetlands_type_count": 96079
+      },
+      "4.0": {
+        "total_wetlands_type_area": 1007570.662679654,
+        "total_wetlands_type_count": 94671
+      },
+      "5.0": {
+        "total_wetlands_type_area": 170498.98413612132,
+        "total_wetlands_type_count": 172822
+      },
+      "6.0": {
+        "total_wetlands_type_area": 1465581.642714526,
+        "total_wetlands_type_count": 3179
+      },
+      "7.0": {
+        "total_wetlands_type_area": 1965.0764825750048,
+        "total_wetlands_type_count": 367
+      },
+      "8.0": {
+        "total_wetlands_type_area": 565553.836291854,
+        "total_wetlands_type_count": 171111
+      }
+    }
+  },
+  "IN": {
+    "total_wetlands_area": 21423086.440689754,
+    "total_wetlands_count": 452443,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 193540.20474566298,
+        "total_wetlands_type_count": 83668
+      },
+      "4.0": {
+        "total_wetlands_type_area": 668171.7261030875,
+        "total_wetlands_type_count": 107924
+      },
+      "5.0": {
+        "total_wetlands_type_area": 163457.28093398578,
+        "total_wetlands_type_count": 167034
+      },
+      "6.0": {
+        "total_wetlands_type_area": 19904882.6789523,
+        "total_wetlands_type_count": 2493
+      },
+      "7.0": {
+        "total_wetlands_type_area": 3370.0507772523906,
+        "total_wetlands_type_count": 1342
+      },
+      "8.0": {
+        "total_wetlands_type_area": 489606.6170437305,
+        "total_wetlands_type_count": 89980
+      }
+    }
+  },
+  "KS": {
+    "total_wetlands_area": 1420442.223623454,
+    "total_wetlands_count": 1063234,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 348915.8232489155,
+        "total_wetlands_type_count": 356474
+      },
+      "4.0": {
+        "total_wetlands_type_area": 189356.6540069741,
+        "total_wetlands_type_count": 69223
+      },
+      "5.0": {
+        "total_wetlands_type_area": 217593.82469432396,
+        "total_wetlands_type_count": 293207
+      },
+      "6.0": {
+        "total_wetlands_type_area": 227535.18312034308,
+        "total_wetlands_type_count": 4696
+      },
+      "7.0": {
+        "total_wetlands_type_area": 1321.5765543747061,
+        "total_wetlands_type_count": 310
+      },
+      "8.0": {
+        "total_wetlands_type_area": 435719.16199852224,
+        "total_wetlands_type_count": 339324
+      }
+    }
+  },
+  "KY": {
+    "total_wetlands_area": 1486170.7133720354,
+    "total_wetlands_count": 429612,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 92244.02147813184,
+        "total_wetlands_type_count": 25102
+      },
+      "4.0": {
+        "total_wetlands_type_area": 433338.4589548702,
+        "total_wetlands_type_count": 39035
+      },
+      "5.0": {
+        "total_wetlands_type_area": 139739.22007289313,
+        "total_wetlands_type_count": 225499
+      },
+      "6.0": {
+        "total_wetlands_type_area": 181109.47454178001,
+        "total_wetlands_type_count": 2033
+      },
+      "7.0": {
+        "total_wetlands_type_area": 555.33364048048,
+        "total_wetlands_type_count": 209
+      },
+      "8.0": {
+        "total_wetlands_type_area": 639184.2046838801,
+        "total_wetlands_type_count": 137734
+      }
+    }
+  },
+  "LA": {
+    "total_wetlands_area": 15019387.823360102,
+    "total_wetlands_count": 653202,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 4990886.9745478295,
+        "total_wetlands_type_count": 106133
+      },
+      "2.0": {
+        "total_wetlands_type_area": 1514457.0697229388,
+        "total_wetlands_type_count": 135045
+      },
+      "3.0": {
+        "total_wetlands_type_area": 1172077.5076780203,
+        "total_wetlands_type_count": 44602
+      },
+      "4.0": {
+        "total_wetlands_type_area": 5515745.266250301,
+        "total_wetlands_type_count": 127744
+      },
+      "5.0": {
+        "total_wetlands_type_area": 157014.06070498977,
+        "total_wetlands_type_count": 90111
+      },
+      "6.0": {
+        "total_wetlands_type_area": 850074.3448946655,
+        "total_wetlands_type_count": 5652
+      },
+      "7.0": {
+        "total_wetlands_type_area": 12117.998090400975,
+        "total_wetlands_type_count": 392
+      },
+      "8.0": {
+        "total_wetlands_type_area": 807014.6014709524,
+        "total_wetlands_type_count": 143523
+      }
+    }
+  },
+  "MA": {
+    "total_wetlands_area": 2543454.472786359,
+    "total_wetlands_count": 300108,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 1710015.4504135288,
+        "total_wetlands_type_count": 1353
+      },
+      "2.0": {
+        "total_wetlands_type_area": 95379.37591531657,
+        "total_wetlands_type_count": 8738
+      },
+      "3.0": {
+        "total_wetlands_type_area": 104867.52596393596,
+        "total_wetlands_type_count": 43708
+      },
+      "4.0": {
+        "total_wetlands_type_area": 395266.1457962201,
+        "total_wetlands_type_count": 145375
+      },
+      "5.0": {
+        "total_wetlands_type_area": 34793.435859391146,
+        "total_wetlands_type_count": 25308
+      },
+      "6.0": {
+        "total_wetlands_type_area": 140380.03850803128,
+        "total_wetlands_type_count": 2358
+      },
+      "7.0": {
+        "total_wetlands_type_area": 4407.486699082683,
+        "total_wetlands_type_count": 1184
+      },
+      "8.0": {
+        "total_wetlands_type_area": 58345.013630851885,
+        "total_wetlands_type_count": 72084
+      }
+    }
+  },
+  "MD": {
+    "total_wetlands_area": 2881536.43632919,
+    "total_wetlands_count": 240150,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 1816136.2503239189,
+        "total_wetlands_type_count": 4617
+      },
+      "2.0": {
+        "total_wetlands_type_area": 245353.733503582,
+        "total_wetlands_type_count": 27260
+      },
+      "3.0": {
+        "total_wetlands_type_area": 43987.48863318746,
+        "total_wetlands_type_count": 21236
+      },
+      "4.0": {
+        "total_wetlands_type_area": 597110.1198905484,
+        "total_wetlands_type_count": 93476
+      },
+      "5.0": {
+        "total_wetlands_type_area": 30457.490142263705,
+        "total_wetlands_type_count": 36829
+      },
+      "6.0": {
+        "total_wetlands_type_area": 29852.555676893902,
+        "total_wetlands_type_count": 935
+      },
+      "7.0": {
+        "total_wetlands_type_area": 16717.427680963112,
+        "total_wetlands_type_count": 9620
+      },
+      "8.0": {
+        "total_wetlands_type_area": 101921.37047783306,
+        "total_wetlands_type_count": 46177
+      }
+    }
+  },
+  "ME": {
+    "total_wetlands_area": 5164742.205284183,
+    "total_wetlands_count": 587645,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 1852105.5523919743,
+        "total_wetlands_type_count": 1895
+      },
+      "2.0": {
+        "total_wetlands_type_area": 157684.71611823738,
+        "total_wetlands_type_count": 25086
+      },
+      "3.0": {
+        "total_wetlands_type_area": 206009.53731670292,
+        "total_wetlands_type_count": 75479
+      },
+      "4.0": {
+        "total_wetlands_type_area": 1755762.303921734,
+        "total_wetlands_type_count": 312576
+      },
+      "5.0": {
+        "total_wetlands_type_area": 57956.360107502456,
+        "total_wetlands_type_count": 62664
+      },
+      "6.0": {
+        "total_wetlands_type_area": 951227.6954239422,
+        "total_wetlands_type_count": 4349
+      },
+      "7.0": {
+        "total_wetlands_type_area": 188.44693285690468,
+        "total_wetlands_type_count": 101
+      },
+      "8.0": {
+        "total_wetlands_type_area": 183807.59307123435,
+        "total_wetlands_type_count": 105495
+      }
+    }
+  },
+  "MI": {
+    "total_wetlands_area": 44045299.56368924,
+    "total_wetlands_count": 992328,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 653077.397321575,
+        "total_wetlands_type_count": 209045
+      },
+      "4.0": {
+        "total_wetlands_type_area": 5863438.304423203,
+        "total_wetlands_type_count": 480258
+      },
+      "5.0": {
+        "total_wetlands_type_area": 189997.1641407762,
+        "total_wetlands_type_count": 166507
+      },
+      "6.0": {
+        "total_wetlands_type_area": 37090166.73871926,
+        "total_wetlands_type_count": 10060
+      },
+      "7.0": {
+        "total_wetlands_type_area": 10446.975689789835,
+        "total_wetlands_type_count": 6712
+      },
+      "8.0": {
+        "total_wetlands_type_area": 238115.10126093854,
+        "total_wetlands_type_count": 119744
+      }
+    }
+  },
+  "MN": {
+    "total_wetlands_area": 16402065.34567448,
+    "total_wetlands_count": 2674616,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 3605875.567414317,
+        "total_wetlands_type_count": 1048994
+      },
+      "4.0": {
+        "total_wetlands_type_area": 7408562.50755929,
+        "total_wetlands_type_count": 1169989
+      },
+      "5.0": {
+        "total_wetlands_type_area": 305274.8737515121,
+        "total_wetlands_type_count": 253120
+      },
+      "6.0": {
+        "total_wetlands_type_area": 4634823.360921556,
+        "total_wetlands_type_count": 24151
+      },
+      "7.0": {
+        "total_wetlands_type_area": 306.02848217361014,
+        "total_wetlands_type_count": 342
+      },
+      "8.0": {
+        "total_wetlands_type_area": 447223.0075456329,
+        "total_wetlands_type_count": 178020
+      }
+    }
+  },
+  "MO": {
+    "total_wetlands_area": 2787865.8206133237,
+    "total_wetlands_count": 1257669,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 322226.99371722835,
+        "total_wetlands_type_count": 194480
+      },
+      "4.0": {
+        "total_wetlands_type_area": 975101.2124841941,
+        "total_wetlands_type_count": 156118
+      },
+      "5.0": {
+        "total_wetlands_type_area": 291263.87775453285,
+        "total_wetlands_type_count": 629791
+      },
+      "6.0": {
+        "total_wetlands_type_area": 424147.257085357,
+        "total_wetlands_type_count": 2695
+      },
+      "7.0": {
+        "total_wetlands_type_area": 5640.116162214041,
+        "total_wetlands_type_count": 1475
+      },
+      "8.0": {
+        "total_wetlands_type_area": 769486.3634097977,
+        "total_wetlands_type_count": 273110
+      }
+    }
+  },
+  "MS": {
+    "total_wetlands_area": 6395014.778648157,
+    "total_wetlands_count": 611881,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 628117.1059328848,
+        "total_wetlands_type_count": 1095
+      },
+      "2.0": {
+        "total_wetlands_type_area": 65676.95411570577,
+        "total_wetlands_type_count": 3956
+      },
+      "3.0": {
+        "total_wetlands_type_area": 220541.568870452,
+        "total_wetlands_type_count": 35691
+      },
+      "4.0": {
+        "total_wetlands_type_area": 4331389.970857753,
+        "total_wetlands_type_count": 158135
+      },
+      "5.0": {
+        "total_wetlands_type_area": 201356.0827779078,
+        "total_wetlands_type_count": 181052
+      },
+      "6.0": {
+        "total_wetlands_type_area": 343404.5065438157,
+        "total_wetlands_type_count": 3450
+      },
+      "7.0": {
+        "total_wetlands_type_area": 3107.9063060448507,
+        "total_wetlands_type_count": 274
+      },
+      "8.0": {
+        "total_wetlands_type_area": 601420.6832435917,
+        "total_wetlands_type_count": 228228
+      }
+    }
+  },
+  "MT": {
+    "total_wetlands_area": 3441991.4217547877,
+    "total_wetlands_count": 1857542,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 1165642.9625555652,
+        "total_wetlands_type_count": 733320
+      },
+      "4.0": {
+        "total_wetlands_type_area": 291719.1277850898,
+        "total_wetlands_type_count": 166246
+      },
+      "5.0": {
+        "total_wetlands_type_area": 172533.144345469,
+        "total_wetlands_type_count": 221802
+      },
+      "6.0": {
+        "total_wetlands_type_area": 768542.9297356929,
+        "total_wetlands_type_count": 6774
+      },
+      "7.0": {
+        "total_wetlands_type_area": 2351.273762200157,
+        "total_wetlands_type_count": 1352
+      },
+      "8.0": {
+        "total_wetlands_type_area": 1041201.9835707712,
+        "total_wetlands_type_count": 728048
+      }
+    }
+  },
+  "NC": {
+    "total_wetlands_area": 7961465.796240671,
+    "total_wetlands_count": 589943,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 2868010.099864286,
+        "total_wetlands_type_count": 4767
+      },
+      "2.0": {
+        "total_wetlands_type_area": 295390.4579062529,
+        "total_wetlands_type_count": 18900
+      },
+      "3.0": {
+        "total_wetlands_type_area": 133874.8009360781,
+        "total_wetlands_type_count": 23016
+      },
+      "4.0": {
+        "total_wetlands_type_area": 3806394.3684383156,
+        "total_wetlands_type_count": 197199
+      },
+      "5.0": {
+        "total_wetlands_type_area": 125353.90808452385,
+        "total_wetlands_type_count": 113858
+      },
+      "6.0": {
+        "total_wetlands_type_area": 375462.0634112586,
+        "total_wetlands_type_count": 1656
+      },
+      "7.0": {
+        "total_wetlands_type_area": 545.757027066087,
+        "total_wetlands_type_count": 33
+      },
+      "8.0": {
+        "total_wetlands_type_area": 356434.3405728926,
+        "total_wetlands_type_count": 230514
+      }
+    }
+  },
+  "ND": {
+    "total_wetlands_area": 4345650.17691852,
+    "total_wetlands_count": 2077124,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 2068955.0239793595,
+        "total_wetlands_type_count": 1144685
+      },
+      "4.0": {
+        "total_wetlands_type_area": 48759.47560610336,
+        "total_wetlands_type_count": 31574
+      },
+      "5.0": {
+        "total_wetlands_type_area": 360931.4945429961,
+        "total_wetlands_type_count": 211343
+      },
+      "6.0": {
+        "total_wetlands_type_area": 1479322.7709290194,
+        "total_wetlands_type_count": 11540
+      },
+      "7.0": {
+        "total_wetlands_type_area": 199691.3110141327,
+        "total_wetlands_type_count": 553847
+      },
+      "8.0": {
+        "total_wetlands_type_area": 187990.10084690718,
+        "total_wetlands_type_count": 124135
+      }
+    }
+  },
+  "NE": {
+    "total_wetlands_area": 2210168.703630385,
+    "total_wetlands_count": 1744902,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 1235990.895827679,
+        "total_wetlands_type_count": 1360356
+      },
+      "4.0": {
+        "total_wetlands_type_area": 150346.97890703165,
+        "total_wetlands_type_count": 48480
+      },
+      "5.0": {
+        "total_wetlands_type_area": 111128.45413384448,
+        "total_wetlands_type_count": 125810
+      },
+      "6.0": {
+        "total_wetlands_type_area": 191561.458859253,
+        "total_wetlands_type_count": 2326
+      },
+      "7.0": {
+        "total_wetlands_type_area": 835.4570487470535,
+        "total_wetlands_type_count": 814
+      },
+      "8.0": {
+        "total_wetlands_type_area": 520305.4588538297,
+        "total_wetlands_type_count": 207116
+      }
+    }
+  },
+  "NH": {
+    "total_wetlands_area": 824037.5103902753,
+    "total_wetlands_count": 258765,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 132993.84354423627,
+        "total_wetlands_type_count": 219
+      },
+      "2.0": {
+        "total_wetlands_type_area": 23037.529309487574,
+        "total_wetlands_type_count": 2367
+      },
+      "3.0": {
+        "total_wetlands_type_area": 74375.70274945245,
+        "total_wetlands_type_count": 42890
+      },
+      "4.0": {
+        "total_wetlands_type_area": 280450.28576271766,
+        "total_wetlands_type_count": 134510
+      },
+      "5.0": {
+        "total_wetlands_type_area": 33426.111303641854,
+        "total_wetlands_type_count": 32031
+      },
+      "6.0": {
+        "total_wetlands_type_area": 191870.13579184609,
+        "total_wetlands_type_count": 3037
+      },
+      "7.0": {
+        "total_wetlands_type_area": 89.49087814057067,
+        "total_wetlands_type_count": 100
+      },
+      "8.0": {
+        "total_wetlands_type_area": 87794.41105075288,
+        "total_wetlands_type_count": 43611
+      }
+    }
+  },
+  "NJ": {
+    "total_wetlands_area": 2026048.0415184144,
+    "total_wetlands_count": 248702,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 921167.2216074434,
+        "total_wetlands_type_count": 5389
+      },
+      "2.0": {
+        "total_wetlands_type_area": 228049.1050776191,
+        "total_wetlands_type_count": 13446
+      },
+      "3.0": {
+        "total_wetlands_type_area": 72299.02617150515,
+        "total_wetlands_type_count": 21491
+      },
+      "4.0": {
+        "total_wetlands_type_area": 627688.250183796,
+        "total_wetlands_type_count": 113375
+      },
+      "5.0": {
+        "total_wetlands_type_area": 31336.84647776246,
+        "total_wetlands_type_count": 21821
+      },
+      "6.0": {
+        "total_wetlands_type_area": 62680.19772240177,
+        "total_wetlands_type_count": 997
+      },
+      "7.0": {
+        "total_wetlands_type_area": 4412.339873050797,
+        "total_wetlands_type_count": 1100
+      },
+      "8.0": {
+        "total_wetlands_type_area": 78415.05440483532,
+        "total_wetlands_type_count": 71083
+      }
+    }
+  },
+  "NM": {
+    "total_wetlands_area": 1312939.6214910932,
+    "total_wetlands_count": 502621,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 286630.12194950116,
+        "total_wetlands_type_count": 169721
+      },
+      "4.0": {
+        "total_wetlands_type_area": 63886.36446765875,
+        "total_wetlands_type_count": 26172
+      },
+      "5.0": {
+        "total_wetlands_type_area": 60743.98470547374,
+        "total_wetlands_type_count": 78610
+      },
+      "6.0": {
+        "total_wetlands_type_area": 224662.24420618574,
+        "total_wetlands_type_count": 2205
+      },
+      "7.0": {
+        "total_wetlands_type_area": 393.5397769973764,
+        "total_wetlands_type_count": 489
+      },
+      "8.0": {
+        "total_wetlands_type_area": 676623.3663852768,
+        "total_wetlands_type_count": 225424
+      }
+    }
+  },
+  "NV": {
+    "total_wetlands_area": 5270109.430637121,
+    "total_wetlands_count": 322497,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 610469.3164058375,
+        "total_wetlands_type_count": 71671
+      },
+      "4.0": {
+        "total_wetlands_type_area": 370216.1022396177,
+        "total_wetlands_type_count": 57797
+      },
+      "5.0": {
+        "total_wetlands_type_area": 55327.955634772996,
+        "total_wetlands_type_count": 35175
+      },
+      "6.0": {
+        "total_wetlands_type_area": 3240222.2967853304,
+        "total_wetlands_type_count": 3518
+      },
+      "7.0": {
+        "total_wetlands_type_area": 9363.486059255734,
+        "total_wetlands_type_count": 302
+      },
+      "8.0": {
+        "total_wetlands_type_area": 984510.2735123053,
+        "total_wetlands_type_count": 154034
+      }
+    }
+  },
+  "NY": {
+    "total_wetlands_area": 7658696.257742092,
+    "total_wetlands_count": 921306,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 1428760.9503216743,
+        "total_wetlands_type_count": 13030
+      },
+      "2.0": {
+        "total_wetlands_type_area": 52513.427373862556,
+        "total_wetlands_type_count": 17405
+      },
+      "3.0": {
+        "total_wetlands_type_area": 383822.28035244776,
+        "total_wetlands_type_count": 133704
+      },
+      "4.0": {
+        "total_wetlands_type_area": 1688583.4470347115,
+        "total_wetlands_type_count": 352712
+      },
+      "5.0": {
+        "total_wetlands_type_area": 161355.74956919198,
+        "total_wetlands_type_count": 165780
+      },
+      "6.0": {
+        "total_wetlands_type_area": 3500598.3124367893,
+        "total_wetlands_type_count": 5408
+      },
+      "7.0": {
+        "total_wetlands_type_area": 22425.308590506203,
+        "total_wetlands_type_count": 1200
+      },
+      "8.0": {
+        "total_wetlands_type_area": 420636.7820629055,
+        "total_wetlands_type_count": 232067
+      }
+    }
+  },
+  "OH": {
+    "total_wetlands_area": 3627997.8163073533,
+    "total_wetlands_count": 478072,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 122595.18438662482,
+        "total_wetlands_type_count": 64474
+      },
+      "4.0": {
+        "total_wetlands_type_area": 449568.42853833316,
+        "total_wetlands_type_count": 97564
+      },
+      "5.0": {
+        "total_wetlands_type_area": 146980.57463344824,
+        "total_wetlands_type_count": 189328
+      },
+      "6.0": {
+        "total_wetlands_type_area": 2520559.9020884964,
+        "total_wetlands_type_count": 1500
+      },
+      "7.0": {
+        "total_wetlands_type_area": 6231.845087258616,
+        "total_wetlands_type_count": 2105
+      },
+      "8.0": {
+        "total_wetlands_type_area": 382061.8815731938,
+        "total_wetlands_type_count": 123101
+      }
+    }
+  },
+  "OK": {
+    "total_wetlands_area": 2500800.664424862,
+    "total_wetlands_count": 923494,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 190348.1628034325,
+        "total_wetlands_type_count": 68388
+      },
+      "4.0": {
+        "total_wetlands_type_area": 771355.7293246726,
+        "total_wetlands_type_count": 87695
+      },
+      "5.0": {
+        "total_wetlands_type_area": 286963.7091985824,
+        "total_wetlands_type_count": 438349
+      },
+      "6.0": {
+        "total_wetlands_type_area": 633873.9318850462,
+        "total_wetlands_type_count": 4669
+      },
+      "7.0": {
+        "total_wetlands_type_area": 6354.120245616323,
+        "total_wetlands_type_count": 703
+      },
+      "8.0": {
+        "total_wetlands_type_area": 611905.0109675119,
+        "total_wetlands_type_count": 323690
+      }
+    }
+  },
+  "OR": {
+    "total_wetlands_area": 4056418.1824518847,
+    "total_wetlands_count": 767961,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 924185.3447938192,
+        "total_wetlands_type_count": 177
+      },
+      "2.0": {
+        "total_wetlands_type_area": 71532.83864343408,
+        "total_wetlands_type_count": 5856
+      },
+      "3.0": {
+        "total_wetlands_type_area": 1157974.8109676621,
+        "total_wetlands_type_count": 144795
+      },
+      "4.0": {
+        "total_wetlands_type_area": 343335.45171453385,
+        "total_wetlands_type_count": 99564
+      },
+      "5.0": {
+        "total_wetlands_type_area": 61315.18917833412,
+        "total_wetlands_type_count": 59757
+      },
+      "6.0": {
+        "total_wetlands_type_area": 766723.7151948003,
+        "total_wetlands_type_count": 4448
+      },
+      "7.0": {
+        "total_wetlands_type_area": 917.7350937804796,
+        "total_wetlands_type_count": 80
+      },
+      "8.0": {
+        "total_wetlands_type_area": 730433.0968655201,
+        "total_wetlands_type_count": 453284
+      }
+    }
+  },
+  "PA": {
+    "total_wetlands_area": 5580393.297435365,
+    "total_wetlands_count": 357340,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 1004170.8303028219,
+        "total_wetlands_type_count": 11
+      },
+      "2.0": {
+        "total_wetlands_type_area": 41.30058142210342,
+        "total_wetlands_type_count": 19
+      },
+      "3.0": {
+        "total_wetlands_type_area": 89064.93877599045,
+        "total_wetlands_type_count": 40207
+      },
+      "4.0": {
+        "total_wetlands_type_area": 415780.5412181335,
+        "total_wetlands_type_count": 86517
+      },
+      "5.0": {
+        "total_wetlands_type_area": 78306.8832468493,
+        "total_wetlands_type_count": 89413
+      },
+      "6.0": {
+        "total_wetlands_type_area": 3312544.5371319083,
+        "total_wetlands_type_count": 1844
+      },
+      "7.0": {
+        "total_wetlands_type_area": 504.73933592521087,
+        "total_wetlands_type_count": 199
+      },
+      "8.0": {
+        "total_wetlands_type_area": 679979.5268423114,
+        "total_wetlands_type_count": 139130
+      }
+    }
+  },
+  "RI": {
+    "total_wetlands_area": 508436.56088480906,
+    "total_wetlands_count": 55229,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 346914.97624568397,
+        "total_wetlands_type_count": 600
+      },
+      "2.0": {
+        "total_wetlands_type_area": 13394.713685798699,
+        "total_wetlands_type_count": 2767
+      },
+      "3.0": {
+        "total_wetlands_type_area": 7703.668521918354,
+        "total_wetlands_type_count": 4473
+      },
+      "4.0": {
+        "total_wetlands_type_area": 92989.87471040015,
+        "total_wetlands_type_count": 27580
+      },
+      "5.0": {
+        "total_wetlands_type_area": 8033.924739575994,
+        "total_wetlands_type_count": 6819
+      },
+      "6.0": {
+        "total_wetlands_type_area": 30995.86383057321,
+        "total_wetlands_type_count": 385
+      },
+      "7.0": {
+        "total_wetlands_type_area": 32.376793181043716,
+        "total_wetlands_type_count": 10
+      },
+      "8.0": {
+        "total_wetlands_type_area": 8371.162357677675,
+        "total_wetlands_type_count": 12595
+      }
+    }
+  },
+  "SC": {
+    "total_wetlands_area": 5350080.041769374,
+    "total_wetlands_count": 615836,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 784967.1498478173,
+        "total_wetlands_type_count": 2482
+      },
+      "2.0": {
+        "total_wetlands_type_area": 413244.52549760614,
+        "total_wetlands_type_count": 33220
+      },
+      "3.0": {
+        "total_wetlands_type_area": 207163.20702178078,
+        "total_wetlands_type_count": 37850
+      },
+      "4.0": {
+        "total_wetlands_type_area": 3210352.283789088,
+        "total_wetlands_type_count": 308602
+      },
+      "5.0": {
+        "total_wetlands_type_area": 111323.01117774879,
+        "total_wetlands_type_count": 77914
+      },
+      "6.0": {
+        "total_wetlands_type_area": 432346.22668854526,
+        "total_wetlands_type_count": 3604
+      },
+      "7.0": {
+        "total_wetlands_type_area": 2.7106656444663235,
+        "total_wetlands_type_count": 1
+      },
+      "8.0": {
+        "total_wetlands_type_area": 190680.92708114543,
+        "total_wetlands_type_count": 152163
+      }
+    }
+  },
+  "SD": {
+    "total_wetlands_area": 3501785.7075528298,
+    "total_wetlands_count": 1663173,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 1926294.9704473908,
+        "total_wetlands_type_count": 1173074
+      },
+      "4.0": {
+        "total_wetlands_type_area": 66614.68757028034,
+        "total_wetlands_type_count": 38466
+      },
+      "5.0": {
+        "total_wetlands_type_area": 229873.46652732682,
+        "total_wetlands_type_count": 169377
+      },
+      "6.0": {
+        "total_wetlands_type_area": 900968.3981903022,
+        "total_wetlands_type_count": 6630
+      },
+      "7.0": {
+        "total_wetlands_type_area": 14088.353030633212,
+        "total_wetlands_type_count": 14264
+      },
+      "8.0": {
+        "total_wetlands_type_area": 363945.83178689517,
+        "total_wetlands_type_count": 261362
+      }
+    }
+  },
+  "TN": {
+    "total_wetlands_area": 2180376.36637455,
+    "total_wetlands_count": 430526,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 89645.50972934588,
+        "total_wetlands_type_count": 22654
+      },
+      "4.0": {
+        "total_wetlands_type_area": 973279.485255321,
+        "total_wetlands_type_count": 68775
+      },
+      "5.0": {
+        "total_wetlands_type_area": 105231.87803391289,
+        "total_wetlands_type_count": 173279
+      },
+      "6.0": {
+        "total_wetlands_type_area": 429306.04174623033,
+        "total_wetlands_type_count": 3777
+      },
+      "7.0": {
+        "total_wetlands_type_area": 2735.5542594681488,
+        "total_wetlands_type_count": 361
+      },
+      "8.0": {
+        "total_wetlands_type_area": 580177.8973502712,
+        "total_wetlands_type_count": 161680
+      }
+    }
+  },
+  "TX": {
+    "total_wetlands_area": 10608068.633818114,
+    "total_wetlands_count": 2233522,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 2407255.5554683795,
+        "total_wetlands_type_count": 16243
+      },
+      "2.0": {
+        "total_wetlands_type_area": 744292.4650678388,
+        "total_wetlands_type_count": 36329
+      },
+      "3.0": {
+        "total_wetlands_type_area": 1189341.4459309927,
+        "total_wetlands_type_count": 252003
+      },
+      "4.0": {
+        "total_wetlands_type_area": 2312134.6671592747,
+        "total_wetlands_type_count": 210052
+      },
+      "5.0": {
+        "total_wetlands_type_area": 581185.3089259481,
+        "total_wetlands_type_count": 847149
+      },
+      "6.0": {
+        "total_wetlands_type_area": 1732701.9002443636,
+        "total_wetlands_type_count": 15827
+      },
+      "7.0": {
+        "total_wetlands_type_area": 150581.19027969433,
+        "total_wetlands_type_count": 14307
+      },
+      "8.0": {
+        "total_wetlands_type_area": 1490576.1007416146,
+        "total_wetlands_type_count": 841612
+      }
+    }
+  },
+  "UT": {
+    "total_wetlands_area": 5196552.301738525,
+    "total_wetlands_count": 291089,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 433371.66725991823,
+        "total_wetlands_type_count": 87758
+      },
+      "4.0": {
+        "total_wetlands_type_area": 59255.50525567685,
+        "total_wetlands_type_count": 24497
+      },
+      "5.0": {
+        "total_wetlands_type_area": 54529.5630022165,
+        "total_wetlands_type_count": 61441
+      },
+      "6.0": {
+        "total_wetlands_type_area": 4137560.2500081155,
+        "total_wetlands_type_count": 4776
+      },
+      "7.0": {
+        "total_wetlands_type_area": 612.129125491214,
+        "total_wetlands_type_count": 150
+      },
+      "8.0": {
+        "total_wetlands_type_area": 511223.1870871069,
+        "total_wetlands_type_count": 112467
+      }
+    }
+  },
+  "VA": {
+    "total_wetlands_area": 4189928.5629597954,
+    "total_wetlands_count": 583029,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 2080478.0156558212,
+        "total_wetlands_type_count": 3825
+      },
+      "2.0": {
+        "total_wetlands_type_area": 265947.04890216724,
+        "total_wetlands_type_count": 24483
+      },
+      "3.0": {
+        "total_wetlands_type_area": 116019.54640283667,
+        "total_wetlands_type_count": 58791
+      },
+      "4.0": {
+        "total_wetlands_type_area": 1037026.8709185937,
+        "total_wetlands_type_count": 183539
+      },
+      "5.0": {
+        "total_wetlands_type_area": 94167.88695721826,
+        "total_wetlands_type_count": 99727
+      },
+      "6.0": {
+        "total_wetlands_type_area": 173063.37234332462,
+        "total_wetlands_type_count": 1911
+      },
+      "7.0": {
+        "total_wetlands_type_area": 1929.1424355632594,
+        "total_wetlands_type_count": 1424
+      },
+      "8.0": {
+        "total_wetlands_type_area": 421296.679344271,
+        "total_wetlands_type_count": 209329
+      }
+    }
+  },
+  "VT": {
+    "total_wetlands_area": 933530.9482201631,
+    "total_wetlands_count": 302265,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 103861.18005446218,
+        "total_wetlands_type_count": 55901
+      },
+      "4.0": {
+        "total_wetlands_type_area": 351657.00853200577,
+        "total_wetlands_type_count": 169458
+      },
+      "5.0": {
+        "total_wetlands_type_area": 24150.65441774339,
+        "total_wetlands_type_count": 43048
+      },
+      "6.0": {
+        "total_wetlands_type_area": 360971.1018652589,
+        "total_wetlands_type_count": 871
+      },
+      "7.0": {
+        "total_wetlands_type_area": 3508.232166230688,
+        "total_wetlands_type_count": 3772
+      },
+      "8.0": {
+        "total_wetlands_type_area": 89382.7711844624,
+        "total_wetlands_type_count": 29215
+      }
+    }
+  },
+  "WA": {
+    "total_wetlands_area": 5519160.0434580315,
+    "total_wetlands_count": 611428,
+    "by_wetland_type": {
+      "1.0": {
+        "total_wetlands_type_area": 3061347.80045364,
+        "total_wetlands_type_count": 252
+      },
+      "2.0": {
+        "total_wetlands_type_area": 263785.71468908305,
+        "total_wetlands_type_count": 5592
+      },
+      "3.0": {
+        "total_wetlands_type_area": 388233.4383415736,
+        "total_wetlands_type_count": 95760
+      },
+      "4.0": {
+        "total_wetlands_type_area": 385164.49839525076,
+        "total_wetlands_type_count": 87026
+      },
+      "5.0": {
+        "total_wetlands_type_area": 55921.25796111339,
+        "total_wetlands_type_count": 42862
+      },
+      "6.0": {
+        "total_wetlands_type_area": 639961.6833272383,
+        "total_wetlands_type_count": 3149
+      },
+      "7.0": {
+        "total_wetlands_type_area": 853.652064789356,
+        "total_wetlands_type_count": 69
+      },
+      "8.0": {
+        "total_wetlands_type_area": 723891.9982253427,
+        "total_wetlands_type_count": 376716
+      }
+    }
+  },
+  "WI": {
+    "total_wetlands_area": 40945799.8979566,
+    "total_wetlands_count": 1764410,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 1262721.6579585774,
+        "total_wetlands_type_count": 750858
+      },
+      "4.0": {
+        "total_wetlands_type_area": 5197034.462588615,
+        "total_wetlands_type_count": 697559
+      },
+      "5.0": {
+        "total_wetlands_type_area": 151164.44490666702,
+        "total_wetlands_type_count": 130503
+      },
+      "6.0": {
+        "total_wetlands_type_area": 33823269.704593696,
+        "total_wetlands_type_count": 7692
+      },
+      "7.0": {
+        "total_wetlands_type_area": 46509.19774962322,
+        "total_wetlands_type_count": 10919
+      },
+      "8.0": {
+        "total_wetlands_type_area": 465100.4301593881,
+        "total_wetlands_type_count": 166879
+      }
+    }
+  },
+  "WV": {
+    "total_wetlands_area": 385640.27677524975,
+    "total_wetlands_count": 148815,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 37605.329013448354,
+        "total_wetlands_type_count": 26436
+      },
+      "4.0": {
+        "total_wetlands_type_area": 70819.74290965514,
+        "total_wetlands_type_count": 24530
+      },
+      "5.0": {
+        "total_wetlands_type_area": 30354.64464156519,
+        "total_wetlands_type_count": 69248
+      },
+      "6.0": {
+        "total_wetlands_type_area": 36482.29956051625,
+        "total_wetlands_type_count": 536
+      },
+      "7.0": {
+        "total_wetlands_type_area": 1271.521934099982,
+        "total_wetlands_type_count": 442
+      },
+      "8.0": {
+        "total_wetlands_type_area": 209106.73871596478,
+        "total_wetlands_type_count": 27623
+      }
+    }
+  },
+  "WY": {
+    "total_wetlands_area": 2200516.4724134337,
+    "total_wetlands_count": 870690,
+    "by_wetland_type": {
+      "3.0": {
+        "total_wetlands_type_area": 719094.5921083392,
+        "total_wetlands_type_count": 315283
+      },
+      "4.0": {
+        "total_wetlands_type_area": 261197.63123315977,
+        "total_wetlands_type_count": 95496
+      },
+      "5.0": {
+        "total_wetlands_type_area": 104758.13478641336,
+        "total_wetlands_type_count": 131513
+      },
+      "6.0": {
+        "total_wetlands_type_area": 458342.6753392548,
+        "total_wetlands_type_count": 8269
+      },
+      "7.0": {
+        "total_wetlands_type_area": 68.7495453657512,
+        "total_wetlands_type_count": 45
+      },
+      "8.0": {
+        "total_wetlands_type_area": 657054.6894009012,
+        "total_wetlands_type_count": 320084
+      }
+    }
+  }
+}

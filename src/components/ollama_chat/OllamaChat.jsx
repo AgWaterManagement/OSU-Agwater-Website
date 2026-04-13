@@ -27,9 +27,10 @@ const OllamaChat = () => {
     const currentAnswer = useRef("")
     const [currentMarkdown, setCurrentMarkdown] = useState(""); // to keep track of the current markdown content
     const [loading, setLoading] = useState(false);
+    const [isStreaming, setIsStreaming] = useState(false);
     const [history, setHistory] = useState([]); // a list of question/answer objects - key = input, value = response
     const [error, setError] = useState(null);
-    const [selectedModel, setSelectedModel] = useState("llama3.2"); // Default model");
+    const [selectedModel, setSelectedModel] = useState("gemma3"); // Default model");
     const [availableModels, setAvailableModels] = useState([]);
     const references = useRef(""); // to keep track of the references
 
@@ -39,7 +40,11 @@ const OllamaChat = () => {
 
     const fetchModels = async () => {
         try {
-            const response = await fetch(MODELS_API_URL);
+            const response = await fetch(MODELS_API_URL, {
+                headers: {
+                    "X-API-Key": "agwater-web-app",
+                }
+            });
             const result = await response.json();
             setAvailableModels(result.models);
         } catch (error) {
@@ -58,6 +63,7 @@ const OllamaChat = () => {
             const response = await fetch(CHAT_API_URL, {
                 method: 'post',
                 headers: {
+                    "X-API-Key": "agwater-web-app",
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
@@ -77,6 +83,9 @@ const OllamaChat = () => {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
+            setIsStreaming(true);
+            setCurrentMarkdown(""); // Clear previous markdown before streaming new response
+            setLoading(false); // Remove fullscreen spinner so streamed text is visible
             for await (const json of readNDJSONStream(response.body)) {
                 //console.log('Received', json);
 
@@ -92,14 +101,17 @@ const OllamaChat = () => {
                         contentStr += "\n\n#### References:\n";
                         refs.forEach((ref, index) => {
                             if (titles.length > 0 && titles[index] !== null) {
-                                contentStr += `${index + 1}. <a href='https://agwater.org:5556/llm/source?filename=${ref}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
+                                //contentStr += `${index + 1}. <a style={{color: '#1a0dab'}} href=\'https://agwater.org:5556/llm/source?filename=${ref}\' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
+                                // Use markdown link format to ensure compatibility with Markdown rendering in React
+                                // IMPORTANT: the angle brackets <> around the URL help prevent markdown parsing issues with special characters in URLs
+                                // specifically spaces or other whitespace characters that may be URL encoded.
+                                contentStr += `${index + 1}. [${titles[index]}](<https://agwater.org:5556/llm/source?filename=${ref}>)\n`; // Use the title if available
                             } else {
                                 contentStr += `${index + 1}. ${ref}\n`;
                             }
                         });
                     }
                     references.current = contentStr; // Store the references for later use
-                    setLoading(false);
                 }
                 setCurrentMarkdown(currentAnswer.current); // Update the markdown content
             }
@@ -112,6 +124,7 @@ const OllamaChat = () => {
 
         const _currentAnswer = currentAnswer.current; // Get the final answer
 
+        setIsStreaming(false);
         currentQuestion.current = ""; // Clear the input field after processing
         currentAnswer.current = ""; // Clear the response field after processing
 
@@ -154,6 +167,7 @@ const OllamaChat = () => {
             const response = await fetch(RATING_API_URL, {
                 method: 'POST',
                 headers: {
+                    'X-API-Key': 'agwater-web-app',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -209,7 +223,7 @@ const OllamaChat = () => {
                 <br />
                 {loading && (<Loading tip="Running Query..." />)}
                 {
-                    currentAnswer.current && currentAnswer.current.length > 0 && (
+                    isStreaming && (
                         <div className="message-container">
                             <div className="user-message">
                                 {currentQuestion.current}

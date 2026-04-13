@@ -13,7 +13,11 @@ const ShowSources = () => {
     const [search, setSearch] = useState("");
 
     useEffect(() => {
-        fetch(SOURCES_URL)
+        fetch(SOURCES_URL, {
+                headers: {
+                    "X-API-Key": "agwater-web-app",
+                }
+            })
             .then((res) => {
                 if (!res.ok) throw new Error("Failed to fetch sources");
                 return res.json();

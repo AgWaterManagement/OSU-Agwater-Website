@@ -9,6 +9,7 @@ import Salini from '../../assets/images/salini-150X150.jpg';
 import Manuel from '../../assets/images/Jamarillo-150X150.jpg';
 import Jen from '../../assets/images/Jen-150X150.jpg';
 import Derek from '../../assets/images/DerekGodwin-150x150.jpg';
+import Yu from '../../assets/images/YuLu-150X150.jpg';
 import Sean from '../../assets/images/sean-higgens-150x150.jpg';
 import PropTypes from 'prop-types';
 
@@ -111,13 +112,14 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
-                <Card title="Jen Martin" style={{ height: '100%' }}>
-                    <img src={Jen} />
-                    <a href="https://bee.oregonstate.edu/users/jennifer-martin" target="_blank">Jen Martin </a> 
-                    is a Faculty Research Assistant in the <a href="https://bee.oregonstate.edu">Biological & Ecological Engineering department </a> 
-                    at Oregon State University. She specializes in scientific software and web app development and is a developer for the Agricultural 
-                    Water Management website. Jen has contributed to projects across a wide range of scientific fields including genomics, bioinformatics, 
-                    geophysics, oceanography, epidemiology, psychology, demography, and digital cartography.
+                <Card title="Yu Lu" style={{ height: '100%' }}>
+                    <img src={Yu} alt="Yu Lu" />
+                    <a href="https://bee.oregonstate.edu/users/yu-lu" target="_blank">Dr. Yu Lu</a> is an Assistant Professor of Practice
+                    in Human Dimensions of Agricultural Water Management in the <a href="https://bee.oregonstate.edu">Biological & Ecological Engineering department</a> at Oregon State University.
+                    She is an interdisciplinary environmental social scientist studying how people, institutions, and ecosystems interact
+                    under climate and market risks and emerging technologies, and how policy and governance can better support resilient livelihoods and landscapes.
+                    Using quantitative and qualitative methods, including surveys, interviews, social network analysis, and machine learning, Dr. Lu's work aims to
+                    inform agricultural and conservation policy and governance in support of sustainable and resilient agricultural systems in Oregon and beyond.
                 </Card>
             </div>
 

@@ -1,0 +1,247 @@
+{
+  "observations": [
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T10:00:00Z",
+      "measurement": "temperature",
+      "value": 22.5,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T10:00:00Z",
+      "measurement": "soil_moisture",
+      "value": 27.6,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T10:00:00Z",
+      "measurement": "pH",
+      "value": 1,
+      "units": "pH"
+    },
+        {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T10:15:00Z",
+      "measurement": "temperature",
+      "value": 24.2,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T10:15:00Z",
+      "measurement": "soil_moisture",
+      "value": 29.2,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T10:15:00Z",
+      "measurement": "pH",
+      "value": 2,
+      "units": "pH"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T10:30:00Z",
+      "measurement": "temperature",
+      "value": 25.7,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T10:30:00Z",
+      "measurement": "soil_moisture",
+      "value": 31.1,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T10:30:00Z",
+      "measurement": "pH",
+      "value": 1,
+      "units": "pH"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T10:45:00Z",
+      "measurement": "temperature",
+      "value": 26.1,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T10:45:00Z",
+      "measurement": "soil_moisture",
+      "value": 32.0,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T10:45:00Z",
+      "measurement": "pH",
+      "value": -1,
+      "units": "pH"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T11:00:00Z",
+      "measurement": "temperature",
+      "value": 26.3,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T11:00:00Z",
+      "measurement": "soil_moisture",
+      "value": 32.3,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T11:00:00Z",
+      "measurement": "pH",
+      "value": -1,
+      "units": "pH"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T11:15:00Z",
+      "measurement": "temperature",
+      "value": 26.5,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T11:15:00Z",
+      "measurement": "soil_moisture",
+      "value": 32.4,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T11:15:00Z",
+      "measurement": "pH",
+      "value": 0,
+      "units": "pH"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T11:30:00Z",
+      "measurement": "temperature",
+      "value": 26.1,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T11:30:00Z",
+      "measurement": "soil_moisture",
+      "value": 32.0,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T11:30:00Z",
+      "measurement": "pH",
+      "value": 0,
+      "units": "pH"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T11:45:00Z",
+      "measurement": "temperature",
+      "value": 25.7,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T11:45:00Z",
+      "measurement": "soil_moisture",
+      "value": 31.6,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T11:45:00Z",
+      "measurement": "pH",
+      "value": 1,
+      "units": "pH"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 7,
+      "timestamp": "2025-10-08T12:00:00Z",
+      "measurement": "temperature",
+      "value": 24.8,
+      "units": "°C"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 8,
+      "timestamp": "2025-10-08T12:00:00Z",
+      "measurement": "soil_moisture",
+      "value": 30.8,
+      "units": "%"
+    },
+    {
+      "exp_id": 4,
+      "bed_index": 0,
+      "sensor_id": 9,
+      "timestamp": "2025-10-08T12:00:00Z",
+      "measurement": "pH",
+      "value": 2,
+      "units": "pH"
+    }
+  ]
+}
