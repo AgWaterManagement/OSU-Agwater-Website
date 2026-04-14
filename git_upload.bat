@@ -108,5 +108,4 @@ if errorlevel 1 (
 echo.
 echo [SUCCESS] All changes pushed to origin/%BRANCH%.
 echo.
-pause
 exit /b 0

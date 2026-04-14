@@ -12,7 +12,7 @@ import 'leaflet/dist/leaflet.css';
 
 
 const CropWaterUse = () => {
-    const districtData = useRef(null);
+    const [geometryData, setGeometryData] = useState(null);
     const [selectedGeometry, setSelectedGeometry] = useState('Watermaster_District.json');
     const [cropData, setCropData] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -27,10 +27,6 @@ const CropWaterUse = () => {
     const [activePanel, setActivePanel] = useState('cwu'); // Changed from ref to state
 
     const [latlng, setLatlng] = useState(null);
-    //const sampleSize = useRef(0);
-    //const cumulativeET = useRef(0);
-    //const cumulativePPT = useRef(0);
-    //const cumulativeET0 = useRef(0);
 
     // used to populate crop select items based on district selection
     const [cropSelectItems, setCropSelectItems] = useState([]);
@@ -121,7 +117,8 @@ const CropWaterUse = () => {
             }));
             districtCropsData.current = _cropData;
             setCropSelectItems(_cropSelectItems);
-            setSelectedCrop(_cropSelectItems.length > 0 ? _cropSelectItems[0].value : null);
+            selectedCropLabel.current = _cropSelectItems.length > 0 ? _cropSelectItems[0].label : '';
+            //(_cropSelectItems.length > 0 ? _cropSelectItems[0].value : null);
             console.log('Fetched district crops data for district:', district, 'Crops:', _cropData);
             setLoading(false);
             return data;
@@ -214,8 +211,8 @@ const CropWaterUse = () => {
     }, []);
 
     const handleCropChange = (value) => {
-        setSelectedCrop(value);
         selectedCropLabel.current = cropSelectItems.find(item => item.value === value)?.label || '';
+        setSelectedCrop(value);
     };
 
     // Function to handle search result
@@ -233,18 +230,12 @@ const CropWaterUse = () => {
 
     const handleMapChange = async (value) => {
         setSelectedGeometry(value);
-        districtData.current = await fetchGeometry(value);
     };
 
     // initialization
     useEffect(() => {
-        let active = true;
-
         const initialize = async () => {
             console.log('Component mounted, fetching initial data');
-            districtData.current = await fetchGeometry('Watermaster_Districts');
-            if (!active) return;
-
             await fetchDistrictCrops(selectedDistrict);
 
             // Initialize ArcGIS components
@@ -260,7 +251,6 @@ const CropWaterUse = () => {
 
         // Cleanup event listener on unmount
         return () => {
-            active = false;
             const arcgisSearch = document.querySelector('arcgis-search');
             if (arcgisSearch) {
                 arcgisSearch.removeEventListener('arcgis-search-result', handleSearchResult);
@@ -268,6 +258,18 @@ const CropWaterUse = () => {
         };
 
     }, [fetchDistrictCrops, fetchGeometry, selectedDistrict]);
+
+    useEffect(() => {
+        const loadGeometry = async () => {
+            const data = await fetchGeometry(selectedGeometry);
+            setGeometryData(data);
+        };
+
+        loadGeometry();
+
+        return () => {
+        };
+    }, [fetchGeometry, selectedGeometry]);
 
     useEffect(() => {
         fetchCropData(selectedDistrict, selectedCrop);
@@ -385,9 +387,9 @@ const CropWaterUse = () => {
                                         attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
                                     />
 
-                                    {districtData.current && (
+                                    {geometryData && (
                                         <GeoJSON
-                                            data={districtData.current}
+                                            data={geometryData}
                                             onEachFeature={onEachDistrict}
                                             style={{ getDistrictStyle }}
                                         />
@@ -516,6 +518,15 @@ const CropWaterUse = () => {
                                                         <Line type="monotone" dataKey="ET Fraction" name="Kc" stroke="#ffd54f" strokeWidth={2} dot={false} />
                                                     </LineChart>
                                                 </ResponsiveContainer>
+
+                                                <p>This chart shows the ratio of actual crop evapotranspiration (AET) to potential evapotranspiration (PET), oftern referred to as a crop coefficient (Kc).
+                                                    This ratio can be used to estimate the water requirements of a crop when estimates of PET are available. 
+                                                    PET is generally calculated based on meteorological data at a site.   The Kc value, along with information about precipitation rates,
+                                                    can be used to estimate irrigation requirement to meet crop water demand according to:
+                                                </p>
+                                                <p style={{ textAlign: 'center', fontSize: '14px', fontWeight: 'bold', fontStyle: 'italic' }}>
+                                                    Irrigation Requirement = (Kc * PET) - Precipitation
+                                                </p>                                                                 
                                             </>
                                             ),
                                         }, {

@@ -4,7 +4,8 @@ import { useState } from 'react';
 //import { AndroidOutlined, AppleOutlined } from '@ant-design/icons';
 
 //import { SearchOutlined, TeamOutlined, QuestionCircleOutlined, DashboardOutlined } from '@ant-design/icons';
-import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, QuestionCircleOutlined, PicRightOutlined } from '@ant-design/icons';
+import AgTapProjects from '../project_map/AgTapProjects.jsx';
 
 //import DashboardImage from '../../assets/images/dashboard.png'
 //import Dashboards from '../../apps/dashboards/Dashboards'
@@ -45,7 +46,8 @@ const AgTAP = () => {
                 <AWButtonContainer
                     items={[
                         { label: 'Find Information', key: 'search', type:'primary', icon: <SearchOutlined /> },
-                        { label: 'Request Assistance', key: 'assist', type: 'default', icon: <QuestionCircleOutlined /> }
+                        { label: 'Request Assistance', key: 'assist', type: 'default', icon: <QuestionCircleOutlined /> },
+                        { label: 'Project Map', key: 'projectMap', type: 'default', icon: <PicRightOutlined /> }
                     ]}
                     onClick={onClickMenu}
                 />
@@ -58,6 +60,10 @@ const AgTAP = () => {
 
             <div className="flex-item" style={{ display: current == 'assist' ? 'block' : 'none' }}>
                      <AWGetAssistance />
+            </div>
+
+            <div className="flex-item" style={{ display: current == 'projectMap' ? 'block' : 'none' }}>
+                <AgTapProjects />
             </div>
 
             {/*}
