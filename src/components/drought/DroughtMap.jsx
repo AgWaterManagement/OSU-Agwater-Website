@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap, ZoomControl, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import { DROUGHT_COLORS, getMapColor, getLegendLabels } from '../../apps/drought/DroughtIndexViewer_2026_04_06/src/utils/mathUtils';
+import { DROUGHT_COLORS, getMapColor, getLegendLabels } from '../../../scripts/drought/mathUtils';
 
 function MapFitter({ bounds }) {
     const map = useMap();
@@ -18,11 +18,13 @@ export default function DroughtMap({ activeMapLayer, setActiveMapLayer, currentH
     const [geojsonData, setGeojsonData] = useState(null);
 
     useEffect(() => {
-        // Fetch geojson payload locally
-        fetch('./data/oregon_huc8.geojson')
-            .then(r => r.json())
+        fetch('/drought/data/oregon_huc8.geojson')
+            .then(r => {
+                if (!r.ok) throw new Error(`Failed to load GeoJSON: ${r.status} ${r.statusText} (${r.url})`);
+                return r.json();
+            })
             .then(data => setGeojsonData(data))
-            .catch(e => console.error("Error loading geojson", e));
+            .catch(e => console.error('Error loading geojson', e));
     }, []);
 
     const styleFeature = (feature) => {

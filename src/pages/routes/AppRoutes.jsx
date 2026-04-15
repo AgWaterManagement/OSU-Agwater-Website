@@ -15,6 +15,7 @@ import AgSNA from '../../apps/ag_sna/AgSNA';
 import VegNutrientPlan from '../../apps/veg_nutrient_plan/VegNutrientPlan';
 import Wotus from '../../apps/wotus/Wotus';
 import Drought from '../../apps/drought/Drought';
+import DroughtIndexViewer from '../../apps/drought/DroughtIndexViewer';
 import CropCoeffCalculator from '../../apps/crop_coeff_calculator/CropCoeffCalculator';
 //import UserRegistration from '../../apps/crop_management_system/UserRegistration';
 
@@ -76,6 +77,7 @@ const AppRoutes = () => (
         <Route path="/apps/agSNA" element={<AgSNA />} />        
         <Route path="/apps/wotus" element={<Wotus />} />
         <Route path="/apps/drought" element={<Drought />} />
+        <Route path="/apps/droughtIndexViewer" element={<DroughtIndexViewer />} />
         <Route path="/droughtSurvey" element={<DroughtSurvey />} />
         <Route path="/droughtSurvey1" element={<DroughtSurvey1 />} />
         <Route path="/apps/cropCoeffCalculator" element={<CropCoeffCalculator />} />

@@ -1,89 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import DroughtMap from './components/DroughtMap';
-import ControlsBar from './components/ControlsBar';
-import ChartPanel from './components/ChartPanel';
-import SummaryPanel from './components/SummaryPanel';
-import ScatterplotPanel from './components/ScatterplotPanel';
-import DatasetModal from './components/DatasetModal';
-import { queryUnifiedHuc, queryAllHucsLatest } from './services/DuckDBManager';
-import './App.css';
+import DroughtMap from '../../components/drought/DroughtMap';
+import ControlsBar from '../../components/drought/ControlsBar';
+import ChartPanel from '../../components/drought/ChartPanel';
+import SummaryPanel from '../../components/drought/SummaryPanel';
+import ScatterplotPanel from '../../components/drought/ScatterplotPanel';
+import DatasetModal from '../../components/drought/DatasetModal';
+import './DroughtIndexViewer.css';
 
-export default function App() {
+const DROUGHT_INDEX_LATEST_URL = 'https://agwater.org:5556/drought/latest';
+const DROUGHT_INDEX_TIMESERIES_URL = 'https://agwater.org:5556/drought/timeseries';
+
+export default function DroughtIndexViewer() {
     const [activeLayer, setActiveLayer] = useState('met');
-    const [activeMapLayer, setActiveMapLayer] = useState('usdm'); // Map layer vs Plot Category
+    const [activeMapLayer, setActiveMapLayer] = useState('usdm');
     const [timeFilter, setTimeFilter] = useState('all');
     const [currentHuc, setCurrentHuc] = useState(null);
     const [currentConditions, setCurrentConditions] = useState(null);
     const [forecastData, setForecastData] = useState(null);
     const [basinNames, setBasinNames] = useState({});
-    
+
     // Shared Data State
     const [unifiedData, setUnifiedData] = useState([]);
     const [isFetchingData, setIsFetchingData] = useState(false);
-    
+
     // UI Expanders
     const [showHistorical, setShowHistorical] = useState(false);
     const [showDatasetModal, setShowDatasetModal] = useState(false);
 
     useEffect(() => {
-        // Load relative static dictionaries
-        fetch('./data/huc8_names.json')
-            .then(r => r.json())
+        // Load basin names from static JSON
+        fetch('/drought/data/huc8_names.json')
+            .then(r => { if (!r.ok) throw new Error(`${r.status} ${r.url}`); return r.json(); })
             .then(data => setBasinNames(data))
             .catch(e => console.error("Error loading names", e));
-        
-        fetch('./data/huc8_current_conditions.json')
-            .then(r => r.json())
-            .then(data => setCurrentConditions(data))
-            .catch(e => console.error("Error loading conditions", e));
-            
-        fetch('./data/huc8_current_forecasts.json')
-            .then(r => r.json())
+
+        // Load forecast data from static JSON
+        fetch('/drought/data/huc8_current_forecasts.json')
+            .then(r => { if (!r.ok) throw new Error(`${r.status} ${r.url}`); return r.json(); })
+            //.then(r => r.json())
             .then(data => setForecastData(data))
             .catch(e => console.error("Error loading forecasts", e));
 
-        queryAllHucsLatest().then(data => {
-            setCurrentConditions(prev => {
-                const merged = prev ? { ...prev } : {};
-                for (const huc in data) {
-                    merged[huc] = { ...merged[huc], ...data[huc] };
-                }
-                return merged;
-            });
-        });
+        // Fetch latest drought indicators for all HUC8s from REST API
+        fetch(DROUGHT_INDEX_LATEST_URL)
+            .then(r => r.json())
+            .then(json => {
+                // API wraps the HUC8-keyed data inside a 'data' property
+                const conditions = json?.data ?? json;
+                setCurrentConditions(conditions);
+            })
+            .catch(e => console.error("Error loading latest conditions", e));
     }, []);
 
-    // Fetches unified data to render Chart and Scatterplot components
+    // Fetch time-series data for the selected HUC8 via REST API
     useEffect(() => {
         if (!currentHuc) return;
-        // eslint-disable-next-line
         setIsFetchingData(true);
-        queryUnifiedHuc(currentHuc).then(rows => {
-            setUnifiedData(rows);
-            setIsFetchingData(false);
-        }).catch(err => {
-            console.error(err);
-            setUnifiedData([]);
-            setIsFetchingData(false);
-        });
+        setUnifiedData([]);
+        fetch(`${DROUGHT_INDEX_TIMESERIES_URL}?huc8=${encodeURIComponent(currentHuc)}`)
+            .then(r => r.json())
+            .then(rows => {
+                // Normalize: API may return {records:[...]}, {data:[...]}, or a plain array
+                const normalized = Array.isArray(rows)
+                    ? rows
+                    : Array.isArray(rows?.records)
+                    ? rows.records
+                    : Array.isArray(rows?.data)
+                    ? rows.data
+                    : [];
+                setUnifiedData(normalized);
+                setIsFetchingData(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setUnifiedData([]);
+                setIsFetchingData(false);
+            });
     }, [currentHuc]);
 
     return (
         <div className="agtap-wrapper">
-            {isFetchingData && unifiedData.length === 0 && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-                    backgroundColor: 'rgba(0, 0, 0, 0.85)', zIndex: 9999, display: 'flex',
-                    flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white'
-                }}>
-                    <div className="duckdb-spinner" style={{
-                        border: '8px solid rgba(255, 255, 255, 0.1)', borderTop: '8px solid #FFFF00', 
-                        borderRadius: '50%', width: '70px', height: '70px', animation: 'spin 1s linear infinite'
-                    }}></div>
-                    <h2 style={{marginTop: '20px', color: '#FFFF00', fontFamily: 'Arial, sans-serif'}}>Loading Data Engine...</h2>
-                    <p style={{color: '#cccccc', maxWidth: '400px', textAlign: 'center'}}>Loading Parquet data files into the browser. The DuckDB engine processes this data locally.</p>
-                </div>
-            )}
             <main className="drought-container">
                 <ControlsBar 
                     activeLayer={activeLayer} 
@@ -164,13 +160,13 @@ export default function App() {
                                 />
                             </div>
 
-                            <div className="card fill-height flex-center">
+                            {/* <div className="card fill-height flex-center">
                                 <ScatterplotPanel 
                                     unifiedData={unifiedData}
                                     isFetchingData={isFetchingData}
                                     currentHuc={currentHuc}
                                 />
-                            </div>
+                            </div> */}
                         </>
                     )}
                 </div>
