@@ -1,6 +1,7 @@
 import { Input } from 'antd';
 import { useState } from 'react';
 import { Link } from "react-router-dom";
+import { secrets } from '../../secrets';
 const { Search } = Input;
 
 
@@ -58,7 +59,7 @@ const SearchPage = () => {
 
       fetch(url, {
           headers: {
-              "X-API-Key": "agwater-web-app",
+            "X-API-Key": secrets.agwater_api_key,
           }
       })
       .then(response => response.json())

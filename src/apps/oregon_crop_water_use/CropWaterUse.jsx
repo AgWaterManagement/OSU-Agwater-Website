@@ -7,6 +7,7 @@ import { ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend
 //import { LocateControl } from "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import 'leaflet/dist/leaflet.css';
+import { secrets } from "../../secrets";
 //import L from 'leaflet';
 
 
@@ -54,7 +55,7 @@ const CropWaterUse = () => {
             const response = await fetch(apiUrl, {
                 headers: {
                     'Accept': 'application/json',
-                    "X-API-Key": "agwater-web-app"
+                    "X-API-Key": secrets.agwater_api_key
                 }
             });
 
@@ -91,7 +92,7 @@ const CropWaterUse = () => {
             const response = await fetch(apiUrl, {
                 headers: {
                     'Accept': 'application/json',
-                    "X-API-Key": "agwater-web-app"
+                    "X-API-Key": secrets.agwater_api_key
                 }
             });
 
@@ -146,7 +147,7 @@ const CropWaterUse = () => {
             const response = await fetch(apiUrl, {
                 headers: {
                     'Accept': 'application/json',
-                    "X-API-Key": "agwater-web-app"
+                    "X-API-Key": secrets.agwater_api_key
                 }
             });
 

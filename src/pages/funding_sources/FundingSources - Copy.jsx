@@ -140,7 +140,7 @@ export default function FundingSources() {
             headers: {
                 //'Content-Type': 'application/json',
                 //'Accept': 'application/json',
-                //'X-API-Key': 'agwater-web-app'
+                //'X-API-Key': secrets.agwater_api_key
             }
         })
             .then(response => {

@@ -1,6 +1,7 @@
 import { Form, Radio, Input, Typography, Divider, Button, Grid, Checkbox } from "antd";
 import PropTypes from "prop-types";
 import { useState } from "react";
+import { secrets } from "../../secrets";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -120,7 +121,7 @@ export default function Survey({ surveyID, title, description, questions, finish
       const response = await fetch(SURVEY_ENDPOINT, {
         method: "POST",
         headers: {
-          "X-API-Key": "survey-web-app",
+          "X-API-Key": secrets.survey_api_key,
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)

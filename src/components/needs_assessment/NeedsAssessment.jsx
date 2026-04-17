@@ -1,6 +1,7 @@
 import { Card, Button, Typography, Form, Select, AutoComplete, Input, Rate } from 'antd';
 import { useState, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { secrets } from '../../secrets';
 
 //const { Step } = Steps;
 const { Title } = Typography;
@@ -423,7 +424,7 @@ Agree that many are missing. Both the roster and name-generator approaches have 
             fetch(url, {
                 method: 'POST',
                 headers: {
-                    "X-API-Key": "survey-web-app",
+                    "X-API-Key": secrets.survey_api_key,
                     'Content-Type': 'application/json'
                 },
                 body: body

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Input, Button, Select, Divider,message, Rate, Row, Col } from "antd";
 
 import { Loading } from "../../components/loading/Loading";
+import { secrets } from "../../secrets";
 
 import Markdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
@@ -106,7 +107,7 @@ const EvalChat = () => {
                 const response = await fetch(CHAT_API_URL, {
                     method: 'post',
                     headers: {
-                        "X-API-Key": "agwater-web-app",
+                        "X-API-Key": secrets.agwater_api_key,
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
@@ -140,7 +141,7 @@ const EvalChat = () => {
                             contentStr += "\n\n#### References:\n";
                             refs.forEach((ref, index) => {
                                 if (titles.length > 0 && titles[index] !== null) {
-                                    contentStr += `${index + 1}. <a href='https://agwater.org:5556/llm/source?filename=${ref}&api_key=agwater-web-app' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
+                                    contentStr += `${index + 1}. <a href='https://agwater.org:5556/llm/source?filename=${ref}&api_key=${secrets.agwater_api_key}' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
                                 } else {
                                     contentStr += `${index + 1}. ${ref}\n`;
                                 }
@@ -266,7 +267,7 @@ const EvalChat = () => {
             const response = await fetch(RATING_API_URL, {
                 method: 'POST',
                 headers: {
-                    "X-API-Key": "agwater-web-app",
+                    "X-API-Key": secrets.agwater_api_key,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({

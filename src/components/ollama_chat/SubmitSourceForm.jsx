@@ -3,6 +3,7 @@ import { Select, Button, Input, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
 import Loading from "../../components/loading/Loading"; // Adjust the import path as necessary
+import { secrets } from "../../secrets";
 
 const { Option } = Select;
 
@@ -21,7 +22,7 @@ const SubmitSourceForm = () => {
         try {
             const response = await fetch('https://agwater.org:5556/tags', {
                 headers: {
-                    "X-API-Key": "agwater-web-app",
+                    "X-API-Key": secrets.agwater_api_key,
                 }
             });
             const result = await response.json();
@@ -67,7 +68,7 @@ const SubmitSourceForm = () => {
             const response = await fetch("https://agwater.org:5556/llm/submit_source", {
                 method: "POST",
                 headers: {
-                   "X-API-Key": "agwater-web-app",
+                         "X-API-Key": secrets.agwater_api_key,
                 },
                 body: formData,
             });

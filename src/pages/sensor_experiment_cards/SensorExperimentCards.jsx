@@ -34,6 +34,7 @@ import {
     EyeOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { secrets } from '../../secrets';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -100,7 +101,7 @@ const SensorExperimentCards = ({ selectedExpId = null }) => {
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    "X-API-Key": "agwater-web-app",
+                    "X-API-Key": secrets.agwater_api_key,
                     "Content-Type": "application/json"
                 }
             });

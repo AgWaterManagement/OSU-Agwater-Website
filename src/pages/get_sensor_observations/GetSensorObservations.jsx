@@ -22,6 +22,7 @@ import { useMediaQuery } from 'react-responsive';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import minMax from 'dayjs/plugin/minMax';
+import { secrets } from '../../secrets';
 
 dayjs.extend(minMax);
 
@@ -75,7 +76,7 @@ const GetSensorObservations = () => {
                 {
                     method: 'GET',
                     headers: {
-                        "X-API-Key": "agwater-web-app",
+                        "X-API-Key": secrets.agwater_api_key,
                         "Content-Type": "application/json"
                     }
                 });

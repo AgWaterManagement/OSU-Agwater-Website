@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, Card, Collapse, Col, Row, Select, Space, Spin, Tag, Typography } from "antd";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useParams} from "react-router";
+import { secrets } from "../../secrets";
 const { Title, Text, Paragraph } = Typography;
 
 const RESULTS_ENDPOINT = "https://agwater.org:5556/survey/results";
@@ -128,7 +129,7 @@ export default function SurveyResults() {
       try {
         const response = await fetch(SURVEY_LIST_ENDPOINT, {
           headers: {
-            "X-API-Key": "survey-web-app",
+            "X-API-Key": secrets.survey_api_key,
           },
         });
 
@@ -175,7 +176,7 @@ export default function SurveyResults() {
       try {
         const response = await fetch(`${RESULTS_ENDPOINT}?survey_id=${encodeURIComponent(surveyId)}`, {
           headers: {
-            "X-API-Key": "survey-web-app",
+            "X-API-Key": secrets.survey_api_key,
           },
         });
 

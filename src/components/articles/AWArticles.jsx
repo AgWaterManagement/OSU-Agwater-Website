@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMediaQuery } from 'react-responsive';
 import PropTypes from 'prop-types';
 import { Row, Col, Input, Select, Pagination, Tag, Divider, Spin } from "antd";
+import { secrets } from '../../secrets';
 
 const { Option } = Select;
 const { Search } = Input;
@@ -120,7 +121,7 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
         setLoading(true);
         fetch(ARTICLE_API_URL, {
             headers: {
-                "X-API-Key": "agwater-web-app",
+                "X-API-Key": secrets.agwater_api_key,
             }
         })  .then((res) => res.json())
             .then((_articles) => {

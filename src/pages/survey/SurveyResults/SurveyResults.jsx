@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Button, Card, Collapse, InputNumber, Space, Spin, Tag, Typography } from "antd";
+import { secrets } from "../../../secrets";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -80,7 +81,7 @@ export default function SurveyResults() {
       try {
         const response = await fetch(`${RESULTS_ENDPOINT}?survey_id=${encodeURIComponent(surveyId)}`, {
           headers: {
-            "X-API-Key": "survey-web-app",
+              "X-API-Key": secrets.survey_api_key,
           },
         });
 

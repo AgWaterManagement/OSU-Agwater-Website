@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Row, Col, Button, DatePicker, Form, Input, Select, AutoComplete, Typography, Divider } from 'antd';
 //import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import { secrets } from '../../secrets';
 
 import { AWFeatureDisplay } from '../../components/articles/AWFeature';
 
@@ -53,7 +54,7 @@ const SubmitArticle = () => {
     useEffect(() => {
         fetch("https://agwater.org:5556/articles/list", {
             headers: {
-                "X-API-Key": "agwater-web-app",
+                "X-API-Key": secrets.agwater_api_key,
             }
         }).then((response) => {
                 if (!response.ok) throw new Error("Failed to fetch articles");

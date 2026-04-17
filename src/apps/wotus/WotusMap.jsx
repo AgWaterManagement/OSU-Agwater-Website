@@ -10,6 +10,7 @@ import GeoJSONLayer from "@arcgis/core/layers/GeoJSONLayer.js";
 import wetlandStatsData from './wetland_stats.json';
 import streamStatsData from './stream_stats.json';
 import PrecipEtData from './PrecipEtData';
+import { secrets } from '../../secrets';
 
 const { Text } = Typography;
 
@@ -523,7 +524,7 @@ const WotusMap = ({ domain, streamQuery, wetlandQuery, currentState, usStates, s
                 const url = `https://agwater.org:5556/wotus/conus_stats?${queryParts.join('&')}`;
                 const response = await fetch(url, {
                     headers: {
-                        "X-API-Key": "agwater-web-app"
+                        "X-API-Key": secrets.agwater_api_key
                     }
                 });
                 const result = await response.json();
@@ -860,13 +861,13 @@ const WotusMap = ({ domain, streamQuery, wetlandQuery, currentState, usStates, s
 
                             if (domain === 'wetlands' || domain === 'both') {
                                 fetchWetlandsData = fetch(`https://agwater.org:5556/wotus/wetlands?${stateQuery}`, {
-                                    headers: { "X-API-Key": "agwater-web-app" }
+                                    headers: { "X-API-Key": secrets.agwater_api_key }
                                 }).then(res => res.json());
                             }
 
                             if (domain === 'streams' || domain === 'both') {
                                 fetchStreamsData = fetch(`https://agwater.org:5556/wotus/streams?${stateQuery}`, {
-                                    headers: { "X-API-Key": "agwater-web-app" }
+                                    headers: { "X-API-Key": secrets.agwater_api_key }
                                 }).then(res => res.json());
                             }
 

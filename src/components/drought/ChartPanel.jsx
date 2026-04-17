@@ -5,17 +5,17 @@ import {
 } from 'recharts';
 
 const INDEX_REGISTRY = {
-    usdm:       { field: 'USDM',             label: 'USDM',              color: '#d69e2e', unit: 'D0-D4' },
-    pdsi:       { field: 'PDSI',             label: 'PDSI',              color: '#c05621', unit: 'D0-D4' },
-    spi:        { field: 'SPI',              label: 'SPI-3mo',           color: '#2b6cb0', unit: 'D0-D4' },
-    eddi:       { field: 'EDDI',             label: 'EDDI',              color: '#6b46c1', unit: 'D0-D4' },
-    vci:        { field: 'VCI_Raw',          label: 'VCI',               color: '#38a169', unit: '0-100' },
-    vhi:        { field: 'VHI_Raw',          label: 'VHI',               color: '#2f855a', unit: '0-100' },
-    cmi:        { field: 'CMI_Raw',          label: 'CMI',               color: '#975a16', unit: 'index' },
-    ssmi:       { field: 'SSMI_Raw',         label: 'SSMI',              color: '#0987a0', unit: 'sigma' },
-    swe:        { field: 'SWE_Pct_Normal',   label: 'SWE % Normal',      color: '#0bc5ea', unit: 'pct'   },
+    usdm:       { field: 'USDM',             label: 'US Drought Monitor',              color: '#d69e2e', unit: 'D0-D4' },
+    pdsi:       { field: 'PDSI',             label: 'Palmer Drought Severity Index',              color: '#c05621', unit: 'D0-D4' },
+    spi:        { field: 'SPI',              label: '3-Month Standardized Precipitation Index',           color: '#2b6cb0', unit: 'D0-D4' },
+    eddi:       { field: 'EDDI',             label: '1-Month Evaporative Demand Drought Index',              color: '#6b46c1', unit: 'D0-D4' },
+    // vci:        { field: 'VCI_Raw',          label: 'Vegetation Condition Index',               color: '#38a169', unit: '0-100' },
+    // vhi:        { field: 'VHI_Raw',          label: 'Vegetation Health Index',               color: '#2f855a', unit: '0-100' },
+    cmi:        { field: 'CMI_Raw',          label: 'Crop Moisture Index',               color: '#975a16', unit: 'index' },
+    ssmi:       { field: 'SSMI_Raw',         label: 'Standardized Soil Moisture Index',              color: '#0987a0', unit: 'sigma' },
+    swe:        { field: 'SWE_Pct_Normal',   label: 'Snow Water Equivalent % Normal',      color: '#0bc5ea', unit: 'pct'   },
     streamflow: { field: 'Streamflow_Pctile',label: 'Streamflow Pctile', color: '#3182ce', unit: 'pctile'},
-    spi1yr:     { field: 'SPI_1yr',          label: 'SPI-1yr',           color: '#c05621', unit: 'sigma' },
+    spi1yr:     { field: 'SPI_1yr',          label: '1-Year Standardized Precipitation Index',           color: '#c05621', unit: 'sigma' },
 };
 
 const UNIT_AXIS_CONFIG = {
@@ -51,10 +51,13 @@ function filterDataByMonth(data, filterVal) {
     });
 }
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// formatDateTick converts "YYYY-MM-DD" to "Month Name - Year" (e.g. "2023-07-01" -> "Jul '23")
 const formatDateTick = (dateStr) => {
     if (!dateStr) return '';
     const parts = dateStr.split('-');
-    return parts.length >= 2 ? `${parts[0].slice(2)}-${parts[1]}` : dateStr;
+    return parts.length >= 2 ? `${MONTH_NAMES[parseInt(parts[1], 10) - 1]} '${parts[0].slice(2)}` : dateStr;
 };
 
 const CustomTooltip = ({ active, payload, label }) => {

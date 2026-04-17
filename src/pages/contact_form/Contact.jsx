@@ -1,6 +1,7 @@
 import { Form, Input, Button, Typography, Grid, Select, notification } from "antd";
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { secrets } from "../../secrets";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -27,7 +28,7 @@ export default function Contact({ onSubmit }) {
       const response = await fetch("https://agwater.org:5556/contact", {
         method: "POST",
         headers: {
-          "X-API-Key": "survey-web-app",
+          "X-API-Key": secrets.survey_api_key,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(values),

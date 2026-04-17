@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from "react-router";
 import PropTypes from 'prop-types';
 import { Button } from 'antd'
+import { secrets } from '../../secrets';
 
 import AWAuthor from './AWAuthor'
 
@@ -76,7 +77,7 @@ const AWFeature = () => {
     useEffect(() => {
         fetch(ARTICLE_API_URL, {
                 headers: {
-                    "X-API-Key": "agwater-web-app"
+                    "X-API-Key": secrets.agwater_api_key
                 }
             })
             .then((res) => res.json())

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Input, Button, Select, message, Rate } from "antd";
 
 import { Loading } from '../../components/loading/Loading';
+import { secrets } from '../../secrets';
 
 import Markdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
@@ -42,7 +43,7 @@ const OllamaChat = () => {
         try {
             const response = await fetch(MODELS_API_URL, {
                 headers: {
-                    "X-API-Key": "agwater-web-app",
+                    "X-API-Key": secrets.agwater_api_key,
                 }
             });
             const result = await response.json();
@@ -63,7 +64,7 @@ const OllamaChat = () => {
             const response = await fetch(CHAT_API_URL, {
                 method: 'post',
                 headers: {
-                    "X-API-Key": "agwater-web-app",
+                    "X-API-Key": secrets.agwater_api_key,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
@@ -167,7 +168,7 @@ const OllamaChat = () => {
             const response = await fetch(RATING_API_URL, {
                 method: 'POST',
                 headers: {
-                    'X-API-Key': 'agwater-web-app',
+                    'X-API-Key': secrets.agwater_api_key,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({

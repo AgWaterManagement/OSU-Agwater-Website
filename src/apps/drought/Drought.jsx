@@ -6,6 +6,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line,
 import { PieChart, Pie, Cell } from 'recharts';
 
 import PropTypes from 'prop-types';
+import { secrets } from '../../secrets';
 import WeatherForecast from './WeatherForecast';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 
@@ -312,7 +313,7 @@ const Drought = () => {
 
 		fetch(dataURL, {
 			headers: {
-				"X-API-Key": "agwater-web-app"
+				"X-API-Key": secrets.agwater_api_key
 			}
 		})
 			.then(response => {

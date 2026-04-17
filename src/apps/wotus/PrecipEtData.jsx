@@ -6,6 +6,7 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
     ResponsiveContainer, ReferenceLine, ReferenceArea
 } from 'recharts';
+import { secrets } from '../../secrets';
 
 const { Title, Text } = Typography;
 
@@ -36,7 +37,7 @@ const PrecipEtData = ({ clickedLocation, onClearLocation }) => {
         setData(null);
 
         fetch(`${API_URL}?lat=${lat}&lon=${lon}`, {
-            headers: { 'X-API-Key': 'agwater-web-app' }
+            headers: { 'X-API-Key': secrets.agwater_api_key }
         })
             .then(res => {
                 if (!res.ok) throw new Error(`Server responded with ${res.status}`);

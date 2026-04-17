@@ -6,17 +6,17 @@ import {
 import { getMapColor } from '../../../scripts/drought/mathUtils';
 
 const INDEX_REGISTRY = {
-    usdm:       { field: 'USDM',             label: 'USDM',              color: '#d69e2e' },
-    pdsi:       { field: 'PDSI',             label: 'PDSI',              color: '#c05621' },
-    spi:        { field: 'SPI',              label: 'SPI-3mo',           color: '#2b6cb0' },
-    eddi:       { field: 'EDDI',             label: 'EDDI',              color: '#6b46c1' },
-    vci:        { field: 'VCI_Raw',          label: 'VCI',               color: '#38a169' },
-    vhi:        { field: 'VHI_Raw',          label: 'VHI',               color: '#2f855a' },
-    cmi:        { field: 'CMI_Raw',          label: 'CMI',               color: '#975a16' },
-    ssmi:       { field: 'SSMI_Raw',         label: 'SSMI',              color: '#0987a0' },
-    swe:        { field: 'SWE_Pct_Normal',   label: 'SWE % Normal',      color: '#0bc5ea' },
-    streamflow: { field: 'Streamflow_Pctile',label: 'Streamflow Pctile', color: '#3182ce' },
-    spi1yr:     { field: 'SPI_1yr',          label: 'SPI-1yr',           color: '#c05621' },
+    usdm:       { field: 'USDM',             label: 'US Drought Monitor',                       color: '#d69e2e' },
+    pdsi:       { field: 'PDSI',             label: 'Palmer Drought Severity Index',            color: '#c05621' },
+    spi:        { field: 'SPI',              label: '3-Month Standardized Precipitation Index', color: '#2b6cb0' },
+    eddi:       { field: 'EDDI',             label: '1-Month Evaporative Demand Drought Index', color: '#6b46c1' },
+    // vci:        { field: 'VCI_Raw',          label: 'Vegetation Condition Index',               color: '#38a169' },
+    // vhi:        { field: 'VHI_Raw',          label: 'Vegetation Health Index',                  color: '#2f855a' },
+    cmi:        { field: 'CMI_Raw',          label: 'Crop Moisture Index',                      color: '#975a16' },
+    ssmi:       { field: 'SSMI_Raw',         label: 'Soil Moisture Index',                      color: '#0987a0' },
+    swe:        { field: 'SWE_Pct_Normal',   label: 'Snow Water Equivalent % Normal',           color: '#0bc5ea' },
+    streamflow: { field: 'Streamflow_Pctile',label: 'Streamflow Percentile',                    color: '#3182ce' },
+    spi1yr:     { field: 'SPI_1yr',          label: '1-Year Standardized Precipitation Index',  color: '#c05621' },
 };
 
 function calculateRegression(points) {

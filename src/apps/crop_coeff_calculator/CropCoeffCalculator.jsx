@@ -4,7 +4,7 @@ import { CalculatorOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
+import { secrets } from "../../secrets";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -55,7 +55,7 @@ const CropCoeffCalculator = () => {
         try {
             const response = await fetch(`${API_URL}/crops`, {
                 headers: {
-                    "X-API-Key": "agwater-web-app"
+                    "X-API-Key": secrets.agwater_api_key
                 }
             });
             if (!response.ok) {
@@ -104,7 +104,7 @@ const CropCoeffCalculator = () => {
             const response = await fetch(`${API_URL}/calculate`, {
                 method: 'POST',
                 headers: {
-                    "X-API-Key": "agwater-web-app",
+                    "X-API-Key": secrets.agwater_api_key,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(requestBody)

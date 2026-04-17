@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, message } from "antd";
 import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import { secrets } from "../../secrets";
 
 import StationInfo from "./StationInfo";
 import CropWaterUseChart from "./CropWaterUseChart";
@@ -98,7 +98,7 @@ const Agrimet = () => {
         try {
             const response = await fetch(url, {
                 headers: {
-                    "X-API-Key": "agwater-web-app"
+                    "X-API-Key": secrets.agwater_api_key
                 }
             });
             if (!response.ok) throw new Error(`Failed to fetch ${selectedStation} data`);

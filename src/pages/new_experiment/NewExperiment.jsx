@@ -32,6 +32,7 @@ import {
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { secrets } from '../../secrets';
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -122,7 +123,7 @@ const NewExperiment = () => {
                 {
                     method: 'POST',
                     headers: {
-                        "X-API-Key": "agwater-web-app",
+                        "X-API-Key": secrets.agwater_api_key,
                         "Content-Type": "application/json"
                     }
                 }

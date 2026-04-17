@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Input, Tag, Typography } from 'antd';
 import Loading from "../../components/loading/Loading"; // Adjust the import path as necessary
+import { secrets } from "../../secrets";
 const { Title } = Typography;
 
 const SOURCES_URL = "https://agwater.org:5556/llm/sources";
@@ -15,7 +16,7 @@ const ShowSources = () => {
     useEffect(() => {
         fetch(SOURCES_URL, {
                 headers: {
-                    "X-API-Key": "agwater-web-app",
+                    "X-API-Key": secrets.agwater_api_key,
                 }
             })
             .then((res) => {

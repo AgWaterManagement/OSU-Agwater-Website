@@ -4,6 +4,7 @@ import { Typography, Statistic, Table, Row, Col, Radio, Spin, Button, Card, Tag,
 import PropTypes from 'prop-types';
 import { PieChart, Pie, Cell, Legend, Tooltip, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts';
 import { useMediaQuery } from 'react-responsive';
+import { secrets } from '../../secrets';
 
 
 const { Title, Text } = Typography;
@@ -67,7 +68,7 @@ const WotusStats = ({ domain, streamQuery, wetlandQuery, currentState, currentSt
         const url = `https://agwater.org:5556/wotus/streams?${streamQuery}`;
         fetch(url, {
             headers: {
-                "X-API-Key": "agwater-web-app"
+                "X-API-Key": secrets.agwater_api_key
             }
         })
             .then(response => response.json())
@@ -189,7 +190,7 @@ const WotusStats = ({ domain, streamQuery, wetlandQuery, currentState, currentSt
         const url = `https://agwater.org:5556/wotus/wetlands?${wetlandQuery}`;
         fetch(url, {
             headers: {
-                "X-API-Key": "agwater-web-app"
+                "X-API-Key": secrets.agwater_api_key
             }
         })
             .then(response => response.json())
