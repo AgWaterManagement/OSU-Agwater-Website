@@ -438,11 +438,10 @@ const Drought = () => {
 
 	const GetSnowForecast = async () => {
     try {
-        // Use the AWDB REST API to get snow data for Oregon stations
+        // Use the AWDB REST API to get snow data for a specific County's stations
         const stationsUrl = "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations";
         const stationsParams = new URLSearchParams({
-            stateCode: 'OR',
-            networkCodes: 'SNTL', // Note: should be networkCodes (plural)
+			stationTriplets: '*:OR:SNTL',	// Get all SNTL stations in a specified county in Oregon.
             activeOnly: 'true'
         });
 
@@ -477,13 +476,12 @@ const Drought = () => {
                 const dataUrl = `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data`;
                 const dataParams = new URLSearchParams({
                     stationTriplets: station.stationTriplet,
-                    elementCd: 'WTEQ', // Snow Water Equivalent
-                    ordinal: '1',
+                    elements: 'WTEQ', // Snow Water Equivalent
                     duration: 'DAILY',
-                    getFlags: 'false',
+                    returnFlags: 'false',
                     beginDate: formatDate(beginDate),
                     endDate: formatDate(endDate),
-                    alwaysReturnDailyFeb29: 'false'
+                    // alwaysReturnDailyFeb29: 'false'
                 });
 
                 const dataResponse = await fetch(`${dataUrl}?${dataParams}`, {
@@ -504,8 +502,9 @@ const Drought = () => {
                                 elevation: station.elevation,
                                 latitude: station.latitude,
                                 longitude: station.longitude,
-                                swe: latestData.value,
-                                date: latestData.date,
+                                swe: latestData.data[0].values[latestData.data[0].values.length - 1].value, // Snow Water Equivalent value
+                                date: latestData.data[0].values[latestData.data[0].values.length - 1].date,
+								latestData: latestData,
                                 unit: 'inches'
                             });
                         }

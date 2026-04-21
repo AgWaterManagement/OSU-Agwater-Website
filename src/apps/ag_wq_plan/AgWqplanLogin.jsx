@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Alert, Button, Card, Divider, Form, Input, Space, Typography, message } from "antd";
 
+import { secrets } from "../../secrets";
+
 const { Title, Text } = Typography;
 
 function normalizeBaseUrl(baseUrl) {
@@ -24,7 +26,7 @@ export default function AgWqplanLogin({
   const [authState, setAuthState] = useState({ isAuthenticated: false, user: null });
 
   const apiBaseUrl = "https://agwater.org:5556" // Adjust if your API is hosted elsewhere
-  const apiKey = "agwater-web-app" // Optional: if your API requires an API key for login
+  const apiKey = secrets.agwater_api_key; // Optional: if your API requires an API key for login
 
   const withHeaders = (includeJson = true) => {
     const headers = {};

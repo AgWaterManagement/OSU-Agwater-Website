@@ -14,8 +14,8 @@ const CATEGORIES = [
     ]},
     { id: 'ag', label: 'Agricultural', stats: [
         { key: 'cmi_raw',           label: 'Crop Moisture',      units: 'Index'      },
-        { key: 'vci_raw',           label: 'VCI',                units: 'Index'      },
-        { key: 'vhi_raw',           label: 'VHI',                units: 'Index'      },
+        // { key: 'vci_raw',           label: 'VCI',                units: 'Index'      },
+        // { key: 'vhi_raw',           label: 'VHI',                units: 'Index'      },
         { key: 'ssmi_raw',          label: 'Soil Moisture',      units: 'Z-Score'    },
     ]},
     { id: 'hydro', label: 'Hydrological', stats: [

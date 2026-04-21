@@ -37,6 +37,11 @@ const STROKE_DASHES = ['', '5 5', '10 5', '5 10 2 10'];
 
 function filterDataByMonth(data, filterVal) {
     if (filterVal === 'all') return data;
+    if (filterVal === 'past_month') {
+        const cutoff = new Date();
+        cutoff.setMonth(cutoff.getMonth() - 1);
+        return data.filter(row => row.Date && new Date(row.Date) >= cutoff);
+    }
     const allowedMonths = new Set();
     const parts = filterVal.split('-');
     if (parts.length === 2) {

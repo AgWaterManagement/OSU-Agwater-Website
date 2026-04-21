@@ -1,15 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Row, Col, Select, Card, Table, message, Collapse } from 'antd';
+import { Row, Col, Select, Card, Table, message, Collapse, Checkbox } from 'antd';
 //import PropTypes from 'prop-types';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 import { ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, BarChart, Bar, LineChart } from 'recharts';
-//import { LocateControl } from "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import 'leaflet/dist/leaflet.css';
 import { secrets } from "../../secrets";
-//import L from 'leaflet';
-
 
 
 const CropWaterUse = () => {
@@ -19,8 +16,8 @@ const CropWaterUse = () => {
     const [loading, setLoading] = useState(false);
     const [chartData, setChartData] = useState([]); // State for line chart data
 
-    const [selectedCrop, setSelectedCrop] = useState(-1); // Default to Corn
-    const selectedCropLabel = useRef('Corn');
+    const [selectedCrop, setSelectedCrop] = useState('-1');
+    const [selectedCropLabel, setSelectedCropLabel] = useState('Corn');
 
     const [selectedDistrict, setSelectedDistrict] = useState('7');
     const districtCropsData = useRef(null)
@@ -28,6 +25,13 @@ const CropWaterUse = () => {
     const [activePanel, setActivePanel] = useState('cwu'); // Changed from ref to state
 
     const [latlng, setLatlng] = useState(null);
+
+    const [visibleTraces, setVisibleTraces] = useState({
+        et: true,
+        eto: true,
+        ppt: true,
+        niwr: true
+    });
 
     // used to populate crop select items based on district selection
     const [cropSelectItems, setCropSelectItems] = useState([]);
@@ -37,7 +41,7 @@ const CropWaterUse = () => {
     const tableCols = [
         { title: 'Month', dataIndex: 'month', key: 'month', align: 'center' },
         { title: 'Actual ET (in)', dataIndex: 'et', key: 'et', align: 'center' },
-        { title: 'Potential ET (in)', dataIndex: 'eto', key: 'eto', align: 'center' },
+        { title: 'Reference ET (in)', dataIndex: 'eto', key: 'eto', align: 'center' },
         { title: 'Kc', dataIndex: 'etfraction', key: 'etfraction', align: 'center' },
         { title: 'Precipitation (in)', dataIndex: 'ppt', key: 'ppt', align: 'center' },
         { title: 'Net Irrigation Water Requirement (in)', dataIndex: 'niwr', key: 'niwr', align: 'center' },
@@ -82,7 +86,7 @@ const CropWaterUse = () => {
     }, []);
 
     const fetchDistrictCrops = useCallback(async (district) => {
-        const MIN_LEVEL = 50; // Minimum level to include a crop in the analysis (at least 5% of fields in the district and at least 10 inches of seasonal ET)
+        const MIN_LEVEL = 24; // Minimum level to include a crop in the analysis (at least 5% of fields in the district and at least 10 inches of seasonal ET)
         console.log('Fetching crops for district:', district);
         setLoading(true);
 
@@ -118,7 +122,8 @@ const CropWaterUse = () => {
             }));
             districtCropsData.current = _cropData;
             setCropSelectItems(_cropSelectItems);
-            selectedCropLabel.current = _cropSelectItems.length > 0 ? _cropSelectItems[0].label : '';
+            setSelectedCrop(_cropSelectItems.length > 0 ? _cropSelectItems[0].value : '-1');
+            setSelectedCropLabel(_cropSelectItems.length > 0 ? _cropSelectItems[0].label : '');
             //(_cropSelectItems.length > 0 ? _cropSelectItems[0].value : null);
             console.log('Fetched district crops data for district:', district, 'Crops:', _cropData);
             setLoading(false);
@@ -161,46 +166,49 @@ const CropWaterUse = () => {
             // Transform the response data into a format suitable for Recharts
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const _chartData = [];
-            months.forEach((month, index) => {
-                const etValue = data.monthly_data[index].et_stats.weighted_mean;
-                const etoValue = data.monthly_data[index].eto_stats.weighted_mean;
-                const pptValue = data.monthly_data[index].ppt_stats.weighted_mean;
-                const niwrValue = data.monthly_data[index].niwr_stats.weighted_mean;
-                const etfrac = data.monthly_data[index].etfraction_stats.weighted_mean;
+            if (data && data.monthly_data && data.monthly_data.length === 12) {
 
-                const etCiValues = data.monthly_data[index].et_stats.ci;
-                const pptCiValues = data.monthly_data[index].ppt_stats.ci;
-                const etoCiValues = data.monthly_data[index].eto_stats.ci;
-                const niwrCiValues = data.monthly_data[index].niwr_stats.ci;
-                const etfracCiValues = data.monthly_data[index].etfraction_stats.ci;
+                months.forEach((month, index) => {
+                    const etValue = data.monthly_data[index].et_stats.weighted_mean;
+                    const etoValue = data.monthly_data[index].eto_stats.weighted_mean;
+                    const pptValue = data.monthly_data[index].ppt_stats.weighted_mean;
+                    const niwrValue = data.monthly_data[index].niwr_stats.weighted_mean;
+                    const etfrac = data.monthly_data[index].etfraction_stats.weighted_mean;
 
-                _chartData.push({
-                    Month: month,
-                    "Actual ET (in)": etValue,
-                    "Potential ET (in)": etoValue,
-                    "Precipitation (in)": pptValue,
-                    "NIWR (in)": niwrValue,
-                    "ET Fraction": etfrac,
-                    et_ci: etCiValues,
-                    ppt_ci: pptCiValues,
-                    eto_ci: etoCiValues,
-                    niwr_ci: niwrCiValues,
-                    etfrac_ci: etfracCiValues
+                    const etCiValues = data.monthly_data[index].et_stats.ci;
+                    const pptCiValues = data.monthly_data[index].ppt_stats.ci;
+                    const etoCiValues = data.monthly_data[index].eto_stats.ci;
+                    const niwrCiValues = data.monthly_data[index].niwr_stats.ci;
+                    const etfracCiValues = data.monthly_data[index].etfraction_stats.ci;
+
+                    _chartData.push({
+                        Month: month,
+                        "Actual ET (in)": etValue,
+                        "Reference ET (in)": etoValue,
+                        "Precipitation (in)": pptValue,
+                        "NIWR (in)": niwrValue,
+                        "ET Fraction": etfrac,
+                        et_ci: etCiValues,
+                        ppt_ci: pptCiValues,
+                        eto_ci: etoCiValues,
+                        niwr_ci: niwrCiValues,
+                        etfrac_ci: etfracCiValues
+                    });
                 });
-            });
-            setChartData(_chartData);
+                setChartData(_chartData);
 
-            const _tableData = months.map((month, index) => ({
-                month: month,
-                et: `${data.monthly_data[index].et_stats.weighted_mean.toFixed(2)}` + " ( " + data.monthly_data[index].et_stats.ci[0].toFixed(2) + " - " + data.monthly_data[index].et_stats.ci[1].toFixed(2) + " )",
-                eto: `${data.monthly_data[index].eto_stats.weighted_mean.toFixed(2)}` + " ( " + data.monthly_data[index].eto_stats.ci[0].toFixed(2) + " - " + data.monthly_data[index].eto_stats.ci[1].toFixed(2) + " )",
-                ppt: `${data.monthly_data[index].ppt_stats.weighted_mean.toFixed(2)}` + " ( " + data.monthly_data[index].ppt_stats.ci[0].toFixed(2) + " - " + data.monthly_data[index].ppt_stats.ci[1].toFixed(2) + " )",
-                niwr: `${data.monthly_data[index].niwr_stats.weighted_mean.toFixed(2)}` + " ( " + data.monthly_data[index].niwr_stats.ci[0].toFixed(2) + " - " + data.monthly_data[index].niwr_stats.ci[1].toFixed(2) + " )",
-                etfraction: `${data.monthly_data[index].etfraction_stats.weighted_mean.toFixed(3)}` + " ( " + data.monthly_data[index].etfraction_stats.ci[0].toFixed(3) + " - " + data.monthly_data[index].etfraction_stats.ci[1].toFixed(3) + " )"
-            }));
+                const _tableData = months.map((month, index) => ({
+                    month: month,
+                    et: `${data.monthly_data[index].et_stats.weighted_mean.toFixed(2)}` + " ( " + data.monthly_data[index].et_stats.ci[0].toFixed(2) + " - " + data.monthly_data[index].et_stats.ci[1].toFixed(2) + " )",
+                    eto: `${data.monthly_data[index].eto_stats.weighted_mean.toFixed(2)}` + " ( " + data.monthly_data[index].eto_stats.ci[0].toFixed(2) + " - " + data.monthly_data[index].eto_stats.ci[1].toFixed(2) + " )",
+                    ppt: `${data.monthly_data[index].ppt_stats.weighted_mean.toFixed(2)}` + " ( " + data.monthly_data[index].ppt_stats.ci[0].toFixed(2) + " - " + data.monthly_data[index].ppt_stats.ci[1].toFixed(2) + " )",
+                    niwr: `${data.monthly_data[index].niwr_stats.weighted_mean.toFixed(2)}` + " ( " + data.monthly_data[index].niwr_stats.ci[0].toFixed(2) + " - " + data.monthly_data[index].niwr_stats.ci[1].toFixed(2) + " )",
+                    etfraction: `${data.monthly_data[index].etfraction_stats.weighted_mean.toFixed(3)}` + " ( " + data.monthly_data[index].etfraction_stats.ci[0].toFixed(3) + " - " + data.monthly_data[index].etfraction_stats.ci[1].toFixed(3) + " )"
+                }));
 
-            tableData.current = _tableData;
-            console.log('Finished fetching and processing crop water use data:');
+                tableData.current = _tableData;
+                console.log('Finished fetching and processing crop water use data:');
+            }
             setLoading(false);
 
         } catch (error) {
@@ -212,7 +220,7 @@ const CropWaterUse = () => {
     }, []);
 
     const handleCropChange = (value) => {
-        selectedCropLabel.current = cropSelectItems.find(item => item.value === value)?.label || '';
+        setSelectedCropLabel(cropSelectItems.find(item => item.value === value)?.label || '');
         setSelectedCrop(value);
     };
 
@@ -227,6 +235,13 @@ const CropWaterUse = () => {
 
     const handlePanelChange = (key) => {
         setActivePanel(key);
+    };
+
+    const handleTraceToggle = (traceKey) => {
+        setVisibleTraces(prev => ({
+            ...prev,
+            [traceKey]: !prev[traceKey]
+        }));
     };
 
     const handleMapChange = async (value) => {
@@ -320,7 +335,7 @@ const CropWaterUse = () => {
                 layer.setStyle({
                     weight: 1,
                     color: '#0000ff',
-                    fillOpacity: 0.1
+                    fillOpacity: 0.0
                 });
                 //console.log('Mouseout District:', feature.properties.district_nbr);
             }
@@ -337,8 +352,8 @@ const CropWaterUse = () => {
 
     //const ratioData = chartData?.map(d => ({
     //    Month: d.Month,
-    //    ratio: (d["Actual ET (in)"] && d["Potential ET (in)"])
-    //        ? Number((d["Actual ET (in)"] / d["Potential ET (in)"]).toFixed(3))
+    //    ratio: (d["Actual ET (in)"] && d["Reference ET (in)"])
+    //        ? Number((d["Actual ET (in)"] / d["Reference ET (in)"]).toFixed(3))
     //        : null
     //}));
 
@@ -350,7 +365,7 @@ const CropWaterUse = () => {
                 <p>
                     This tool provides insights into the water use of various crops across different Water Master districts in Oregon.
                     By selecting a district and crop of interest, users can visualize localized average monthly crop water use data,
-                    including actual and potential evapotranspiration (ET), precipitation, and net irrigation water
+                    including actual and reference evapotranspiration (ET, ET0), precipitation, and net irrigation water
                     requirement (NIWR) for the selected crop. This information can help farmers and water managers make informed
                     decisions about irrigation scheduling and water resource management based on the expected water use of crops
                     throughout the growing season.
@@ -371,7 +386,7 @@ const CropWaterUse = () => {
                                         { value: 'OR_Counties.geojson', label: 'Counties' },
                                     ]}
                                     onChange={handleMapChange}
-                                />
+                                />Re
                                 <MapContainer
                                     center={[44.0, -120.5]}
                                     zoom={6}
@@ -392,7 +407,13 @@ const CropWaterUse = () => {
                                         <GeoJSON
                                             data={geometryData}
                                             onEachFeature={onEachDistrict}
-                                            style={{ getDistrictStyle }}
+                                            style={(feature) => ({
+                                                color: feature.properties.stroke ?? '#0000ff',
+                                                weight: feature.properties.strokeWidth ?? 1,
+                                                fillOpacity: feature.properties.fillOpacity ?? 0,
+   
+  })}
+                                            
                                         />
                                     )}
                                     {/* <DistrictLabels districtData={districtData} onEachDistrict={onEachDistrict} /> */}
@@ -423,7 +444,42 @@ const CropWaterUse = () => {
                                         onChange={handlePanelChange}
                                         items={[{
                                             key: 'cwu', label: 'Crop Water Use Chart', children: (<>
-                                                <span style={{ paddingLeft: "10%", fontSize: "20px" }}>{`Monthly Crop Water Use for ${selectedCropLabel.current}`}</span>
+                                                <span style={{ paddingLeft: "10%", fontSize: "20px" }}>{`Monthly Crop Water Use for ${selectedCropLabel}`}</span>
+
+                                                <Row style={{ marginTop: '12px', marginBottom: '12px', paddingLeft: '10%' }} gutter={16}>
+                                                    <Col>
+                                                        <Checkbox
+                                                            checked={visibleTraces.et}
+                                                            onChange={() => handleTraceToggle('et')}
+                                                        >
+                                                            Actual ET (in)
+                                                        </Checkbox>
+                                                    </Col>
+                                                    <Col>
+                                                        <Checkbox
+                                                            checked={visibleTraces.eto}
+                                                            onChange={() => handleTraceToggle('eto')}
+                                                        >
+                                                            Reference ET (in)
+                                                        </Checkbox>
+                                                    </Col>
+                                                    <Col>
+                                                        <Checkbox
+                                                            checked={visibleTraces.ppt}
+                                                            onChange={() => handleTraceToggle('ppt')}
+                                                        >
+                                                            Precipitation (in)
+                                                        </Checkbox>
+                                                    </Col>
+                                                    <Col>
+                                                        <Checkbox
+                                                            checked={visibleTraces.niwr}
+                                                            onChange={() => handleTraceToggle('niwr')}
+                                                        >
+                                                            NIWR (in)
+                                                        </Checkbox>
+                                                    </Col>
+                                                </Row>
 
                                                 {chartData.some(d => d["Actual ET (in)"] !== null) ? (
                                                     <ResponsiveContainer width="100%" height={300}>
@@ -445,50 +501,66 @@ const CropWaterUse = () => {
                                                                 label={{ value: 'Today', position: 'left', fill: 'yellow' }}
                                                             />
 
-                                                            <Area
-                                                                type="monotone"
-                                                                dataKey="et_ci"
-                                                                stroke="none"
-                                                                fill="rgba(44, 162, 236, 0.4)"
-                                                                legendType="none"
-                                                            />
+                                                            {visibleTraces.et && (
+                                                                <Area
+                                                                    type="monotone"
+                                                                    dataKey="et_ci"
+                                                                    stroke="none"
+                                                                    fill="rgba(44, 162, 236, 0.4)"
+                                                                    legendType="none"
+                                                                />
+                                                            )}
 
-                                                            <Area
-                                                                type="monotone"
-                                                                dataKey="ppt_ci"
-                                                                stroke="none"
-                                                                fill="rgba(29, 204, 37, 0.4)"
-                                                                legendType="none"
-                                                            />
+                                                            {visibleTraces.ppt && (
+                                                                <Area
+                                                                    type="monotone"
+                                                                    dataKey="ppt_ci"
+                                                                    stroke="none"
+                                                                    fill="rgba(29, 204, 37, 0.4)"
+                                                                    legendType="none"
+                                                                />
+                                                            )}
 
-                                                            <Area
-                                                                type="monotone"
-                                                                dataKey="eto_ci"
-                                                                stroke="none"
-                                                                fill="rgba(255, 238, 0, 0.6)"
-                                                                legendType="none"
-                                                            />
+                                                            {visibleTraces.eto && (
+                                                                <Area
+                                                                    type="monotone"
+                                                                    dataKey="eto_ci"
+                                                                    stroke="none"
+                                                                    fill="rgba(255, 238, 0, 0.6)"
+                                                                    legendType="none"
+                                                                />
+                                                            )}
 
-                                                            <Area
-                                                                type="monotone"
-                                                                dataKey="niwr_ci"
-                                                                stroke="none"
-                                                                fill="rgba(20, 61, 242, 0.4)"
-                                                                legendType="none"
-                                                            />
+                                                            {visibleTraces.niwr && (
+                                                                <Area
+                                                                    type="monotone"
+                                                                    dataKey="niwr_ci"
+                                                                    stroke="none"
+                                                                    fill="rgba(20, 61, 242, 0.4)"
+                                                                    legendType="none"
+                                                                />
+                                                            )}
 
-                                                            <Line type="monotone" dataKey="Actual ET (in)" stroke="#8884d8" strokeWidth={2} />
-                                                            <Line type="monotone" dataKey="Potential ET (in)" stroke="#ff7300" strokeWidth={2} />
-                                                            <Line type="monotone" dataKey="Precipitation (in)" stroke="#82ca9d" strokeWidth={2} />
-                                                            <Line type="monotone" dataKey="NIWR (in)" stroke="#143df2ff" strokeWidth={2} />
+                                                            {visibleTraces.et && (
+                                                                <Line type="monotone" dataKey="Actual ET (in)" stroke="#8884d8" strokeWidth={2} />
+                                                            )}
+                                                            {visibleTraces.eto && (
+                                                                <Line type="monotone" dataKey="Reference ET (in)" stroke="#ff7300" strokeWidth={2} />
+                                                            )}
+                                                            {visibleTraces.ppt && (
+                                                                <Line type="monotone" dataKey="Precipitation (in)" stroke="#82ca9d" strokeWidth={2} />
+                                                            )}
+                                                            {visibleTraces.niwr && (
+                                                                <Line type="monotone" dataKey="NIWR (in)" stroke="#143df2ff" strokeWidth={2} />
+                                                            )}
                                                         </ComposedChart>
                                                     </ResponsiveContainer>
                                                 ) : <p style={{ color: 'red', paddingLeft: "10%" }}>No crop water use data available for this crop in this district.</p>}
 
 
-                                                <p>This chart shows the actual and potential evapotranspiration (ET) along with precipitation over time.
+                                                <p>This chart shows the actual and reference evapotranspiration (ET, ETO) along with precipitation over time.
                                                     Actual ET (in) is a measure of the water a crop needs to grow optimally.
-                                                    Potential ET (in) represents the maximum possible water use under ideal conditions, while
+                                                    Reference ET (in) represents the maximum possible water use under ideal conditions, while
                                                     Precipitation (in) indicates the amount of water received from rainfall.
                                                     The shaded areas represent the 95% confidence intervals for each variable, providing insight into the variability and uncertainty in the measurements.
                                                 </p>
@@ -499,7 +571,7 @@ const CropWaterUse = () => {
                                             )
                                         }, {
                                             key: 'kc', label: 'Crop Coefficient (Kc) Chart', children: (<>
-                                                <span style={{ paddingLeft: "10%", fontSize: "20px" }}>{`Monthly Kc (ET Fraction) for ${selectedCropLabel.current}`}</span>
+                                                <span style={{ paddingLeft: "10%", fontSize: "20px" }}>{`Monthly Kc (ET Fraction) for ${selectedCropLabel}`}</span>
                                                 <ResponsiveContainer width="100%" height={220}>
                                                     <LineChart
                                                         data={chartData}
@@ -520,14 +592,14 @@ const CropWaterUse = () => {
                                                     </LineChart>
                                                 </ResponsiveContainer>
 
-                                                <p>This chart shows the ratio of actual crop evapotranspiration (AET) to potential evapotranspiration (PET), oftern referred to as a crop coefficient (Kc).
-                                                    This ratio can be used to estimate the water requirements of a crop when estimates of PET are available. 
-                                                    PET is generally calculated based on meteorological data at a site.   The Kc value, along with information about precipitation rates,
+                                                <p>This chart shows the ratio of actual crop evapotranspiration (AET) to reference evapotranspiration (ET0), oftern referred to as a crop coefficient (Kc).
+                                                    This ratio can be used to estimate the water requirements of a crop when estimates of ET0 are available.
+                                                    ET0 is generally calculated based on meteorological data at a site.   The Kc value, along with information about precipitation rates,
                                                     can be used to estimate irrigation requirement to meet crop water demand according to:
                                                 </p>
                                                 <p style={{ textAlign: 'center', fontSize: '14px', fontWeight: 'bold', fontStyle: 'italic' }}>
                                                     Irrigation Requirement = (Kc * PET) - Precipitation
-                                                </p>                                                                 
+                                                </p>
                                             </>
                                             ),
                                         }, {
@@ -571,7 +643,7 @@ const CropWaterUse = () => {
                                                     Crops grown in each district were included in the analysis if there were at least 500 monthly samples for that crop
                                                     in a given region were present in the datasets were present in dataset.  The number and type of crops included in a given district
                                                     varied based on cropping patterns, but typically include around 10-20 crops per district.  Crop specific water use data was then
-                                                    summarized by calculating the average monthly actual ET, potential ET, precipitation, and net irrigation water and other Parameters
+                                                    summarized by calculating the average monthly actual ET, reference ET (ET0, grass reference), precipitation, and net irrigation water and other Parameters
                                                     affecting crop water use for each crop in each district.  The average monthly values were calculated by taking the weighted mean
                                                     of the field-scale data for each crop in each district, where the weights were based on the number of observations available for
                                                     each month over the 1983-2022 period. 95% confidence intervals were also calculated for each monthly variable to provide
