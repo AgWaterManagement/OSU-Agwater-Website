@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, message } from "antd";
+import { Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, Modal, message } from "antd";
 import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { secrets } from "../../secrets";
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 import StationInfo from "./StationInfo";
 import CropWaterUseChart from "./CropWaterUseChart";
@@ -73,6 +74,9 @@ const Agrimet = () => {
     const [selectedStation, setSelectedStation] = useState(() => getCookie('agrimet_station') || 'crvo');
     const [selectedCrop, setSelectedCrop] = useState(() => getCookie('agrimet_crop') || 'WGRN');
     const [selectedState, setSelectedState] = useState(() => getCookie('agrimet_state') || 'OR');
+    const [selectedStationData, setSelectedStationData] = useState(null);
+    const [cropCurveModalOpen, setCropCurveModalOpen] = useState(false);
+    const [selectedCurveCrop, setSelectedCurveCrop] = useState(null);
     const [showMap, setShowMap] = useState(false); // State to control map visibility }
     const [userLocation, setUserLocation] = useState(getStationLatLong(selectedStation));  // from geolocation
 
@@ -174,7 +178,7 @@ const Agrimet = () => {
                 stations[props.state] = []; // Initialize array for the state if not already present
 
             stations[props.state].push({
-                key: 's_' + i,
+                key: 'station_' + i,
                 value: props.siteid,
                 label: props.title
             });
@@ -182,9 +186,10 @@ const Agrimet = () => {
         });
 
         const items = []
+        i = 0;
         for (const state in stations) {
             items.push({
-                key: 'sn_' + i,
+                key: 'state_' + i,
                 value: state,
                 label: state,
                 children: stations[state]
@@ -210,6 +215,36 @@ const Agrimet = () => {
             index += 1;
         }
     }
+    
+    const updateStation = (station) => {
+        const fetchSelectedStationData = async () => {
+            try {
+                const response = await fetch(`https://agwater.org:5556//agrimet/station_crop_info?station=${station}`, {
+                    headers: {
+                        "X-API-Key": secrets.agwater_api_key
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch station_crop_info for station ${station}`);
+                }
+                const stationJson = await response.json();
+
+                // add a 'key' field to each crop object in the stationJson list for use in the Ant Design Table component
+                //stationJson.forEach((crop, index) => {
+                //    crop.key = 'stcrop_' +  index;
+                //});
+
+                setSelectedStationData(stationJson);
+            } catch (error) {
+                console.error("Error fetching selected station crop info", error);
+                setSelectedStationData(null);
+            }
+        };
+
+        fetchSelectedStationData();
+        setSelectedStation(station);
+    };
 
     const onSelectedCropChange = (value, option) => {
         selectedCropName.current = option.label; // Store the name of the selected crop
@@ -284,40 +319,121 @@ const Agrimet = () => {
         setShowMap(!showMap);
     }
 
+    const openCropCurveModal = (crop) => {
+        setSelectedCurveCrop(crop);
+        setCropCurveModalOpen(true);
+    };
+
+    const closeCropCurveModal = () => {
+        setCropCurveModalOpen(false);
+        setSelectedCurveCrop(null);
+    };
+
+    const getCropCurveData = (crop) => {
+        if (!crop) return [];
+
+        const points = [];
+        Object.keys(crop).forEach((key) => {
+            const match = key.match(/^Daily Penman ET \(in\)(?:-(\d+))?$/);
+            if (!match) return;
+
+            const offset = match[1] ? -parseInt(match[1], 10) : 0;
+            const value = Number(crop[key]);
+            if (Number.isFinite(value)) {
+                points.push({
+                    dayOffset: offset,
+                    label: offset === 0 ? 'Today' : `D${offset}`,
+                    et: value,
+                });
+            }
+        });
+
+        return points.sort((a, b) => a.dayOffset - b.dayOffset);
+    };
+
 
 
 
     const CropInfoTable = () => {
-        if (!selectedCrop || !stationCropData.current || stationCropData.current.length === 0) {
+        if (!selectedStationData || !selectedStationData.crop_data) {
             return (<span>No crop data available</span>);
         }
-        const crop = stationCropData.current.find(c => c.code === selectedCrop);
-        if (crop == null)
-            return (<span>No crop specified</span>);
+        //const crop = stationCropData.current.find(c => c.code === selectedCrop);
+        //if (crop == null)
+        //    return (<span>No crop specified</span>);
+        
+    /* expected format of selectedStationData: a list of crop objects that look like:
 
-        const dataSource = [
-            {
-                key: crop.code,
-                startDate: crop.startDate,
-                coverDate: crop.coverDate,
-                termDate: crop.termDate,
-                sumET: crop.sumET,
-                sevenDayUse: crop.sevenDayUse,
-                fourteenDayUse: crop.fourteenDayUse,
-                name: crop.name,
-            }];
+    {
+    "CropCode": "ETr",
+    "Start Date": "01/01",
+    "Full Cover Date": "01/01",
+    "Termination Date": "12/31",
+    "Daily Penman ET (in)-4": 0.09,
+    "Daily Penman ET (in)-3": 0.09,
+    "Daily Penman ET (in)-2": 0.05,
+    "Daily Penman ET (in)-1": 0.09,
+    "Daily Penman ET (in)": 0.08,
+    "Sum ET (in)": 6.8,
+    "7 Day Use": "0.71.3",
+    "14 Day Use": null,
+    "Name": "ETr"
+  },
+ */
+        const cropData = selectedStationData.crop_data;
+        // add a 'key' field to each crop object in the cropData list for use in the Ant Design Table component
+        cropData.forEach((crop, index) => {
+            crop.key = 'stcrop_' +  index;
+        });
 
         const columns = [
-            { title: 'Name', dataIndex: 'name', key: 'name', },
-            { title: 'Start Date', dataIndex: 'startDate', key: 'startDate', align: 'center' },
-            { title: 'Cover Date', dataIndex: 'coverDate', key: 'coverDate', align: 'center' },
-            { title: 'Term Date', dataIndex: 'termDate', key: 'termDate', align: 'center' },
-            { title: 'Sum ET', dataIndex: 'sumET', key: 'sumET', align: 'center' },
-            { title: '7-Day Use', dataIndex: 'sevenDayUse', key: 'sevenDayUse', align: 'center' },
-            { title: '14-Day Use', dataIndex: 'fourteenDayUse', key: 'fourteenDayUse', align: 'center' },
+            { title: 'Name', dataIndex: 'Name', key: 'Name' },
+            { title: 'Crop Code', dataIndex: 'CropCode', key: 'CropCode', align: 'center' },
+            { title: 'Start Date', dataIndex: 'Start Date', key: 'Start Date', align: 'center' },
+            { title: 'Cover Date', dataIndex: 'Full Cover Date', key: 'Full Cover Date', align: 'center' },
+            { title: 'Term Date', dataIndex: 'Termination Date', key: 'Termination Date', align: 'center' },
+            { title: 'Sum ET (in)', dataIndex: 'Sum ET (in)', key: 'Sum ET (in)', align: 'center' },
+            { title: '7-Day Use', dataIndex: '7 Day Use', key: '7 Day Use', align: 'center' },
+            { title: '14-Day Use', dataIndex: '14 Day Use', key: '14 Day Use', align: 'center' },
+            {
+                title: 'Action',
+                key: 'action',
+                align: 'center',
+                render: (_, record) => (
+                    <Button  type='primary' onClick={() => openCropCurveModal(record)}>
+                        View Curve
+                    </Button>
+                ),
+            },
         ];
 
-        return <Table dataSource={dataSource} columns={columns} />;
+        return (
+            <>
+                <Table dataSource={cropData} columns={columns} />
+                <Modal
+                    title={`Crop Curve${selectedCurveCrop?.Name ? ` - ${selectedCurveCrop.Name}` : ''}`}
+                    open={cropCurveModalOpen}
+                    onCancel={closeCropCurveModal}
+                    footer={null}
+                    width={760}
+                >
+                    <div style={{ height: 320, width: '100%' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                                data={getCropCurveData(selectedCurveCrop)}
+                                margin={{ top: 10, right: 24, left: 8, bottom: 8 }}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="label" />
+                                <YAxis />
+                                <Tooltip />
+                                <Line type="monotone" dataKey="et" name="Daily Penman ET (in)" stroke="#1677ff" strokeWidth={2} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </Modal>
+            </>
+        );
     };
 
 
@@ -372,10 +488,12 @@ const Agrimet = () => {
                 <Col xs={24} lg={12} style={{ height: 360 }} >
                     <Divider orientation="left">Select a Agrimet station</Divider>
 
-                    <Cascader key='stationCascader' defaultValue={[selectedState, selectedStation]} style={{ width: '24em' }} options={stationOptions} onChange={value => {
-                        const [state, station] = value;
-                        setSelectedState(state);
-                        setSelectedStation(station);
+                    <Cascader key='stationCascader' defaultValue={[selectedState, selectedStation]} style={{ width: '24em' }} 
+                        options={stationOptions} 
+                        onChange={value => {
+                            const [state, station] = value;
+                            setSelectedState(state);
+                            updateStation(station);
                     }} />
 
                     <Divider orientation="left">OR</Divider>

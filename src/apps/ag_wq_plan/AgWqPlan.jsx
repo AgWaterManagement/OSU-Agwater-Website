@@ -8,7 +8,11 @@ import {
   Space,
   Button,
   Spin,
+  Row,
+  Col,
 } from 'antd';
+import { MapContainer, TileLayer, GeoJSON, WMSTileLayer } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 import StepWhoWhere from './StepWhoWhere';
 import StepConditions from './StepConditions';
@@ -22,9 +26,11 @@ import AgWqplanLogin from "./AgWqplanLogin";
 
 const { Content, Footer } = Layout;
 const { Step } = Steps;
-const { Title, Paragraph } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const API_BASE = 'https://agwater.org:5556';
 
+const TMDL_GEOJSON_URL = 'https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services/TMDLs_DEQ_by_parameter_Feb2026/FeatureServer/4/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson';
+const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/services/Framework/ODA_AdminBnds_AgWaterQualityManagementArea/MapServer/WMSServer';
 /*
   "Create a 'living' repository of suggested agricultural/environmental practices
    to maintain and improve the quality of water for all waters of the State."
@@ -49,6 +55,8 @@ const AgWqPlan = () => {
   const [userType, setUserType] = useState('Landowner');
   const [region, setRegion] = useState();
   const [commodity, setCommodity] = useState();
+  const [showMaps, setShowMaps] = useState(false);
+  const [tmdlGeoJson, setTmdlGeoJson] = useState(null);
 
   // Selection state across steps
   const [selectedConcerns, setSelectedConcerns] = useState([]);
@@ -78,7 +86,7 @@ const AgWqPlan = () => {
       setLoadingData(true);
 
       try {
-        const [concernsData,questionsData, practicesData, goalsData] = await Promise.all([
+        const [concernsData, questionsData, practicesData, goalsData] = await Promise.all([
           fetchJson('/agwqplan/concerns'),
           fetchJson('/agwqplan/concernQuestions'),
           fetchJson('/agwqplan/practices'),
@@ -159,48 +167,181 @@ const AgWqPlan = () => {
     [selectedPracticeIds, practices],
   );
 
+  const showMapContent = (show) => {
+    console.log("Show maps:", show);
+    setShowMaps(show);
+    // Implement map display logic here, e.g., navigate to a map page or open a modal
+  }
+
+  useEffect(() => {
+    if (!showMaps || tmdlGeoJson ) {
+      return;
+    }
+
+    let active = true;
+
+    const loadTmdlLayer = async () => {
+      try {
+        const response = await fetch(TMDL_GEOJSON_URL);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch TMDL GeoJSON: ${response.status}`);
+        }
+
+        const geojson = await response.json();
+        if (active) {
+          setTmdlGeoJson(geojson);
+        }
+      } catch (error) {
+        console.error('Error loading TMDL GeoJSON layer:', error);
+        if (active) {
+          setTmdlGeoJson(null);
+        }
+      }
+    };
+
+    loadTmdlLayer();
+
+    return () => {
+      active = false;
+    };
+  }, [showMaps, tmdlGeoJson]);
+
+  const tmdlLayerStyle = () => ({
+    color: '#0000ff',
+    weight: 1.5,
+    fillColor: '#0000ff',
+    fillOpacity: 0.08,
+  });
+
+  const onEachTmdlFeature = (feature, layer) => {
+    const label = feature?.properties?.TMDL_name || feature?.properties?.TMDL_parameter || 'TMDL area';
+
+    layer.bindTooltip(label, {
+      sticky: true,
+      direction: 'auto',
+      opacity: 0.9,
+    });
+  };
+
   const next = () => setCurrent((c) => c + 1);
   const prev = () => setCurrent((c) => c - 1);
 
   return (
     <>
-    {loggingIn && (
-      <AgWqplanLogin
-        onLoginSuccess={(result) => {console.log("Login successful:", result);
-          setLoginName(result.user.username);
-          setUserRole(result.user.role);
-          setLoggingIn(false);
-        } }
-        onLoginFailure={(error) => {console.error("Login failed:", error);
-          setLoggingIn(false);
-        }}
-        onLogout={() => {console.log("Logged out");
-          setLoginName(null);
-          setUserRole(null);
-          setLoggingIn(false);
-        }}
-      ></AgWqplanLogin>
-    )}
-    {!loginName && !loggingIn && (
-      <div style={{ padding: 4, textAlign: 'right' }} >
-        <Button type="text" onClick={() => setLoggingIn(true)}>
-          Sign In
-        </Button>
-      </div>  
-    )}
-    { loginName && (
-      <div style={{ padding: 4, textAlign: 'right', color: 'white', fontSize:'small' }} >
-        Signed in as <b>{loginName}</b>
-        <Button ghost onClick={() => {
-          setLoggingIn(false);
-          setLoginName(null);
-          setUserRole(null);
-        }} style={{ marginLeft: 8 }}>
-          Sign Out
-        </Button>
-      </div>
-    )}
 
+
+      {loggingIn && (
+        <AgWqplanLogin
+          onLoginSuccess={(result) => {
+            console.log("Login successful:", result);
+            setLoginName(result.user.username);
+            setUserRole(result.user.role);
+            setLoggingIn(false);
+          }}
+          onLoginFailure={(error) => {
+            console.error("Login failed:", error);
+            setLoggingIn(false);
+          }}
+          onLogout={() => {
+            console.log("Logged out");
+            setLoginName(null);
+            setUserRole(null);
+            setLoggingIn(false);
+          }}
+        ></AgWqplanLogin>
+      )}
+      {!loginName && !loggingIn && (
+        <div style={{ padding: 4, textAlign: 'right' }} >
+          <Button type="text" onClick={() => setLoggingIn(true)}>
+            Sign In
+          </Button>
+          <Button type="text" onClick={() => showMapContent(true)}>
+            Maps
+          </Button>
+        </div>
+      )}
+      {loginName && (
+        <div style={{ padding: 4, textAlign: 'right', color: 'white', fontSize: 'small' }} >
+          Signed in as <b>{loginName}</b>
+          <Button ghost onClick={() => {
+            setLoggingIn(false);
+            setLoginName(null);
+            setUserRole(null);
+          }} style={{ marginLeft: 8 }}>
+            Sign Out
+          </Button>
+          <Button type="text" onClick={() => showMapContent(true)}>
+            Maps
+          </Button>
+        </div>
+      )}
+
+      {showMaps && (
+        <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
+          <Card>
+            <Title level={3}>Maps</Title>
+            <Paragraph>
+              This tool connects land conditions and goals to agricultural water quality
+              practices, technical assistance, and reference materials.
+            </Paragraph>
+
+            <Row>
+              <Col xs={24} md={12}>
+                <Title level={4}>Agricultural Water Quality Management Areas</Title>
+                <Text>ODA Agricultural Water Quality Management Areas. Source: <a href="https://www.oregon.gov/oda/programs/NaturalResources/Pages/AWQMA.aspx">ODA AWQMA Mapper</a></Text>
+                 <div style={{ height: 420, width: '100%', marginTop: 16, marginBottom: 16 }}>
+                  <MapContainer
+                    center={[44.0, -120.5]}
+                    zoom={6}
+                    style={{ height: '100%', width: '100%', borderRadius: 8 }}
+                    scrollWheelZoom={false}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <WMSTileLayer
+                      url={ODA_AWQMA_WMS_URL}
+                      layers="0"
+                      format="image/png"
+                      transparent={true}
+                      opacity={0.75}
+                    />
+                  </MapContainer>
+                </div>
+
+              
+              </Col>
+              <Col xs={24} md={12}>
+                <Title level={4}>TMDL Areas</Title>
+                <Text>Oregon DEQ TMDL areas by parameter. Source: <a href="https://www.oregon.gov/deq/wq/Pages/TMDLs.aspx">DEQ TMDL Mapper</a></Text>
+                <div style={{ height: 420, width: '100%', marginTop: 16, marginBottom: 16 }}>
+                  <MapContainer
+                    center={[44.0, -120.5]}
+                    zoom={6}
+                    style={{ height: '100%', width: '100%', borderRadius: 8 }}
+                    scrollWheelZoom={false}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    {tmdlGeoJson && (
+                      <GeoJSON
+                        data={tmdlGeoJson}
+                        style={tmdlLayerStyle}
+                        onEachFeature={onEachTmdlFeature}
+                      />
+                    )}
+                  </MapContainer>
+                </div>
+              </Col>
+            </Row>
+
+            <Button type="primary" onClick={() => showMapContent(false)}>Close</Button>
+          </Card>
+        </Content>
+      )}
 
 
       <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
