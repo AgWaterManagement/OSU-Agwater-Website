@@ -1,0 +1,1211 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "1000",
+        "countyName": "",
+        "name": "Annie Springs",
+        "elevation": 6020.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 20.904184954274687
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.16518,
+          42.87007
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "1010",
+        "countyName": "",
+        "name": "Crazyman Flat",
+        "elevation": 6190.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 8.090386543032619
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.94917,
+          42.6381
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "1079",
+        "countyName": "",
+        "name": "Milk Shakes",
+        "elevation": 5580.0,
+        "huc": 170701000000.0,
+        "average_annual_mean_swe": 21.302632041511917
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.94883,
+          45.9821
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "1084",
+        "countyName": "",
+        "name": "Miller Woods",
+        "elevation": 420.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 0.568008845899471
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -123.27563,
+          45.24755
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "1158",
+        "countyName": "",
+        "name": "Howard Prairie",
+        "elevation": 4580.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 3.041933247440846
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3713,
+          42.215
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "1166",
+        "countyName": "",
+        "name": "Bear Grass",
+        "elevation": 4720.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 23.50919906652993
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.0938,
+          44.3253
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "1314",
+        "countyName": "",
+        "name": "Fifteenmile",
+        "elevation": 5970.0,
+        "huc": 170701000000.0,
+        "average_annual_mean_swe": 17.522745366796364
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.53,
+          45.35265
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "302",
+        "countyName": "",
+        "name": "Aneroid Lake #2",
+        "elevation": 7430.0,
+        "huc": 170601000000.0,
+        "average_annual_mean_swe": 13.181009245780691
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.19255,
+          45.21332
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "304",
+        "countyName": "",
+        "name": "Arbuckle Mtn",
+        "elevation": 5770.0,
+        "huc": 170702000000.0,
+        "average_annual_mean_swe": 10.725059694744452
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.25392,
+          45.19085
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "331",
+        "countyName": "",
+        "name": "Beaver Reservoir",
+        "elevation": 5140.0,
+        "huc": 170601000000.0,
+        "average_annual_mean_swe": 5.779296941139926
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.219,
+          45.14532
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "341",
+        "countyName": "",
+        "name": "Big Red Mountain",
+        "elevation": 6060.0,
+        "huc": 171003000000.0,
+        "average_annual_mean_swe": 14.80900329942453
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.85487,
+          42.05257
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "343",
+        "countyName": "",
+        "name": "Bigelow Camp",
+        "elevation": 5130.0,
+        "huc": 171003000000.0,
+        "average_annual_mean_swe": 8.140645167833219
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -123.34393,
+          42.07875
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "344",
+        "countyName": "",
+        "name": "Billie Creek Divide",
+        "elevation": 5280.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 12.181793377316659
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.26617,
+          42.40717
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "351",
+        "countyName": "",
+        "name": "Blazed Alder",
+        "elevation": 3660.0,
+        "huc": 170800000000.0,
+        "average_annual_mean_swe": 18.031756710152905
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.85605,
+          45.4287
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "357",
+        "countyName": "",
+        "name": "Blue Mountain Spring",
+        "elevation": 5880.0,
+        "huc": 170501000000.0,
+        "average_annual_mean_swe": 9.360221194399108
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.51722,
+          44.24767
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "361",
+        "countyName": "",
+        "name": "Bourne",
+        "elevation": 5850.0,
+        "huc": 170502000000.0,
+        "average_annual_mean_swe": 8.99291818702095
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.18787,
+          44.83052
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "362",
+        "countyName": "",
+        "name": "Bowman Springs",
+        "elevation": 4550.0,
+        "huc": 170701000000.0,
+        "average_annual_mean_swe": 4.932555568681461
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.46715,
+          45.36428
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "388",
+        "countyName": "",
+        "name": "Cascade Summit",
+        "elevation": 5100.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 17.380609363097083
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.0601,
+          43.59042
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "395",
+        "countyName": "",
+        "name": "Chemult Alternate",
+        "elevation": 4850.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 5.200938397475482
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.80662,
+          43.22625
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "398",
+        "countyName": "",
+        "name": "Clackamas Lake",
+        "elevation": 3400.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 6.871535324545023
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.75443,
+          45.09658
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "401",
+        "countyName": "",
+        "name": "Clear Lake",
+        "elevation": 3810.0,
+        "huc": 170703000000.0,
+        "average_annual_mean_swe": 7.094514685867492
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.6916,
+          45.18832
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "406",
+        "countyName": "",
+        "name": "Cold Springs Camp",
+        "elevation": 5940.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 15.767935793498573
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.17683,
+          42.53305
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "422",
+        "countyName": "",
+        "name": "County Line",
+        "elevation": 4840.0,
+        "huc": 170601000000.0,
+        "average_annual_mean_swe": 2.569707209499775
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.55015,
+          45.19107
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "434",
+        "countyName": "",
+        "name": "Daly Lake",
+        "elevation": 3690.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 8.619952308621304
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.08718,
+          44.52147
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "440",
+        "countyName": "",
+        "name": "Derr.",
+        "elevation": 5850.0,
+        "huc": 170703000000.0,
+        "average_annual_mean_swe": 8.173636788397074
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.93012,
+          44.4465
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "442",
+        "countyName": "",
+        "name": "Diamond Lake",
+        "elevation": 5280.0,
+        "huc": 171003000000.0,
+        "average_annual_mean_swe": 8.302035855957698
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.14003,
+          43.18787
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "464",
+        "countyName": "",
+        "name": "Eilertson Meadows",
+        "elevation": 5510.0,
+        "huc": 170502000000.0,
+        "average_annual_mean_swe": 5.772686962761345
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.11387,
+          44.86887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "470",
+        "countyName": "",
+        "name": "Emigrant Springs",
+        "elevation": 3790.0,
+        "huc": 170701000000.0,
+        "average_annual_mean_swe": 3.715146657040024
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.45385,
+          45.55808
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "477",
+        "countyName": "",
+        "name": "Fish Creek",
+        "elevation": 7700.0,
+        "huc": 171200000000.0,
+        "average_annual_mean_swe": 17.261980817925487
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.63219,
+          42.70993
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "479",
+        "countyName": "",
+        "name": "Fish Lk.",
+        "elevation": 4660.0,
+        "huc": 171003000000.0,
+        "average_annual_mean_swe": 6.436111880590071
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.34943,
+          42.3801
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "483",
+        "countyName": "",
+        "name": "Fourmile Lake",
+        "elevation": 5970.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 14.847482691028194
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.2288,
+          42.43933
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "494",
+        "countyName": "",
+        "name": "Gold Center",
+        "elevation": 5400.0,
+        "huc": 170702000000.0,
+        "average_annual_mean_swe": 5.989532630186056
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.3117,
+          44.7638
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "504",
+        "countyName": "",
+        "name": "Greenpoint",
+        "elevation": 3320.0,
+        "huc": 170701000000.0,
+        "average_annual_mean_swe": 9.816927707384371
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.70415,
+          45.62237
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "523",
+        "countyName": "",
+        "name": "High Ridge",
+        "elevation": 4900.0,
+        "huc": 170701000000.0,
+        "average_annual_mean_swe": 13.784159238298528
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.10657,
+          45.69682
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "526",
+        "countyName": "",
+        "name": "Hogg Pass",
+        "elevation": 4800.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 17.37654990598274
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.85655,
+          44.42042
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "529",
+        "countyName": "",
+        "name": "Holland Meadows",
+        "elevation": 4930.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 12.467598548853099
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.56877,
+          43.66917
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "545",
+        "countyName": "",
+        "name": "Irish Taylor",
+        "elevation": 5540.0,
+        "huc": 170703000000.0,
+        "average_annual_mean_swe": 19.79297206169285
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.94793,
+          43.80368
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "552",
+        "countyName": "",
+        "name": "Jump Off Joe",
+        "elevation": 3530.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 6.591539706431532
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.16683,
+          44.38605
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "558",
+        "countyName": "",
+        "name": "King Mountain",
+        "elevation": 4340.0,
+        "huc": 171003000000.0,
+        "average_annual_mean_swe": 3.8598803020100565
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -123.20037,
+          42.72395
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "563",
+        "countyName": "",
+        "name": "Lake Creek R.S.",
+        "elevation": 5250.0,
+        "huc": 170501000000.0,
+        "average_annual_mean_swe": 6.657792112193029
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.63752,
+          44.21007
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "584",
+        "countyName": "",
+        "name": "Little Meadows",
+        "elevation": 4020.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 15.280916696750424
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.22565,
+          44.61297
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "605",
+        "countyName": "",
+        "name": "Lucky Strike",
+        "elevation": 4970.0,
+        "huc": 170701000000.0,
+        "average_annual_mean_swe": 4.928605430650559
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.8479,
+          45.27478
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "608",
+        "countyName": "",
+        "name": "Madison Butte",
+        "elevation": 5150.0,
+        "huc": 170702000000.0,
+        "average_annual_mean_swe": 3.2483733492888476
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.49585,
+          45.10513
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "614",
+        "countyName": "",
+        "name": "Marion Forks",
+        "elevation": 2590.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 6.308672077880076
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.97365,
+          44.59397
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "619",
+        "countyName": "",
+        "name": "Mckenzie",
+        "elevation": 4770.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 22.688720562264834
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.87292,
+          44.2103
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "647",
+        "countyName": "",
+        "name": "Moss Springs",
+        "elevation": 5760.0,
+        "huc": 170601000000.0,
+        "average_annual_mean_swe": 13.632343189170765
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.68747,
+          45.27173
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "651",
+        "countyName": "",
+        "name": "Mt Hood Test Site",
+        "elevation": 5380.0,
+        "huc": 170800000000.0,
+        "average_annual_mean_swe": 32.169177245758114
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.7158,
+          45.32097
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "653",
+        "countyName": "",
+        "name": "Mt. Howard",
+        "elevation": 7840.0,
+        "huc": 170601000000.0,
+        "average_annual_mean_swe": 9.572692546018093
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.17377,
+          45.26514
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "655",
+        "countyName": "",
+        "name": "Mud Ridge",
+        "elevation": 4070.0,
+        "huc": 170800000000.0,
+        "average_annual_mean_swe": 14.753471041963037
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.73673,
+          45.25362
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "660",
+        "countyName": "",
+        "name": "New Crescent Lake",
+        "elevation": 4910.0,
+        "huc": 170703000000.0,
+        "average_annual_mean_swe": 7.168515977561054
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.97982,
+          43.51185
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "666",
+        "countyName": "",
+        "name": "North Fork",
+        "elevation": 3070.0,
+        "huc": 170800000000.0,
+        "average_annual_mean_swe": 11.69184581619829
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.00283,
+          45.5505
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "671",
+        "countyName": "",
+        "name": "Ochoco Meadows",
+        "elevation": 5430.0,
+        "huc": 170703000000.0,
+        "average_annual_mean_swe": 5.923570159215425
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.3311,
+          44.42917
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "687",
+        "countyName": "",
+        "name": "Peavine Ridge",
+        "elevation": 3420.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 7.819233814921574
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.93252,
+          45.04148
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "706",
+        "countyName": "",
+        "name": "Quartz Mountain",
+        "elevation": 5710.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 2.560615120318803
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.82533,
+          42.31923
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "710",
+        "countyName": "",
+        "name": "Railroad Overpass",
+        "elevation": 2680.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 1.012590877563457
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.21272,
+          43.65887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "712",
+        "countyName": "",
+        "name": "Red Hill",
+        "elevation": 4410.0,
+        "huc": 170701000000.0,
+        "average_annual_mean_swe": 25.9929182826731
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.70428,
+          45.4643
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "719",
+        "countyName": "",
+        "name": "Roaring River",
+        "elevation": 4960.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 15.715281057514217
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.03063,
+          43.90098
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "721",
+        "countyName": "",
+        "name": "Rock Springs",
+        "elevation": 5290.0,
+        "huc": 170501000000.0,
+        "average_annual_mean_swe": 3.3053296373116328
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.83842,
+          44.00883
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "726",
+        "countyName": "",
+        "name": "Saddle Mountain",
+        "elevation": 3090.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 4.412964052878709
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -123.37331,
+          45.54475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "729",
+        "countyName": "",
+        "name": "Salt Creek Falls",
+        "elevation": 4220.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 11.062591898361925
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.11758,
+          43.61193
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "733",
+        "countyName": "",
+        "name": "Santiam Jct.",
+        "elevation": 3740.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 8.939316637272942
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.94502,
+          44.43503
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "736",
+        "countyName": "",
+        "name": "Schneider Meadows",
+        "elevation": 5400.0,
+        "huc": 170502000000.0,
+        "average_annual_mean_swe": 15.930444935709309
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.16522,
+          45.00107
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "743",
+        "countyName": "",
+        "name": "Seine Creek",
+        "elevation": 2070.0,
+        "huc": 170900000000.0,
+        "average_annual_mean_swe": 1.7671920035944553
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -123.29857,
+          45.52688
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "745",
+        "countyName": "",
+        "name": "Sevenmile Marsh",
+        "elevation": 5690.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 16.400664869753985
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.14165,
+          42.69825
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "756",
+        "countyName": "",
+        "name": "Silver Creek",
+        "elevation": 5750.0,
+        "huc": 171200000000.0,
+        "average_annual_mean_swe": 6.121844407979526
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.18123,
+          42.95615
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "759",
+        "countyName": "",
+        "name": "Silvies",
+        "elevation": 7000.0,
+        "huc": 171200000000.0,
+        "average_annual_mean_swe": 9.119483475451435
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.68785,
+          42.75333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stationId": "945",
+        "countyName": "",
+        "name": "Gerber Reservoir",
+        "elevation": 4880.0,
+        "huc": 180102000000.0,
+        "average_annual_mean_swe": 1.1985190408898465
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.1334,
+          42.2062
+        ]
+      }
+    }
+  ]
+}

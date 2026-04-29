@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap, ZoomControl, Pane } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import { DROUGHT_COLORS, getMapColor, getLegendLabels } from '../../../scripts/drought/mathUtils';
@@ -16,6 +17,17 @@ function MapFitter({ bounds }) {
 
 export default function DroughtMap({ activeMapLayer, setActiveMapLayer, currentHuc, setCurrentHuc, currentConditions, forecastData }) {
     const [geojsonData, setGeojsonData] = useState(null);
+    const [snotelData, setSnotelData] = useState(null);
+
+    useEffect(() => {
+        fetch('/drought/data/snotel_stations_average_annual_swe.geojson')
+            .then(r => {
+                if (!r.ok) throw new Error(`Failed to load SNOTEL data: ${r.status} ${r.statusText}`);
+                return r.json();
+            })
+            .then(data => setSnotelData(data))
+            .catch(e => console.error('Error loading SNOTEL data', e));
+    }, []);
 
     useEffect(() => {
         fetch('/drought/data/oregon_huc8.geojson')
@@ -124,6 +136,29 @@ export default function DroughtMap({ activeMapLayer, setActiveMapLayer, currentH
                         style={styleFeature} 
                         onEachFeature={onEachFeature} 
                     />
+                    {snotelData && (
+                        <GeoJSON
+                            key="snotel-stations"
+                            data={snotelData}
+                            pointToLayer={(feature, latlng) =>
+                                L.circleMarker(latlng, {
+                                    radius: 5,
+                                    fillColor: '#00bfff',
+                                    color: '#ffffff',
+                                    weight: 1,
+                                    opacity: 1,
+                                    fillOpacity: 0.85
+                                })
+                            }
+                            onEachFeature={(feature, layer) => {
+                                const { name, average_annual_mean_swe, elevation } = feature.properties;
+                                layer.bindTooltip(
+                                    `<strong>${name}</strong><br/>Avg Annual SWE: ${average_annual_mean_swe.toFixed(1)} in<br/>Elevation: ${elevation.toLocaleString()} ft`,
+                                    { sticky: true }
+                                );
+                            }}
+                        />
+                    )}
                     <Pane name="labels" style={{ zIndex: 650, pointerEvents: 'none' }}>
                         <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png" />
                     </Pane>

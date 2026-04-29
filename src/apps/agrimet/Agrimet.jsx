@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, Modal, message } from "antd";
+import { Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, Modal, message, Tabs } from "antd";
 import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { secrets } from "../../secrets";
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 
 import StationInfo from "./StationInfo";
 import CropWaterUseChart from "./CropWaterUseChart";
@@ -61,10 +61,6 @@ const getStationLatLong = (stationId) => {
 };
 
 
-
-
-
-
 const Agrimet = () => {
 
     // State to hold fetched station data
@@ -77,68 +73,89 @@ const Agrimet = () => {
     const [selectedStationData, setSelectedStationData] = useState(null);
     const [cropCurveModalOpen, setCropCurveModalOpen] = useState(false);
     const [selectedCurveCrop, setSelectedCurveCrop] = useState(null);
+    const [cropCoefficients, setCropCoefficients] = useState({});
+    const [selectedCoefficientCrop, setSelectedCoefficientCrop] = useState('ALFP');
     const [showMap, setShowMap] = useState(false); // State to control map visibility }
+    const [selectedTab, setSelectedTab] = useState('1'); // Track selected tab
+    const [showCoefficientTable, setShowCoefficientTable] = useState(false); // State to toggle coefficient table
     const [userLocation, setUserLocation] = useState(getStationLatLong(selectedStation));  // from geolocation
+    const [cropETData, setCropETData] = useState({}); // Store crop ET data
 
     const selectedCropName = useRef(() => ''); // Store the name of the selected crop
     const selectedStationName = useRef(getSelectedStationName(selectedStation)); // Store the name of the selected station
 
-    const dates = useRef([]);           // list of dates for the selected station's observations, e.g. ['2025-07-01', '2025-07-02', ...]
-    const crops = useRef({});           // list of crops for the selected station, e.g. { 'WGRN': 'Winter Wheat', ... }
+    //const dates = useRef([]);           // list of dates for the selected station's observations, e.g. ['2025-07-01', '2025-07-02', ...]
+    //const crops = useRef({});           // list of crops for the selected station, e.g. { 'WGRN': 'Winter Wheat', ... }
     const stationCropData = useRef([]); // station crop data (e.g. planting dates) for all crops
     const nwsForecast = useRef({}); // Store NWS forecast data
-
-    const [chartData, setChartData] = useState([]); // Use state to trigger re-renders]
-    const featureProps = useRef({});
+  const featureProps = useRef({});
     const OregonBounds = [
         [41.991794, -124.566244], // Southwest
         [46.292035, -116.463262], // Northeast
     ];
 
-    // Scrape and parse data from astoch.txt
-    async function fetchCWUData() {
-        console.log("Fetching CWU data for station:", selectedStation);
-        const url = 'https://agwater.org:5556/agrimet/cwu_chart_data?station=' + selectedStation;
+
+    const fetchCropETData = async () => {
+        if (!selectedStation) {
+            setCropETData({});
+            return;
+        }
+
         try {
-            const response = await fetch(url, {
+            const response = await fetch(`https://agwater.org:5556/agrimet/station/daily_et?station=${selectedStation}`, {
                 headers: {
                     "X-API-Key": secrets.agwater_api_key
                 }
             });
-            if (!response.ok) throw new Error(`Failed to fetch ${selectedStation} data`);
-            const json = await response.json();
-
-            if (!json || json.success == false)
-                throw new Error(`No data found for station ${selectedStation}`);
-
-            crops.current = json.crop_codes; // {crop_code: crop label}, ...}
-            dates.current = json.dates; // [day1, ..
-            stationCropData.current = json.station_crop_data;
-            nwsForecast.current = json.nws_forecast;
-
-            const _chartData = [];
-            const dateArray = json.chart_data['Date'] || [];
-
-            // reinterpret the fetched chart data to be compatible with recharts
-            for (let i = 0; i < dateArray.length; i++) {  // iterate through observations (days), adding a new object for each day to the array
-                const dataPoint = {}; // one day, dict with all fields
-                for (const [key, value] of Object.entries(json.chart_data)) {  // Iterate through each field in the chart_data
-                    dataPoint[key] = value[i]; // Add other fields
-                }
-                _chartData.push(dataPoint);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch crop_et_data: ${response.status}`);
             }
-
-            setChartData(_chartData); // json.chart_data); // Set chart data in state
-            return;
+            const data = await response.json();
+            setCropETData(data);
+            console.log('Crop ET data loaded:', data);
         } catch (error) {
-            setChartData([]); // Reset chart data
-            crops.current = {}; // Reset crop names
-            dates.current = []; // Reset dates
-            stationCropData.current = [];
-            console.error("Error fetching station-specific data", error);
-            return;
+            console.error('Error loading crop ET data:', error);
+            setCropETData({});
         }
-    }
+    };
+
+    // Initialize: Fetch crop coefficients on component mount
+    useEffect(() => {
+        const fetchCropCoefficients = async () => {
+            try {
+                const response = await fetch('https://agwater.org:5556/json?path=agrimet&file=crop_coefficients', {
+                    headers: {
+                        "X-API-Key": secrets.agwater_api_key
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch crop_coefficients: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                Object.entries(data.data).forEach(([, crop]) => {
+                    let gsi = []
+                    if (crop.growth_stage_indicators) {
+                        for (let i=0; i < 21; i++) {
+                            if (i*10 in crop.growth_stage_indicators)
+                                gsi.push(crop.growth_stage_indicators[i*10]);
+                             else 
+                                gsi.push(null);
+                        }
+                    }
+                    crop.growth_stage_indicators_list = gsi;
+                });
+                setCropCoefficients(data.data);
+                console.log('Crop coefficients loaded:', data);
+            } catch (error) {
+                console.error('Error loading crop coefficients:', error);
+                setCropCoefficients({});
+            }
+        };
+
+        fetchCropCoefficients();
+        fetchCropETData();
+    }, []);
 
     // When selectedStation is updated:
     // 1) Store station in cookie,
@@ -161,10 +178,12 @@ const Agrimet = () => {
         setUserLocation({ lat: latitude, lng: longitude });
 
         // get the cropw water use chart data for the selected station
-        fetchCWUData();
+        fetchCropETData();
+
     }, [selectedStation]);
 
     useEffect(() => {
+        //let cropCoeffChartData = getCropCoefficientChartData(selectedCrop);
         setCookie('agrimet_crop', selectedCrop);
     }, [selectedCrop]);
 
@@ -173,14 +192,14 @@ const Agrimet = () => {
         const stations = {};
         let i = 0
         features.forEach((feature) => {
-            const props = feature.properties;
-            if (!(props.state in stations))
-                stations[props.state] = []; // Initialize array for the state if not already present
+            const properties = feature.properties;
+            if (!(properties.state in stations))
+                stations[properties.state] = []; // Initialize array for the state if not already present
 
-            stations[props.state].push({
+            stations[properties.state].push({
                 key: 'station_' + i,
-                value: props.siteid,
-                label: props.title
+                value: properties.siteid,
+                label: properties.title
             });
             i += 1;
         });
@@ -219,7 +238,7 @@ const Agrimet = () => {
     const updateStation = (station) => {
         const fetchSelectedStationData = async () => {
             try {
-                const response = await fetch(`https://agwater.org:5556//agrimet/station_crop_info?station=${station}`, {
+                const response = await fetch(`https://agwater.org:5556/agrimet/station_crop_info?station=${station}`, {
                     headers: {
                         "X-API-Key": secrets.agwater_api_key
                     }
@@ -351,8 +370,155 @@ const Agrimet = () => {
         return points.sort((a, b) => a.dayOffset - b.dayOffset);
     };
 
+    const CustomTooltip = ({ active, payload }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div style={{ backgroundColor: '#000', border: '1px solid #fff', padding: '8px' }}>
+                    <p style={{ color: '#fff', margin: 0 }}>
+                        {`Crop Coefficient: ${payload[0].value.toFixed(2)}`}
+                    </p>
+                </div>
+            );
+        }
+        return null;
+    };
 
 
+
+    const LocationSpecificInformation = () => {
+        return (
+            <div>
+                <p>Location-specific agricultural information and recommendations will be displayed here.</p>
+            </div>
+        );
+    };
+
+
+    const CropCoefficientsContent = () => {
+        if (!cropCoefficients || typeof cropCoefficients !== 'object' || Object.keys(cropCoefficients).length === 0) {
+            return (<span>No crop coefficient data available</span>);
+        }
+
+        const cropCodes = Object.keys(cropCoefficients);
+        const cropOptions = cropCodes.map((code) => {
+            const crop = cropCoefficients[code];
+            return {
+                value: code,
+                label: crop.name ? `${crop.name} (${code})` : code
+            };
+        });
+
+        const selectedCode = selectedCoefficientCrop !== null ? selectedCoefficientCrop : cropCodes[0];
+        const selectedCrop = cropCoefficients[selectedCode];
+
+        const getCoefficientsData = (crop) => {
+            if (!crop || !crop.crop_coefficients || !Array.isArray(crop.crop_coefficients)) return [];
+
+
+            let data = crop.crop_coefficients.map((value, index) => ({
+                growth_stage_indicator: crop.growth_stage_indicators_list ? crop.growth_stage_indicators_list[index] : "",
+                pctGrowth: index*10,
+                kc: Number(value),
+            }));
+
+            data.unshift({ pctGrowth: -5, kc: null });
+            data.push({ pctGrowth: 105, kc: null });
+            return data;
+        };
+
+        const coeffData = selectedCrop ? getCoefficientsData(selectedCrop) : [];
+        const isMobile = (typeof navigator !== 'undefined') && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const tickStep = isMobile ? 25 : 10;
+        const chartTicks = coeffData.slice(1, -1).map((d) => d.pctGrowth).filter((v) => (v % tickStep) === 0);
+
+        return (
+            <>
+                <div style={{ marginBottom: '16px' }}>
+                    <label style={{ marginRight: '8px' }}>Select Crop:</label>
+                    <Select
+                        value={selectedCode}
+                        onChange={setSelectedCoefficientCrop}
+                        options={cropOptions}
+                        style={{ width: '300px' }}
+                    />
+                </div>
+                {selectedCrop && selectedCrop.crop_coefficients && (
+                    <div>
+                        <p style={{ fontSize: '14px', color: '#ccc', marginBottom: '12px' }}>
+                            {selectedCrop.description}
+                        </p>
+                        <div style={{ height: 320, width: '100%' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                    data={coeffData}
+                                    margin={{ top: 10, right: 24, left: 8, bottom: 8 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="pctGrowth" ticks={chartTicks} stroke="yellow" style={{fontWeight: 'normal'}} height={50} label={{ stroke:'white', value: 'Percent Growth Stage (%)', position: 'insideBottom',}} />
+                                    <YAxis stroke="yellow" domain={[0, 1.25]} ticks={[0, 0.25, 0.5, 0.75, 1, 1.25]} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Line type="monotone" dataKey="kc" name="Crop Coefficient (Kc)" stroke="#ff7a00" strokeWidth={2} />
+                                    {coeffData && coeffData.filter(d => d.growth_stage_indicator).map((d, idx) => (
+                                        <ReferenceDot
+                                            key={`gsi_${idx}`}
+                                            x={d.pctGrowth}
+                                            y={d.kc}
+                                            r={9}
+                                            stroke="#ff7a00"
+                                            fill="yellow"
+                                            label={{ position: 'bottom', value: d.growth_stage_indicator, fill: '#fff', fontSize: '12pt' }}
+                                        />
+                                    ))}
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                        
+                        <div style={{ marginTop: '24px' }}>
+                            <Button 
+                                type="primary" 
+                                onClick={() => setShowCoefficientTable(!showCoefficientTable)}
+                                style={{ marginBottom: '16px' }}
+                            >
+                                {showCoefficientTable ? 'Hide' : 'Show'} Crop Coefficient Table
+                            </Button>
+                            {showCoefficientTable && (
+                            <Table
+                                dataSource={coeffData.slice(1, -1)} // Exclude the first and last entries which are for -5% and 105% growth stages
+                                columns={[
+                                    {
+                                        title: 'Growth Stage (%)',
+                                        dataIndex: 'pctGrowth',
+                                        key: 'pctGrowth',
+                                        align: 'center',
+                                        width: '30%',
+                                    },
+                                    {
+                                        title: 'Crop Coefficient (Kc)',
+                                        dataIndex: 'kc',
+                                        key: 'kc',
+                                        align: 'center',
+                                        width: '30%',
+                                        render: (value) => value ? value.toFixed(2): null,
+                                    },
+                                    {
+                                        title: 'Growth Stage Indicator',
+                                        dataIndex: 'growth_stage_indicator',
+                                        key: 'growth_stage_indicator',
+                                        align: 'center',
+                                        width: '40%',
+                                        render: (value) => value || '',
+                                    },
+                                ]}
+                                pagination={false}
+                                size="small"
+                            />
+                            )}
+                        </div>
+                    </div>
+                )}
+            </>
+        );
+    };
 
     const CropInfoTable = () => {
         if (!selectedStationData || !selectedStationData.crop_data) {
@@ -362,24 +528,6 @@ const Agrimet = () => {
         //if (crop == null)
         //    return (<span>No crop specified</span>);
         
-    /* expected format of selectedStationData: a list of crop objects that look like:
-
-    {
-    "CropCode": "ETr",
-    "Start Date": "01/01",
-    "Full Cover Date": "01/01",
-    "Termination Date": "12/31",
-    "Daily Penman ET (in)-4": 0.09,
-    "Daily Penman ET (in)-3": 0.09,
-    "Daily Penman ET (in)-2": 0.05,
-    "Daily Penman ET (in)-1": 0.09,
-    "Daily Penman ET (in)": 0.08,
-    "Sum ET (in)": 6.8,
-    "7 Day Use": "0.71.3",
-    "14 Day Use": null,
-    "Name": "ETr"
-  },
- */
         const cropData = selectedStationData.crop_data;
         // add a 'key' field to each crop object in the cropData list for use in the Ant Design Table component
         cropData.forEach((crop, index) => {
@@ -426,7 +574,7 @@ const Agrimet = () => {
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="label" />
                                 <YAxis />
-                                <Tooltip />
+                                <Tooltip content={<CustomTooltip />} />
                                 <Line type="monotone" dataKey="et" name="Daily Penman ET (in)" stroke="#1677ff" strokeWidth={2} />
                             </LineChart>
                         </ResponsiveContainer>
@@ -441,12 +589,12 @@ const Agrimet = () => {
     const resultItems = [
         {
             key: '1',
-            label: 'Station Information - ' + selectedStationName.current,
+            label: 'Station Information',
             children: <StationInfo stationInfo={featureProps.current} />,
         },
         {
             key: '2',
-            label: 'Current Weather Conditions - ' + selectedStationName.current,
+            label: 'Current Weather Conditions',
             children:
                 nwsForecast.current && nwsForecast.current.periods ? (
                     <NWSForecast
@@ -458,16 +606,28 @@ const Agrimet = () => {
         },
         {
             key: '3',
-            label: 'Crop Water Use - ' + selectedStationName.current,
-            children: <CropWaterUseChart chartData={chartData} selectedCrop={selectedCrop} selectCropOptions={selectCropOptions}
-                onSelectedCropChange={setSelectedCrop} />,
+            label: 'Crop Planting, Harvest Date, and Seasonal Water Use',
+            children: <CropInfoTable />,
         },
         {
             key: '4',
-            label: 'Crop Planting, Harvest Date + Seasonal Water Use - ' + selectedStationName.current,
-            children: <CropInfoTable />,
-        }
+            label: 'Crop Water Use',
+            children: <CropWaterUseChart cropETData={cropETData} />,
+        },
     ];
+
+    const tabItems = [
+            {
+                key: '1',
+                label: 'Location-Specific Information',
+                //children: <LocationSpecificInformation />,
+            },
+            {
+                key: '2',
+                label: 'Crop Coefficients',
+                //children: <CropCoefficientsContent />,
+            },
+        ];
 
 
     return (
@@ -484,8 +644,20 @@ const Agrimet = () => {
                 The page provides access to Oregon-specific Agrimet data and products.
             </p>
 
+
+            <div style={{ marginLeft: '1em', marginRight: '1em', marginTop: '1em' }} >
+
+            <Tabs items={tabItems} activeKey={selectedTab} onChange={setSelectedTab} />
+
+            {selectedTab === '2' && (
+                <div style={{ marginTop: '1em' }}>
+                    <CropCoefficientsContent />
+                </div>
+            )}
+
+            {selectedTab === '1' && (
             <Row gutter={12} style={{ marginBottom: 16 }}>
-                <Col xs={24} lg={12} style={{ height: 360 }} >
+                <Col xs={24} lg={10} style={{ height: 540 }} >
                     <Divider orientation="left">Select a Agrimet station</Divider>
 
                     <Cascader key='stationCascader' defaultValue={[selectedState, selectedStation]} style={{ width: '24em' }} 
@@ -591,11 +763,14 @@ const Agrimet = () => {
                     )}
                 </Col>
 
-                <Col xs={24} lg={12}>
-                    <Divider orientation="left">Agrimet Station Results</Divider>
-                    <Collapse accordion defaultActiveKey={['2']} items={resultItems} />
+                <Col xs={24} lg={14}>
+                    <Divider orientation="left">Station: {selectedStation ? selectedStation.toUpperCase() : 'None'}</Divider>
+                    <span style={{ fontSize: '14px', color: 'white' }}>Station Name: {selectedStationName.current || 'No station selected'}</span>
+                    <Collapse accordion defaultActiveKey={['2']} style={{marginTop: '1em'}} items={resultItems} />
                 </Col>
             </Row>
+            )}
+            </div>
         </>
     );
 };

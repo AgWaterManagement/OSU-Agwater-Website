@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 
-import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse } from 'antd';
+import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal, Select } from 'antd';
 import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, useMapEvents } from 'react-leaflet';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
@@ -8,6 +8,7 @@ import { PieChart, Pie, Cell } from 'recharts';
 import PropTypes from 'prop-types';
 import { secrets } from '../../secrets';
 import WeatherForecast from './WeatherForecast';
+import SummaryPanel from '../../components/drought/SummaryPanel';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 
 const { Title} = Typography;
@@ -196,6 +197,12 @@ const Drought = () => {
 	const [streamForecast, setStreamForecast] = useState(null);
 	const [snowForecast, setSnowForecast] = useState(null);
 	const [reservoirForecast, setReservoirForecast] = useState(null);
+	const [modalChart, setModalChart] = useState(null);
+	const [hucConditions, setHucConditions] = useState(null);
+	const [hucForecasts, setHucForecasts] = useState(null);
+	const [hucNames, setHucNames] = useState({});
+	const [currentHuc, setCurrentHuc] = useState(null);
+	const [activeMapLayer, setActiveMapLayer] = useState('forecast_pct_normal');
 
 	const countyCentroids = {
 		"Baker": { latitude: 44.7661, longitude: -117.8334, zoneId: "ORZ001" },
@@ -443,15 +450,18 @@ const Drought = () => {
 			// that have SRVO forecast data (indicated by the forecastPoint metadata field).
 			const stationsUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations';
 			const cleanCountyName = countyName ? countyName.replace(/ County$/i, '').trim() : null;
+			
 			const stationsParams = new URLSearchParams({
-				stationTriplets: '*:OR:*',
-				elements: 'SRVO',
+				stationTriplets: '*:OR:USGS',	// For now, we will stick with forecasts from US Geological Survey stations, which are the most common source of streamflow forecasts in the AWDB. This may be expanded in the future to include other station types if they have forecastPoint metadata.
+				elements: 'SRVO',	// We are currently only forecasting streamflow volume (SRVO), but in the future we may want to include other forecasted elements such as SWE or water supply forecasts if they are available for stations in the selected county.
 				activeOnly: 'true',
-				returnForecastPointMetadata: 'true'
+				returnForecastPointMetadata: 'true'	// This will be useful to filter for stations that have forecast data available, and to display metadata about the forecast points in the UI.
 			});
 			if (cleanCountyName) {
 				stationsParams.append('countyNames', cleanCountyName);
 			}
+
+			//console.log(`Fetching stations with params: ${stationsParams.toString()}`);
 
 			const stationsResponse = await fetch(`${stationsUrl}?${stationsParams}`, {
 				headers: { 'Accept': 'application/json' }
@@ -479,32 +489,92 @@ const Drought = () => {
 			const streamData = [];
 
 			for (const station of stationsToFetch) {
+				console.log(`Fetching forecast for station ${station.name} (${station.stationId}) at ${station.stationTriplet}`);
 				try {
 					const forecastUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/forecasts';
+
+					// Determine the start month of the current quarter so we can select the
+					// most relevant forecast period from whatever the station provides.
+					const currentMonth = new Date().getMonth() + 1;
+					const quarterStartMonth = currentMonth < 4 ? 1 : currentMonth < 7 ? 4 : currentMonth < 10 ? 7 : 10;
+					const quarterStartPrefix = String(quarterStartMonth).padStart(2, '0');
+
+					// Helper: compute duration in days for a forecastPeriod (array or legacy object).
+					const periodDays = (fp) => {
+						const toDate = (mmdd) => new Date(`2000-${mmdd}`);
+						if (Array.isArray(fp)) return (toDate(fp[1]) - toDate(fp[0])) / 86400000;
+						const start = fp?.beginDate || fp?.startDate;
+						const end = fp?.endDate;
+						return start && end ? (toDate(end) - toDate(start)) / 86400000 : Infinity;
+					};
+
+					// Fetch all available periods for this station — no forecastPeriods filter —
+					// so stations with non-standard period lengths (e.g. 04-01 to 07-31 instead
+					// of 04-01 to 06-30) are still returned.
 					const forecastParams = new URLSearchParams({
 						stationTriplets: station.stationTriplet,
-						elements: 'SRVO'
+						elementCodes: 'SRVO',
 					});
 
 					const forecastResponse = await fetch(`${forecastUrl}?${forecastParams}`, {
 						headers: { 'Accept': 'application/json' }
 					});
 
+					console.log(`Response for station ${station.name}:`, forecastResponse);
+
 					if (forecastResponse.ok) {
 						const data = await forecastResponse.json();
+						//console.log(`Forecast data for station ${station.name}:`, data);
 						if (data && data.length > 0) {
 							const stationForecast = data[0];
-							const periods = (stationForecast?.data || []).map(d => ({
-								periodName: d.forecastPeriod?.name ||
-									`${d.forecastPeriod?.beginDate}–${d.forecastPeriod?.endDate}`,
-								beginDate: d.forecastPeriod?.beginDate,
-								endDate: d.forecastPeriod?.endDate,
-								// API may return forecastValues or values depending on version
-								forecastValues: (d.forecastValues || d.values || []).filter(
-									v => v.exceedanceProbability !== undefined && v.value !== null
-								),
-								unit: d.unit || 'KAF'
-							})).filter(p => p.forecastValues.length > 0);
+
+							// Filter to periods that start in the current quarter, then pick the
+							// shortest one so stations with non-standard period lengths still show data.
+							const allDataEntries = stationForecast?.data || [];
+							const quarterEntries = allDataEntries.filter(d => {
+								const fp = d.forecastPeriod;
+								const startMM = Array.isArray(fp)
+									? fp[0].slice(0, 2)
+									: (fp?.beginDate || fp?.startDate || '').slice(0, 2);
+								return startMM === quarterStartPrefix;
+							});
+							// Among matching entries pick the shortest period; fall back to all entries.
+							const candidates = quarterEntries.length > 0 ? quarterEntries : allDataEntries;
+							candidates.sort((a, b) => periodDays(a.forecastPeriod) - periodDays(b.forecastPeriod));
+							const selectedEntries = candidates.length > 0 ? [candidates[0]] : [];
+
+							const periods = selectedEntries.map(d => {
+								// forecastPeriod: new API returns array ["MM-DD","MM-DD"],
+								// legacy returns object {name, beginDate, endDate}
+								let periodName;
+								if (Array.isArray(d.forecastPeriod)) {
+									periodName = `${d.forecastPeriod[0]}–${d.forecastPeriod[1]}`;
+								} else {
+									periodName = d.forecastPeriod?.name ||
+										`${d.forecastPeriod?.beginDate}–${d.forecastPeriod?.endDate}`;
+								}
+
+								// forecastValues: new API returns plain object {"5": 110, "30": 82, ...},
+								// legacy returns array [{exceedanceProbability, value}]
+								let forecastValues;
+								if (d.forecastValues && !Array.isArray(d.forecastValues)) {
+									forecastValues = Object.entries(d.forecastValues)
+										.filter(([, val]) => val !== null && val !== undefined)
+										.map(([prob, val]) => ({ exceedanceProbability: prob, value: val }));
+								} else {
+									forecastValues = (d.forecastValues || d.values || []).filter(
+										v => v.exceedanceProbability !== undefined && v.value !== null
+									);
+								}
+
+								const rawUnit = d.unitCode || d.unit || 'kac_ft';
+								const unit = (rawUnit === 'kac_ft' || rawUnit === 'kaf') ? 'KAF'
+									: rawUnit === 'af' ? 'acre-ft'
+									: rawUnit === 'cfs' ? 'CFS'
+									: rawUnit.toUpperCase();
+
+								return { periodName, forecastValues, unit };
+							}).filter(p => p.forecastValues.length > 0);
 
 							if (periods.length > 0) {
 								streamData.push({
@@ -753,11 +823,51 @@ const Drought = () => {
 		}
 	};
 
+	// Transforms huc8_current_conditions.json field names to match SummaryPanel's LATEST_API_KEY_MAP
+	const adaptConditions = (raw) => {
+		const out = {};
+		for (const [huc, v] of Object.entries(raw)) {
+			out[huc] = {
+				usdm: v.usdm,
+				pdsi: v.pdsi,
+				spi: v.spi,
+				eddi: v.eddi,
+				cmi_raw: v.cmi,
+				vci_raw: v.vci,
+				vhi_raw: v.vhi,
+				ssmi_raw: v.ssmi,
+				streamflow_pctile: v.streamflow,
+				swe_pct_normal: v.swe,
+				spi_1yr: v.spi1yr,
+			};
+		}
+		return out;
+	};
+
+	const getActiveLayer = (mapLayer) => {
+		if (['usdm', 'pdsi', 'spi', 'eddi'].includes(mapLayer)) return 'met';
+		if (['cmi_raw', 'vci_raw', 'vhi_raw', 'ssmi_raw'].includes(mapLayer)) return 'ag';
+		return 'hydro';
+	};
+
 	useEffect(() => {
 		PopulateCountyData();
 		FetchCountiesMap();
 		GetNWSForcast(44.0582, -121.3153);
 		GetWeatherAlerts('ORZ001');
+
+		// Load HUC-8 static data for SummaryPanel
+		Promise.all([
+			fetch('/drought/data/huc8_current_conditions.json').then(r => r.json()),
+			fetch('/drought/data/huc8_current_forecasts.json').then(r => r.json()),
+			fetch('/drought/data/huc8_names.json').then(r => r.json()),
+		]).then(([conditions, forecasts, names]) => {
+			setHucConditions(adaptConditions(conditions));
+			setHucForecasts(forecasts);
+			setHucNames(names);
+		}).catch(err => {
+			console.error('Error loading HUC-8 data:', err);
+		});
 	}, []);
 
 
@@ -885,6 +995,251 @@ const Drought = () => {
 		initArcGISComponents();
 	}, []);
 
+	const renderSnowChart = (height = 250) => {
+		if (!snowForecast?.stations?.length) {
+			return (
+				<p style={{ color: 'white', marginTop: '4px' }}>
+					{!selectedCounty
+						? 'Select a county to view snow pack data.'
+						: snowForecast?.noStations
+							? `No SNOTEL stations are located in ${selectedCounty.properties.NAME.replace(/ County$/i, '')} County.`
+							: 'Loading snow data...'}
+				</p>
+			);
+		}
+		const allDatesSet = new Set();
+		snowForecast.stations.forEach(s => s.values.forEach(v => allDatesSet.add(v.date)));
+		const sortedDates = Array.from(allDatesSet).sort();
+		const chartData = sortedDates.map(date => {
+			const point = { date };
+			snowForecast.stations.forEach(s => {
+				const match = s.values.find(v => v.date === date);
+				point[s.stationName] = match ? match.value : null;
+			});
+			return point;
+		});
+		const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
+		const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+		const lineColors = ['#8884d8','#82ca9d','#ffc658','#ff7300','#0088fe','#00C49F','#FFBB28','#FF8042','#a4de6c','#d0ed57'];
+		return (
+			<>
+				<p style={{ color: 'white', marginTop: '4px' }}>
+					{snowForecast.stations.length} station{snowForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'} — daily SWE (past year)
+				</p>
+				<ResponsiveContainer width="100%" height={height}>
+					<LineChart data={chartData} margin={{ top: 5, right: 5, left: 15, bottom: 5 }}>
+						<CartesianGrid strokeDasharray="3 3" stroke="#444" />
+						<XAxis
+							dataKey="date"
+							ticks={monthTicks}
+							tickFormatter={(d) => monthNames[parseInt(d.slice(5, 7)) - 1]}
+							tick={{ fill: 'white', fontSize: 10 }}
+						/>
+						<YAxis
+							tick={{ fill: 'white', fontSize: 10 }}
+							label={{ value: 'SWE (in)', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
+						/>
+						<Tooltip
+							formatter={(value, name) => [value != null ? `${value} in` : 'N/A', name]}
+							labelFormatter={(label) => label}
+							contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
+							itemStyle={{ color: 'white' }}
+							labelStyle={{ color: 'white' }}
+						/>
+						<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
+						{snowForecast.stations.map((station, idx) => (
+							<Line
+								key={station.stationId}
+								type="monotone"
+								dataKey={station.stationName}
+								stroke={lineColors[idx % lineColors.length]}
+								dot={false}
+								connectNulls={false}
+							/>
+						))}
+					</LineChart>
+				</ResponsiveContainer>
+			</>
+		);
+	};
+
+	const renderReservoirChart = (height = 250) => {
+		if (!reservoirForecast?.stations?.length) {
+			return (
+				<p style={{ color: 'white', marginTop: '4px' }}>
+					{!selectedCounty
+						? 'Select a county to view reservoir data.'
+						: reservoirForecast?.noStations
+							? `No reservoir stations are located in ${selectedCounty.properties.NAME.replace(/ County$/i, '')} County.`
+							: 'Loading reservoir data...'}
+				</p>
+			);
+		}
+		const allDatesSet = new Set();
+		reservoirForecast.stations.forEach(s => s.values.forEach(v => allDatesSet.add(v.date)));
+		const sortedDates = Array.from(allDatesSet).sort();
+		const chartData = sortedDates.map(date => {
+			const point = { date };
+			reservoirForecast.stations.forEach(s => {
+				const match = s.values.find(v => v.date === date);
+				point[s.stationName] = match ? match.value : null;
+			});
+			return point;
+		});
+		const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
+		const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+		const lineColors = ['#8884d8','#82ca9d','#ffc658','#ff7300','#0088fe','#00C49F','#FFBB28','#FF8042','#a4de6c','#d0ed57'];
+		return (
+			<>
+				<p style={{ color: 'white', marginTop: '4px' }}>
+					{reservoirForecast.stations.length} reservoir{reservoirForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'} — daily storage (past year)
+				</p>
+				<ResponsiveContainer width="100%" height={height}>
+					<LineChart data={chartData} margin={{ top: 5, right: 5, left: 20, bottom: 5 }}>
+						<CartesianGrid strokeDasharray="3 3" stroke="#444" />
+						<XAxis
+							dataKey="date"
+							ticks={monthTicks}
+							tickFormatter={(d) => monthNames[parseInt(d.slice(5, 7)) - 1]}
+							tick={{ fill: 'white', fontSize: 10 }}
+						/>
+						<YAxis
+							tick={{ fill: 'white', fontSize: 10 }}
+							label={{ value: 'Storage (acre-ft)', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
+						/>
+						<Tooltip
+							formatter={(value, name) => [value != null ? `${value.toLocaleString()} acre-ft` : 'N/A', name]}
+							labelFormatter={(label) => label}
+							contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
+							itemStyle={{ color: 'white' }}
+							labelStyle={{ color: 'white' }}
+						/>
+						<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
+						{reservoirForecast.stations.map((station, idx) => (
+							<Line
+								key={station.stationId}
+								type="monotone"
+								dataKey={station.stationName}
+								stroke={lineColors[idx % lineColors.length]}
+								dot={false}
+								connectNulls={false}
+							/>
+						))}
+					</LineChart>
+				</ResponsiveContainer>
+			</>
+		);
+	};
+
+	const renderStreamForecastChart = (height = 250) => {
+		if (!streamForecast?.stations?.length) {
+			return (
+				<p style={{ color: 'white', marginTop: '4px' }}>
+					{!selectedCounty
+						? 'Select a county to view streamflow forecast data.'
+						: streamForecast?.noStations
+							? `No streamflow forecast points are located in ${selectedCounty.properties.NAME.replace(/ County$/i, '')} County.`
+							: 'Loading streamflow forecast data...'}
+				</p>
+			);
+		}
+
+		// Color scale from red (dry/low exceedance) → yellow (median) → blue (wet/high exceedance)
+		const probabilityColorMap = {
+			'95%': '#b71c1c',
+			'90%': '#d32f2f',
+			'80%': '#f4511e',
+			'70%': '#fb8c00',
+			'60%': '#fdd835',
+			'50%': '#c6ca53',
+			'40%': '#8bc34a',
+			'30%': '#26a69a',
+			'20%': '#1e88e5',
+			'10%': '#1565c0',
+			'5%': '#0d47a1'
+		};
+		const getProbColor = (prob) => probabilityColorMap[prob] || '#8884d8';
+
+		return (
+			<>
+				<p style={{ color: 'white', marginTop: '4px' }}>
+					{streamForecast.stations.length} forecast point{streamForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'}
+				</p>
+				{streamForecast.stations.map(station => {
+					// Collect all unique probability keys across all periods, sorted ascending
+					const allProbKeys = [...new Set(
+						station.periods.flatMap(p => p.forecastValues.map(v => `${v.exceedanceProbability}%`))
+					)].sort((a, b) => parseInt(b) - parseInt(a));
+
+					// Build chart data: one row per probability threshold, one column per period
+					const chartData = allProbKeys.map(probKey => {
+						const point = { probability: probKey };
+						station.periods.forEach(p => {
+							const match = p.forecastValues.find(v => `${v.exceedanceProbability}%` === probKey);
+							point[p.periodName] = match ? match.value : null;
+						});
+						return point;
+					});
+
+					const unit = station.periods[0]?.unit || 'KAF';
+					const periodLabels = station.periods.map(p => p.periodName).join(', ');
+
+					return (
+						<div key={station.stationId} style={{ marginBottom: '16px' }}>
+							<p style={{ color: '#ccc', fontSize: '12px', margin: '4px 0 2px 0' }}>
+								{station.stationName} — {periodLabels}
+							</p>
+							<ResponsiveContainer width="100%" height={height}>
+								<BarChart
+									layout="vertical"
+									data={chartData}
+									margin={{ top: 5, right: 20, left: 35, bottom: 20 }}
+								>
+									<CartesianGrid strokeDasharray="3 3" stroke="#444" />
+									<XAxis
+										type="number"
+										tick={{ fill: 'white', fontSize: 10 }}
+										label={{ value: unit, position: 'insideBottom', fill: 'white', fontSize: 10, offset: -10 }}
+									/>
+									<YAxis
+										type="category"
+										dataKey="probability"
+										tick={{ fill: 'white', fontSize: 10 }}
+										label={{ value: 'Exceedance', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
+									/>
+									<Tooltip
+										formatter={(value, name) => [value != null ? `${value} ${unit}` : 'N/A', name]}
+										contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
+										itemStyle={{ color: 'white' }}
+										labelStyle={{ color: 'white' }}
+									/>
+									<Legend
+										content={() => (
+											<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '4px 0', justifyContent: 'center' }}>
+												{allProbKeys.map(prob => (
+													<span key={prob} style={{ color: 'white', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+														<span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: getProbColor(prob), borderRadius: '2px' }} />
+														{prob}
+													</span>
+												))}
+											</div>
+										)}
+									/>
+									{station.periods.map((p) => (
+										<Bar key={p.periodName} dataKey={p.periodName}>
+											{chartData.map((entry) => (
+												<Cell key={`cell-${entry.probability}`} fill={getProbColor(entry.probability)} />
+											))}
+										</Bar>
+									))}
+								</BarChart>
+							</ResponsiveContainer>
+						</div>
+					);
+				})}
+			</>
+		);
+	};
 
 	return (
 		<>
@@ -1028,72 +1383,13 @@ const Drought = () => {
 								key: '2', label: 'Short Term Stream Flow Forecast', children: (
 									<div>
 										<strong style={{ color: 'white' }}>Streamflow Volume Outlook (SRVO)</strong>
-										{streamForecast?.stations?.length ? (() => {
-											// Colors keyed by exceedance probability:
-											// Low % = rarely exceeded = high flow; high % = often exceeded = low flow
-											const probColors = {
-												'10%': '#0088fe',
-												'30%': '#00C49F',
-												'50%': '#82ca9d',
-												'70%': '#ffc658',
-												'90%': '#ff7300'
-											};
-											return (
-												<>
-													<p style={{ color: 'white', marginTop: '4px' }}>
-														{streamForecast.stations.length} forecast point{streamForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'}
-													</p>
-													{streamForecast.stations.map(station => {
-														const chartData = station.periods.map(p => {
-															const point = { period: p.periodName };
-															p.forecastValues.forEach(v => {
-																point[`${v.exceedanceProbability}%`] = v.value;
-															});
-															return point;
-														});
-														const probKeys = chartData.length > 0
-															? Object.keys(chartData[0]).filter(k => k !== 'period').sort((a, b) => parseInt(a) - parseInt(b))
-															: [];
-														const unit = station.periods[0]?.unit || 'KAF';
-														return (
-															<div key={station.stationId} style={{ marginBottom: '16px' }}>
-																<p style={{ color: '#ccc', fontSize: '12px', margin: '4px 0 2px 0' }}>
-																	{station.stationName}
-																</p>
-																<ResponsiveContainer width="100%" height={200}>
-																	<BarChart data={chartData} margin={{ top: 5, right: 5, left: 20, bottom: 5 }}>
-																		<CartesianGrid strokeDasharray="3 3" stroke="#444" />
-																		<XAxis dataKey="period" tick={{ fill: 'white', fontSize: 10 }} />
-																		<YAxis
-																			tick={{ fill: 'white', fontSize: 10 }}
-																			label={{ value: unit, angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
-																		/>
-																		<Tooltip
-																			formatter={(value, name) => [value != null ? `${value} ${unit}` : 'N/A', `${name} exceedance`]}
-																			contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
-																			itemStyle={{ color: 'white' }}
-																			labelStyle={{ color: 'white' }}
-																		/>
-																		<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
-																		{probKeys.map(key => (
-																			<Bar key={key} dataKey={key} fill={probColors[key] || '#8884d8'} />
-																		))}
-																	</BarChart>
-																</ResponsiveContainer>
-															</div>
-														);
-													})}
-												</>
-											);
-										})() : (
-											<p style={{ color: 'white', marginTop: '4px' }}>
-												{!selectedCounty
-													? 'Select a county to view streamflow forecast data.'
-													: streamForecast?.noStations
-														? `No streamflow forecast points are located in ${selectedCounty.properties.NAME.replace(/ County$/i, '')} County.`
-														: 'Loading streamflow forecast data...'}
-											</p>
-										)}
+										<div
+											style={{ cursor: 'pointer' }}
+											title="Click to expand"
+											onClick={() => setModalChart('stream')}
+										>
+											{renderStreamForecastChart(250)}
+										</div>
 									</div>
 								),
 
@@ -1101,138 +1397,24 @@ const Drought = () => {
 							{
 								key: '3', label: 'Historic Water Levels (Snow Pack/Reservoirs)', children: (
 									<div>
+										<div
+										style={{ cursor: 'pointer' }}
+										title="Click to expand"
+										onClick={() => setModalChart('snow')}
+									>
 										<strong style={{ color: 'white' }}>Snow Pack (SNOTEL)</strong>
-								{snowForecast?.stations?.length ? (() => {
-									const allDatesSet = new Set();
-									snowForecast.stations.forEach(s => s.values.forEach(v => allDatesSet.add(v.date)));
-									const sortedDates = Array.from(allDatesSet).sort();
-									const chartData = sortedDates.map(date => {
-										const point = { date };
-										snowForecast.stations.forEach(s => {
-											const match = s.values.find(v => v.date === date);
-											point[s.stationName] = match ? match.value : null;
-										});
-										return point;
-									});
-									const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
-									const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-									const lineColors = ['#8884d8','#82ca9d','#ffc658','#ff7300','#0088fe','#00C49F','#FFBB28','#FF8042','#a4de6c','#d0ed57'];
-									return (
-										<>
-											<p style={{ color: 'white', marginTop: '4px' }}>
-												{snowForecast.stations.length} station{snowForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'} — daily SWE (past year)
-											</p>
-											<ResponsiveContainer width="100%" height={250}>
-												<LineChart data={chartData} margin={{ top: 5, right: 5, left: 15, bottom: 5 }}>
-													<CartesianGrid strokeDasharray="3 3" stroke="#444" />
-													<XAxis
-														dataKey="date"
-														ticks={monthTicks}
-														tickFormatter={(d) => monthNames[parseInt(d.slice(5, 7)) - 1]}
-														tick={{ fill: 'white', fontSize: 10 }}
-													/>
-													<YAxis
-														tick={{ fill: 'white', fontSize: 10 }}
-														label={{ value: 'SWE (in)', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
-													/>
-													<Tooltip
-														formatter={(value, name) => [value != null ? `${value} in` : 'N/A', name]}
-														labelFormatter={(label) => label}
-														contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
-														itemStyle={{ color: 'white' }}
-														labelStyle={{ color: 'white' }}
-													/>
-													<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
-													{snowForecast.stations.map((station, idx) => (
-														<Line
-															key={station.stationId}
-															type="monotone"
-															dataKey={station.stationName}
-															stroke={lineColors[idx % lineColors.length]}
-															dot={false}
-															connectNulls={false}
-														/>
-													))}
-												</LineChart>
-											</ResponsiveContainer>
-										</>
-									);
-								})() : (
-									<p style={{ color: 'white', marginTop: '4px' }}>
-											{!selectedCounty
-												? 'Select a county to view snow pack data.'
-												: snowForecast?.noStations
-													? `No SNOTEL stations are located in ${selectedCounty.properties.NAME.replace(/ County$/i, '')} County.`
-													: 'Loading snow data...'}
-									</p>
-								)}
+										{renderSnowChart(250)}
+									</div>
 										<Divider style={{ borderColor: '#555', margin: '12px 0' }} />
 
+									<div
+										style={{ cursor: 'pointer' }}
+										title="Click to expand"
+										onClick={() => setModalChart('reservoir')}
+									>
 										<strong style={{ color: 'white' }}>Reservoir Storage</strong>
-										{reservoirForecast?.stations?.length ? (() => {
-											const allDatesSet = new Set();
-											reservoirForecast.stations.forEach(s => s.values.forEach(v => allDatesSet.add(v.date)));
-											const sortedDates = Array.from(allDatesSet).sort();
-											const chartData = sortedDates.map(date => {
-												const point = { date };
-												reservoirForecast.stations.forEach(s => {
-													const match = s.values.find(v => v.date === date);
-													point[s.stationName] = match ? match.value : null;
-												});
-												return point;
-											});
-											const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
-											const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-											const lineColors = ['#8884d8','#82ca9d','#ffc658','#ff7300','#0088fe','#00C49F','#FFBB28','#FF8042','#a4de6c','#d0ed57'];
-											return (
-												<>
-													<p style={{ color: 'white', marginTop: '4px' }}>
-														{reservoirForecast.stations.length} reservoir{reservoirForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'} — daily storage (past year)
-													</p>
-													<ResponsiveContainer width="100%" height={250}>
-														<LineChart data={chartData} margin={{ top: 5, right: 5, left: 20, bottom: 5 }}>
-															<CartesianGrid strokeDasharray="3 3" stroke="#444" />
-															<XAxis
-																dataKey="date"
-																ticks={monthTicks}
-																tickFormatter={(d) => monthNames[parseInt(d.slice(5, 7)) - 1]}
-																tick={{ fill: 'white', fontSize: 10 }}
-															/>
-															<YAxis
-																tick={{ fill: 'white', fontSize: 10 }}
-																label={{ value: 'Storage (acre-ft)', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
-															/>
-															<Tooltip
-																formatter={(value, name) => [value != null ? `${value.toLocaleString()} acre-ft` : 'N/A', name]}
-																labelFormatter={(label) => label}
-																contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
-																itemStyle={{ color: 'white' }}
-																labelStyle={{ color: 'white' }}
-															/>
-															<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
-															{reservoirForecast.stations.map((station, idx) => (
-																<Line
-																	key={station.stationId}
-																	type="monotone"
-																	dataKey={station.stationName}
-																	stroke={lineColors[idx % lineColors.length]}
-																	dot={false}
-																	connectNulls={false}
-																/>
-															))}
-														</LineChart>
-													</ResponsiveContainer>
-												</>
-											);
-										})() : (
-											<p style={{ color: 'white', marginTop: '4px' }}>
-												{!selectedCounty
-													? 'Select a county to view reservoir data.'
-													: reservoirForecast?.noStations
-														? `No reservoir stations are located in ${selectedCounty.properties.NAME.replace(/ County$/i, '')} County.`
-														: 'Loading reservoir data...'}
-											</p>
-										)}
+										{renderReservoirChart(250)}
+									</div>
 									</div>
 								),
 							}, {
@@ -1268,6 +1450,38 @@ const Drought = () => {
 						</Card>
 					</Col>
 				</Row>
+
+				<Divider style={{ borderColor: '#555', margin: '24px 0 12px 0' }}>
+					Watershed Basin Conditions (HUC-8)
+				</Divider>
+				<Row style={{ marginBottom: '12px' }}>
+					<Col>
+						<Select
+							style={{ width: 320 }}
+							placeholder="Select a watershed basin..."
+							value={currentHuc}
+							onChange={setCurrentHuc}
+							showSearch
+							allowClear
+							filterOption={(input, option) =>
+								option.label.toLowerCase().includes(input.toLowerCase())
+							}
+							options={Object.entries(hucNames)
+								.sort(([, a], [, b]) => a.localeCompare(b))
+								.map(([huc, name]) => ({ value: huc, label: `${name} (${huc})` }))}
+						/>
+					</Col>
+				</Row>
+				<SummaryPanel
+					currentHuc={currentHuc}
+					hucName={currentHuc ? hucNames[currentHuc] : null}
+					currentConditions={hucConditions}
+					forecastData={hucForecasts}
+					unifiedData={null}
+					activeLayer={getActiveLayer(activeMapLayer)}
+					activeMapLayer={activeMapLayer}
+					setActiveMapLayer={setActiveMapLayer}
+				/>
 				</>
 			)}
 
@@ -1286,6 +1500,26 @@ const Drought = () => {
 				<h5>More Information</h5>
 				(1) USDA ERS - Irrigation & Water Use. https: //www.ers.usda.gov/topics/farm-practices-management/irrigation-water-use/.
 			</div>
+			<Modal
+				open={modalChart !== null}
+				onCancel={() => setModalChart(null)}
+				footer={null}
+				width="90vw"
+				styles={{ body: { backgroundColor: '#1a1a1a', padding: '16px' } }}
+				title={
+					<span style={{ color: 'white' }}>
+						{modalChart === 'snow' ? 'Snow Pack (SNOTEL) — Past Year SWE'
+							: modalChart === 'reservoir' ? 'Reservoir Storage — Past Year'
+							: 'Streamflow Volume Outlook (SRVO)'}
+					</span>
+				}
+			>
+				<div style={{ backgroundColor: '#1a1a1a' }}>
+					{modalChart === 'snow' && renderSnowChart(500)}
+					{modalChart === 'reservoir' && renderReservoirChart(500)}
+					{modalChart === 'stream' && renderStreamForecastChart(500)}
+				</div>
+			</Modal>
 		</>
 	)
 };

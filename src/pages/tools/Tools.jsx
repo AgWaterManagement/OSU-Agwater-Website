@@ -72,6 +72,24 @@ const toolsData = [
         link: '/apps/oregonCropWaterUse',
         status: 'under_development'
       },
+
+
+      {
+        title: 'Agrimet Portal',
+        description: (<><img src={imagePath + 'drpw1.jpg'} alt='Agrimet Portal' width={360} />
+              This tool provides access to the Bureau of Land Management&apos;s (BLM) Agrimet data.  Agrimet is 
+              a network of agricultural weather stations located throughout the Western United States, providing data on precipitation, 
+              temperature, soil moisture, and other variables relevant to agricultural water management. 
+              The Agrimet Portal allows users to explore and visualize this data, and provides tools for analyzing and interpreting the data for agricultural water management applications.
+        </>),
+        keywords: ['Agrimet', 'BLM', 'weather', 'crop water use', 'Oregon', 'irrigation', 'water consumption'],
+        link: '/apps/agrimet',
+        status: 'under_development'
+      },
+
+
+
+
       {
         title: 'Managing Drought In Oregon',
         description: (<><img src={imagePath + 'OIP-1495046469.jpg'} alt='Managing Drought' width={360} />This tool provides information on drought
