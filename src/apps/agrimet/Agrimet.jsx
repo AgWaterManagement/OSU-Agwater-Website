@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, Modal, message, Tabs } from "antd";
-import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
+import { Layout, Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, Modal, message, Tabs } from "antd";
+
 import "leaflet/dist/leaflet.css";
 import { secrets } from "../../secrets";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
@@ -16,6 +16,15 @@ import Loading from "../../components/loading/Loading";
 import stationData from "./usbr_map.json";
 
 const { Title, Text } = Typography;
+const { Header, Sider, Content } = Layout; import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
+
+
+import {
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+} from '@ant-design/icons';
+
+
 
 // Color mapping for each 'type' property
 const typeColorMap = {
@@ -67,28 +76,33 @@ const Agrimet = () => {
     const [loading, setLoading] = useState(false);
 
     // Load initial station/crop from cookie if available
+    const [selectedState, setSelectedState] = useState(null); // () => getCookie('agrimet_state') || 'OR');
+
+
+    // station info
     const [selectedStation, setSelectedStation] = useState(() => getCookie('agrimet_station') || 'crvo');
+    const selectedStationName = useRef(getSelectedStationName(selectedStation)); // Store the name of the selected station
+    const stateStationOptions= useRef([]); // station options for the selected state, for the Cascader component
+    const stationCropData = useRef([]); // station crop data (e.g. planting dates, harvest dates, recent water use) for all crops at station
+    const [selectedStationData, setSelectedStationData] = useState(null);  // data about the selected station.
+    const [cropETData, setCropETData] = useState({}); // Store crop ET data
+
+    // crop coefficient info
     const [selectedCrop, setSelectedCrop] = useState(() => getCookie('agrimet_crop') || 'WGRN');
-    const [selectedState, setSelectedState] = useState(() => getCookie('agrimet_state') || 'OR');
-    const [selectedStationData, setSelectedStationData] = useState(null);
-    const [cropCurveModalOpen, setCropCurveModalOpen] = useState(false);
-    const [selectedCurveCrop, setSelectedCurveCrop] = useState(null);
-    const [cropCoefficients, setCropCoefficients] = useState({});
+    const selectedCropName = useRef(() => ''); // Store the name of the selected crop
+    const [cropCoefficients, setCropCoefficients] = useState({});   /// crop coefficient data for all crops, keyed by crop code, from agwater JSON
     const [selectedCoefficientCrop, setSelectedCoefficientCrop] = useState('ALFP');
-    const [showMap, setShowMap] = useState(false); // State to control map visibility }
+
+    // UI state
+    const [showMap, setShowMap] = useState(true); // State to control map visibility }
     const [selectedTab, setSelectedTab] = useState('1'); // Track selected tab
     const [showCoefficientTable, setShowCoefficientTable] = useState(false); // State to toggle coefficient table
     const [userLocation, setUserLocation] = useState(getStationLatLong(selectedStation));  // from geolocation
-    const [cropETData, setCropETData] = useState({}); // Store crop ET data
 
-    const selectedCropName = useRef(() => ''); // Store the name of the selected crop
-    const selectedStationName = useRef(getSelectedStationName(selectedStation)); // Store the name of the selected station
+    const [collapsed, setCollapsed] = useState(false);
 
-    //const dates = useRef([]);           // list of dates for the selected station's observations, e.g. ['2025-07-01', '2025-07-02', ...]
-    //const crops = useRef({});           // list of crops for the selected station, e.g. { 'WGRN': 'Winter Wheat', ... }
-    const stationCropData = useRef([]); // station crop data (e.g. planting dates) for all crops
     const nwsForecast = useRef({}); // Store NWS forecast data
-  const featureProps = useRef({});
+    const featureProps = useRef({});
     const OregonBounds = [
         [41.991794, -124.566244], // Southwest
         [46.292035, -116.463262], // Northeast
@@ -111,6 +125,7 @@ const Agrimet = () => {
                 throw new Error(`Failed to fetch crop_et_data: ${response.status}`);
             }
             const data = await response.json();
+            //const data = await response.text();
             setCropETData(data);
             console.log('Crop ET data loaded:', data);
         } catch (error) {
@@ -132,14 +147,14 @@ const Agrimet = () => {
                     throw new Error(`Failed to fetch crop_coefficients: ${response.status}`);
                 }
                 const data = await response.json();
-                
+
                 Object.entries(data.data).forEach(([, crop]) => {
                     let gsi = []
                     if (crop.growth_stage_indicators) {
-                        for (let i=0; i < 21; i++) {
-                            if (i*10 in crop.growth_stage_indicators)
-                                gsi.push(crop.growth_stage_indicators[i*10]);
-                             else 
+                        for (let i = 0; i < 21; i++) {
+                            if (i * 10 in crop.growth_stage_indicators)
+                                gsi.push(crop.growth_stage_indicators[i * 10]);
+                            else
                                 gsi.push(null);
                         }
                     }
@@ -187,28 +202,31 @@ const Agrimet = () => {
         setCookie('agrimet_crop', selectedCrop);
     }, [selectedCrop]);
 
-   
+
     function selectStationOptions(features) {
-        const stations = {};
+        const stations = {};  // key = state, value = list of stations (children) in that state
         let i = 0
         features.forEach((feature) => {
             const properties = feature.properties;
             if (!(properties.state in stations))
                 stations[properties.state] = []; // Initialize array for the state if not already present
 
+            // add site information to the appropriate state 
             stations[properties.state].push({
-                key: 'station_' + i,
+                key: properties.siteid + '_' + i,
                 value: properties.siteid,
                 label: properties.title
             });
             i += 1;
         });
 
+        // build the options array for the Cascader component from the stations object,
+        //  which groups stations by state
         const items = []
         i = 0;
         for (const state in stations) {
             items.push({
-                key: 'state_' + i,
+                //key: 'state_' + i,
                 value: state,
                 label: state,
                 children: stations[state]
@@ -227,17 +245,36 @@ const Agrimet = () => {
         let index = 0;
         for (const crop of stationCropData.current) {
             selectCropOptions.push({
-                key: index,
+                key: crop.code + '_' + index,
                 value: crop.code,
                 label: crop.name
             })
             index += 1;
         }
     }
-    
+
+
+    const updateState = (state) => {
+        // find the first station in the selected state and set it as the selected station
+        // Note that stationOptions is an array of objects with 'value' and 'children' properties, 
+        // where 'value' is the state name and 'children' is an array of station options for that state.
+        if (!stationOptions || stationOptions.length === 0 || state == null) {
+            return;
+        }   
+
+        const _selectedState = stationOptions.find(s => s.value === state);
+
+        stateStationOptions.current = _selectedState?.children || [];
+
+        const _selectedStation = _selectedState?.children[0]?.value || null;
+        setSelectedStation(_selectedStation);
+    };
+
+
     const updateStation = (station) => {
         const fetchSelectedStationData = async () => {
             try {
+                // fetch the station crop info for the selected station from the API
                 const response = await fetch(`https://agwater.org:5556/agrimet/station_crop_info?station=${station}`, {
                     headers: {
                         "X-API-Key": secrets.agwater_api_key
@@ -338,37 +375,6 @@ const Agrimet = () => {
         setShowMap(!showMap);
     }
 
-    const openCropCurveModal = (crop) => {
-        setSelectedCurveCrop(crop);
-        setCropCurveModalOpen(true);
-    };
-
-    const closeCropCurveModal = () => {
-        setCropCurveModalOpen(false);
-        setSelectedCurveCrop(null);
-    };
-
-    const getCropCurveData = (crop) => {
-        if (!crop) return [];
-
-        const points = [];
-        Object.keys(crop).forEach((key) => {
-            const match = key.match(/^Daily Penman ET \(in\)(?:-(\d+))?$/);
-            if (!match) return;
-
-            const offset = match[1] ? -parseInt(match[1], 10) : 0;
-            const value = Number(crop[key]);
-            if (Number.isFinite(value)) {
-                points.push({
-                    dayOffset: offset,
-                    label: offset === 0 ? 'Today' : `D${offset}`,
-                    et: value,
-                });
-            }
-        });
-
-        return points.sort((a, b) => a.dayOffset - b.dayOffset);
-    };
 
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
@@ -417,7 +423,7 @@ const Agrimet = () => {
 
             let data = crop.crop_coefficients.map((value, index) => ({
                 growth_stage_indicator: crop.growth_stage_indicators_list ? crop.growth_stage_indicators_list[index] : "",
-                pctGrowth: index*10,
+                pctGrowth: index * 10,
                 kc: Number(value),
             }));
 
@@ -454,7 +460,7 @@ const Agrimet = () => {
                                     margin={{ top: 10, right: 24, left: 8, bottom: 8 }}
                                 >
                                     <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="pctGrowth" ticks={chartTicks} stroke="yellow" style={{fontWeight: 'normal'}} height={50} label={{ stroke:'white', value: 'Percent Growth Stage (%)', position: 'insideBottom',}} />
+                                    <XAxis dataKey="pctGrowth" ticks={chartTicks} stroke="yellow" style={{ fontWeight: 'normal' }} height={50} label={{ stroke: 'white', value: 'Percent Growth Stage (%)', position: 'insideBottom', }} />
                                     <YAxis stroke="yellow" domain={[0, 1.25]} ticks={[0, 0.25, 0.5, 0.75, 1, 1.25]} />
                                     <Tooltip content={<CustomTooltip />} />
                                     <Line type="monotone" dataKey="kc" name="Crop Coefficient (Kc)" stroke="#ff7a00" strokeWidth={2} />
@@ -472,46 +478,46 @@ const Agrimet = () => {
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
-                        
+
                         <div style={{ marginTop: '24px' }}>
-                            <Button 
-                                type="primary" 
+                            <Button
+                                type="primary"
                                 onClick={() => setShowCoefficientTable(!showCoefficientTable)}
                                 style={{ marginBottom: '16px' }}
                             >
                                 {showCoefficientTable ? 'Hide' : 'Show'} Crop Coefficient Table
                             </Button>
                             {showCoefficientTable && (
-                            <Table
-                                dataSource={coeffData.slice(1, -1)} // Exclude the first and last entries which are for -5% and 105% growth stages
-                                columns={[
-                                    {
-                                        title: 'Growth Stage (%)',
-                                        dataIndex: 'pctGrowth',
-                                        key: 'pctGrowth',
-                                        align: 'center',
-                                        width: '30%',
-                                    },
-                                    {
-                                        title: 'Crop Coefficient (Kc)',
-                                        dataIndex: 'kc',
-                                        key: 'kc',
-                                        align: 'center',
-                                        width: '30%',
-                                        render: (value) => value ? value.toFixed(2): null,
-                                    },
-                                    {
-                                        title: 'Growth Stage Indicator',
-                                        dataIndex: 'growth_stage_indicator',
-                                        key: 'growth_stage_indicator',
-                                        align: 'center',
-                                        width: '40%',
-                                        render: (value) => value || '',
-                                    },
-                                ]}
-                                pagination={false}
-                                size="small"
-                            />
+                                <Table
+                                    dataSource={coeffData.slice(1, -1)} // Exclude the first and last entries which are for -5% and 105% growth stages
+                                    columns={[
+                                        {
+                                            title: 'Growth Stage (%)',
+                                            dataIndex: 'pctGrowth',
+                                            key: 'pctGrowth',
+                                            align: 'center',
+                                            width: '30%',
+                                        },
+                                        {
+                                            title: 'Crop Coefficient (Kc)',
+                                            dataIndex: 'kc',
+                                            key: 'kc',
+                                            align: 'center',
+                                            width: '30%',
+                                            render: (value) => value ? value.toFixed(2) : null,
+                                        },
+                                        {
+                                            title: 'Growth Stage Indicator',
+                                            dataIndex: 'growth_stage_indicator',
+                                            key: 'growth_stage_indicator',
+                                            align: 'center',
+                                            width: '40%',
+                                            render: (value) => value || '',
+                                        },
+                                    ]}
+                                    pagination={false}
+                                    size="small"
+                                />
                             )}
                         </div>
                     </div>
@@ -527,11 +533,11 @@ const Agrimet = () => {
         //const crop = stationCropData.current.find(c => c.code === selectedCrop);
         //if (crop == null)
         //    return (<span>No crop specified</span>);
-        
+
         const cropData = selectedStationData.crop_data;
         // add a 'key' field to each crop object in the cropData list for use in the Ant Design Table component
         cropData.forEach((crop, index) => {
-            crop.key = 'stcrop_' +  index;
+            crop.key = 'stcrop_' + index;
         });
 
         const columns = [
@@ -543,46 +549,161 @@ const Agrimet = () => {
             { title: 'Sum ET (in)', dataIndex: 'Sum ET (in)', key: 'Sum ET (in)', align: 'center' },
             { title: '7-Day Use', dataIndex: '7 Day Use', key: '7 Day Use', align: 'center' },
             { title: '14-Day Use', dataIndex: '14 Day Use', key: '14 Day Use', align: 'center' },
-            {
-                title: 'Action',
-                key: 'action',
-                align: 'center',
-                render: (_, record) => (
-                    <Button  type='primary' onClick={() => openCropCurveModal(record)}>
-                        View Curve
-                    </Button>
-                ),
-            },
         ];
 
         return (
             <>
                 <Table dataSource={cropData} columns={columns} />
-                <Modal
-                    title={`Crop Curve${selectedCurveCrop?.Name ? ` - ${selectedCurveCrop.Name}` : ''}`}
-                    open={cropCurveModalOpen}
-                    onCancel={closeCropCurveModal}
-                    footer={null}
-                    width={760}
-                >
-                    <div style={{ height: 320, width: '100%' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart
-                                data={getCropCurveData(selectedCurveCrop)}
-                                margin={{ top: 10, right: 24, left: 8, bottom: 8 }}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="label" />
-                                <YAxis />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Line type="monotone" dataKey="et" name="Daily Penman ET (in)" stroke="#1677ff" strokeWidth={2} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </div>
-                </Modal>
             </>
         );
     };
+
+
+    const Methods = () => {
+        const methodItems = [
+            {
+                key: 'ccChart',
+                label: 'Crop Coefficient Chart',
+                children: (<div>
+                    <p style={{ marginBottom: 0 }}>
+                        This chart provides crop coefficients (Kc) values for a range of crops.  These coefficients are not station-specific,
+                        but rather represent generalized values used across the region.  The crop coefficients are used on this site are largely
+                        derived from Agrimet values, but may be slightly modified if more acccurate coeffients are identified.
+                    </p>
+                    <p>
+                        The data in this chart was obtained from the agwater API at: <a href={'https://agwater.org:5556/json?path=agrimet&file=crop_coefficients'}>
+                            {'https://agwater.org:5556/json?path=agrimet&file=crop_coefficients'}</a>, which is based largely on the
+                        Agrimet coefficients available at: <a href={'https://www.usbr.gov/pn/agrimet/cropcurves/crop_coefficients.txt'}>
+                            {'https://www.usbr.gov/pn/agrimet/cropcurves/crop_coefficients.txt'}</a>
+
+                    </p>
+
+                </div>)
+            }, {
+                key: 'cwuChart',
+                label: 'Crop Water Use Chart',
+                children: (<div>
+                    <Title level={5}>Growing Season Crop Water Use/Precipitation</Title>
+                    <p style={{ marginBottom: 0 }}>
+                        The Crop Water Use Chart displays crop water use and precipitation data from the start of the growing season for the selected station and crop.
+                        Potential ET (based on a reference crop of XXX, and is estimated with the ___ equation) Actual ET, reflecting actual crop water use, is determined by
+                        multiplying the daily crop coefficients by the potential ET.
+                    </p>
+                    <Title level={5}>Data Sources</Title>
+                    <p>Crop Water Use for given station</p>
+                    <span style={{ marginLeft: '1em' }}>
+                        <a href={'https://www.usbr.gov/pn-bin/daily.pl?station={station}&year={current_year}&month=1&day=1&year={current_year}&month={yesterday_month}&day={yesterday_day}&pcode=ET'}>
+                            {'https://www.usbr.gov/pn-bin/daily.pl?station={station}&year={current_year}&month=1&day=1&year={current_year}&month={yesterday_month}&day={yesterday_day}&pcode=ET'}</a>
+                    </span>
+                    <br />
+
+                    <p>Crop Coefficients (Kc)</p>
+                    <span style={{ marginLeft: '1em' }}>
+                        The data in this chart was obtained from the agwater API at: <a href={'https://agwater.org:5556/json?path=agrimet&file=crop_coefficients'}>
+                            {'https://agwater.org:5556/json?path=agrimet&file=crop_coefficients'}</a>, which is based largely on the
+                        Agrimet coefficients available at: <a href={'https://www.usbr.gov/pn/agrimet/cropcurves/crop_coefficients.txt'}>
+                            {'https://www.usbr.gov/pn/agrimet/cropcurves/crop_coefficients.txt'}</a>
+                    </span>
+
+                    <br />
+                </div>)
+            }, {
+                key: 'Data Sources',
+                label: 'Data Sources',
+                children: (
+                    <>
+                        <div>Tabular Results (presented in other panel)</div>
+                        <div>These are retrieved from the agwater api at: <a href={'https://agwater.org:5556/agrimet/station_crop_info?station=${station}'}>
+                            {'https://agwater.org:5556/agrimet/station_crop_info?station=${station}'}
+                        </a>, which in turn retrieves the data from the Agrimet page at: <a href={'https://www.usbr.gov/pn/agrimet/chart/{station}ch.txt'}>
+                                {'https://www.usbr.gov/pn/agrimet/chart/{station}ch.txt'}
+                            </a>
+
+                            <p>
+                                This API returns arrays of information decribing crop water use data for crops grown at that station.
+                                Crop information returned includes the following:
+                            </p>
+
+                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.75em' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ textAlign: 'left', borderBottom: '1px solid #d9d9d9', padding: '0.5em' }}>Metric</th>
+                                        <th style={{ textAlign: 'left', borderBottom: '1px solid #d9d9d9', padding: '0.5em' }}>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>CropCode</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Identifier for the crop associated with the station record.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Start Date</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Date the crop water use period begins.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Full Cover Date</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Date the crop reaches full canopy cover.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Termination Date</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Date the crop water use period ends.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET (in)-4</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET value four days before the current day.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET (in)-3</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET value three days before the current day.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET (in)-2</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET value two days before the current day.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET (in)-1</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET value one day before the current day.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Daily Penman ET (in)</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Current daily Penman ET value.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Sum ET (in)</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Cumulative ET total for the crop period.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>7 Day Use</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Seven-day crop water use total.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>14 Day Use</td>
+                                        <td style={{ padding: '0.45em 0.5em', verticalAlign: 'top' }}>Fourteen-day crop water use total.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </>)
+            }, {
+                key: 'Assumptions',
+                label: 'Assumptions',
+                children: (<div>
+
+                </div>),
+            }, {
+                key: 'Limitations',
+                label: 'Limitations',
+                children: (<div>
+
+                </div>),
+            }]
+
+        return (
+            <>
+                <Collapse defaultActiveKey={['2']} style={{ marginTop: '1em' }} items={methodItems} />
+            </>
+        );
+    }
 
 
 
@@ -594,6 +715,11 @@ const Agrimet = () => {
         },
         {
             key: '2',
+            label: 'Season-to-date Crop Water Use Information',
+            children: <CropWaterUseChart cropETData={cropETData} />,
+        },
+        {
+            key: '3',
             label: 'Current Weather Conditions',
             children:
                 nwsForecast.current && nwsForecast.current.periods ? (
@@ -605,33 +731,36 @@ const Agrimet = () => {
                     />) : (<Text>No forecast available</Text>)
         },
         {
-            key: '3',
+            key: '4',
             label: 'Crop Planting, Harvest Date, and Seasonal Water Use',
             children: <CropInfoTable />,
         },
         {
-            key: '4',
-            label: 'Crop Water Use',
-            children: <CropWaterUseChart cropETData={cropETData} />,
+            key: '5',
+            label: 'Methods and Data',
+            children: <Methods />,
         },
     ];
 
     const tabItems = [
-            {
-                key: '1',
-                label: 'Location-Specific Information',
-                //children: <LocationSpecificInformation />,
-            },
-            {
-                key: '2',
-                label: 'Crop Coefficients',
-                //children: <CropCoefficientsContent />,
-            },
-        ];
+        {
+            key: '1',
+            label: 'Station Information',
+            //children: <LocationSpecificInformation />,
+        },
+        {
+            key: '2',
+            label: 'Crop Coefficients',
+            //children: <CropCoefficientsContent />,
+        },
+    ];
 
 
     return (
         <>
+            <style>{`.agrimet-map { max-width: 100%; height: 100% !important; display: block; box-sizing: border-box; }
+            .agrimet-map .leaflet-tile, .agrimet-map img { max-width: 100%; height: auto; }
+            `}</style>
             {loading && <Loading tip="Loading sources..." />}
 
             <Title level={3} style={{ textAlign: "center", fontSize: "1.5rem" }}>
@@ -644,133 +773,203 @@ const Agrimet = () => {
                 The page provides access to Oregon-specific Agrimet data and products.
             </p>
 
-
             <div style={{ marginLeft: '1em', marginRight: '1em', marginTop: '1em' }} >
 
-            <Tabs items={tabItems} activeKey={selectedTab} onChange={setSelectedTab} />
+                <Tabs items={tabItems} activeKey={selectedTab} onChange={setSelectedTab} />
 
-            {selectedTab === '2' && (
-                <div style={{ marginTop: '1em' }}>
+                {selectedTab === '2' && (
                     <CropCoefficientsContent />
-                </div>
-            )}
+                )}
 
-            {selectedTab === '1' && (
-            <Row gutter={12} style={{ marginBottom: 16 }}>
-                <Col xs={24} lg={10} style={{ height: 540 }} >
-                    <Divider orientation="left">Select a Agrimet station</Divider>
+                {selectedTab === '1' && (
+                    <Layout>
+                        <Sider width={'40%'} trigger={null} collapsible collapsed={collapsed} collapsedWidth={32}>
+                            {collapsed ? (
+                                <div style={{
+                                    transform: 'rotate(90deg)',
+                                    transformOrigin: 'left top 0',
+                                    marginLeft: 20,
+                                    textAlign: 'center',
+                                }}>
+                                    <Button type="primary" onClick={() => setCollapsed(false)}>
+                                        Select Station
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="" >
+                                    <Divider orientation="left">Select a Agrimet station</Divider>
 
-                    <Cascader key='stationCascader' defaultValue={[selectedState, selectedStation]} style={{ width: '24em' }} 
-                        options={stationOptions} 
-                        onChange={value => {
-                            const [state, station] = value;
-                            setSelectedState(state);
-                            updateStation(station);
-                    }} />
 
-                    <Divider orientation="left">OR</Divider>
-
-                    <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleGetLocation}>
-                        Use My Location
-                    </Button>
-
-                    <Divider orientation="left">OR</Divider>
-
-                    {showMap && (
-                        <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleToggleMap}>
-                            Hide the Map
-                        </Button>)}
-
-                    {!showMap && (
-                        <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleToggleMap}>
-                            Pick from a Map
-                        </Button>)}
-                    <br />
-
-                    {showMap && (
-                        <>
-                            <div style={{ fontSize: 'medium' }}>Select a station on the map below for station information, crop water use, and related information</div>
-                            <MapContainer
-                                center={[44.0, -120.5]}
-                                zoom={6.0}
-                                style={{ height: "100%", width: "100%" }}
-                                maxBounds={OregonBounds}
-                                scrollWheelZoom={false}
-                                zoomControl={false}
-                                doubleClickZoom={false}
-                                dragging={false}
-                                touchZoom={false}
-                                boxZoom={false}
-                                keyboard={false}
-                            >
-                                <TileLayer
-                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                    attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
-                                />
-
-                                {/* Render circles for each station */}
-                                {stationData.features.map((feature, index) => {
-                                    const coords = feature.geometry.coordinates;
-                                    const latlng = { lat: coords[1], lng: coords[0] };
-                                    const color = typeColorMap[feature.properties.type?.toUpperCase()] || typeColorMap["default"];
-                                    const isActive = feature.properties.siteid === selectedStation;
-
-                                    return (
-                                        <Circle
-                                            key={index}
-                                            center={latlng}
-                                            radius={isActive ? 16000 : 8000}
-                                            eventHandlers={{
-                                                click: (e) => {
-                                                    featureProps.current = feature.properties;
-                                                    setSelectedStation(feature.properties.siteid)
-                                                }
-                                            }}
-                                            pathOptions={{
-                                                color: color,
-                                                fillColor: isActive ? color : 'red',
-                                                fillOpacity: isActive ? 0.3 : 0.15,
-                                                weight: isActive ? 4 : 2
-                                            }}
-                                        />
-                                    );
-                                })}
-
-                                {/* Show user location marker if available */}
-                                {userLocation && userLocation.lat && userLocation.lng && (
-                                    <Circle
-                                        center={userLocation}
-                                        radius={12000}
-                                        pathOptions={{
-                                            color: "#222",
-                                            fillColor: "#222",
-                                            fillOpacity: 0.2,
-                                            weight: 2,
-                                            dashArray: "4 4"
+                                    {
+                                    <Cascader key='stationCascader1' defaultValue={[selectedState, selectedStation]} style={{ width: '24em' }}
+                                        options={stationOptions}
+                                        onChange={value => {
+                                            const [state, station] = value;
+                                            setSelectedState(state);
+                                            updateStation(station);
+                                        }} />
+                                    }
+                                    <Select
+                                        key='selectStateOptions'
+                                        style={{width: '30em', marginTop: '1em' }}
+                                        showSearch
+                                        placeholder="Select a state"
+                                        optionFilterProp="children"
+                                        filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
+                                        onChange={value => {
+                                            setSelectedState(value);
+                                            updateState(value);
                                         }}
                                     >
-                                        <Popup>
-                                            <div>
-                                                <strong>Your Location</strong><br />
-                                                Lat: {userLocation.lat.toFixed(4)}, Lng: {userLocation.lng.toFixed(4)}
+                                        {stationOptions.map(station => (
+                                            <Select.Option key={station.value} value={station.value}>
+                                                {station.label} ({station.children.length} stations)
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+
+                                    <Select
+                                        key='selectStationOptions'
+                                        style={{width: '30em', marginTop: '1em' }}
+                                        showSearch
+                                        placeholder="Select a station"
+                                        //optionFilterProp="children"
+                                        //filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
+                                        onChange={value => {
+                                            setSelectedStation(value);
+                                            updateStation(value);
+                                        }}
+                                    >
+                                        { stateStationOptions.current && stateStationOptions.current.length > 0 && selectedState && 
+                                            stateStationOptions.current.map(station => (
+                                                <Select.Option key={station.value} value={station.value}>
+                                                    {station.label} ({station.value})
+                                                </Select.Option>
+                                        ))}
+                                    </Select>
+                                        
+
+                                    <Divider orientation="left">OR</Divider>
+
+                                    <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleGetLocation}>
+                                        Use My Location
+                                    </Button>
+
+                                    <Divider orientation="left">OR</Divider>
+
+                                    {showMap && (
+                                        <>
+                                            <div style={{ fontSize: 'medium' }}>Select a station on the map below for station information, crop water use, and related information</div>
+                                            <div style={{ fontSize: 'medium', width: '100%', maxWidth: '100%', height: '640px', overflow: 'hidden', position: 'relative', boxSizing: 'border-box' }}>
+                                                <MapContainer
+                                                    className="agrimet-map"
+                                                    center={[44.0, -120.5]}
+                                                    zoom={6.0}
+                                                    style={{ width: "100%", maxWidth: '100%', height: '100%',  display: 'block' }}
+                                                    maxBounds={OregonBounds}
+                                                    scrollWheelZoom={false}
+                                                    zoomControl={false}
+                                                    doubleClickZoom={false}
+                                                    dragging={false}
+                                                    touchZoom={false}
+                                                    boxZoom={false}
+                                                    keyboard={false}
+                                                >
+                                                    <TileLayer
+                                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                        attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+                                                    />
+
+                                                    {/* Render circles for each station */}
+                                                    {stationData.features.map((feature, index) => {
+                                                        const coords = feature.geometry.coordinates;
+                                                        const latlng = { lat: coords[1], lng: coords[0] };
+                                                        const color = typeColorMap[feature.properties.type?.toUpperCase()] || typeColorMap["default"];
+                                                        const isActive = feature.properties.siteid === selectedStation;
+
+                                                        return (
+                                                            <Circle
+                                                                key={index}
+                                                                center={latlng}
+                                                                radius={isActive ? 16000 : 8000}
+                                                                eventHandlers={{
+                                                                    click: (e) => {
+                                                                        featureProps.current = feature.properties;
+                                                                        setSelectedStation(feature.properties.siteid)
+                                                                    }
+                                                                }}
+                                                                pathOptions={{
+                                                                    color: color,
+                                                                    fillColor: isActive ? color : 'red',
+                                                                    fillOpacity: isActive ? 0.3 : 0.15,
+                                                                    weight: isActive ? 4 : 2
+                                                                }}
+                                                            />
+                                                        );
+                                                    })}
+
+                                                    {/* Show user location marker if available */}
+                                                    {userLocation && userLocation.lat && userLocation.lng && (
+                                                        <Circle
+                                                            center={userLocation}
+                                                            radius={12000}
+                                                            pathOptions={{
+                                                                color: "#222",
+                                                                fillColor: "#222",
+                                                                fillOpacity: 0.2,
+                                                                weight: 2,
+                                                                dashArray: "4 4"
+                                                            }}
+                                                        >
+                                                            <Popup>
+                                                                <div>
+                                                                    <strong>Your Location</strong><br />
+                                                                    Lat: {userLocation.lat.toFixed(4)}, Lng: {userLocation.lng.toFixed(4)}
+                                                                </div>
+                                                            </Popup>
+                                                        </Circle>
+                                                    )}
+
+                                                </MapContainer>
                                             </div>
-                                        </Popup>
-                                    </Circle>
-                                )}
+                                            <br />
+                                        </>
+                                    )}
+                                    {showMap && (
+                                        <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleToggleMap}>
+                                            Hide the Map
+                                        </Button>)}
 
-                            </MapContainer>
-                        </>
-                    )}
-                </Col>
+                                    {!showMap && (
+                                        <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleToggleMap}>
+                                            Pick from a Map
+                                        </Button>)}
+                                </div>
+                            )}
+                        </Sider>
 
-                <Col xs={24} lg={14}>
-                    <Divider orientation="left">Station: {selectedStation ? selectedStation.toUpperCase() : 'None'}</Divider>
-                    <span style={{ fontSize: '14px', color: 'white' }}>Station Name: {selectedStationName.current || 'No station selected'}</span>
-                    <Collapse accordion defaultActiveKey={['2']} style={{marginTop: '1em'}} items={resultItems} />
-                </Col>
-            </Row>
-            )}
+                        <Layout style={{backgroundColor: '#fff', padding: 0 }}>
+                            <Header style={{ padding: 0 }}>
+                                <Button
+                                    type="text"
+                                    icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                                    onClick={() => setCollapsed(!collapsed)}
+                                    style={{
+                                        fontSize: '16px',
+                                        width: 64,
+                                        height: 64,
+                                    }}
+                                />
+                                <span style={{fontSize:18}}>
+                                    { selectedStationName.current ? `${selectedStationName.current} (${selectedStation.toUpperCase()})` : selectedStation ? selectedStation : 'Select a station to view information'}
+                                </span>
+                            </Header>
+                            <Collapse accordion defaultActiveKey={['2']} style={{ backgroundColor: 'black', padding: 0 }} items={resultItems} />
+                        </Layout>
+                    </Layout>
+                )}
             </div>
+
         </>
     );
 };

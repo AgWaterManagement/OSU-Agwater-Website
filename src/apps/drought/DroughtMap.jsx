@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
-import { MapContainer, TileLayer, Pane, Tooltip, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Pane, Tooltip, Circle, Popup, useMap, useMapEvents, LayersControl } from 'react-leaflet'
 import { useLeafletContext } from '@react-leaflet/core'
 import { GeoJSON } from 'react-leaflet/GeoJSON'
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './irrigWaterUse.css';
 
-//import L from 'leaflet';
 import colormap from 'colormap';
 import axios from 'axios';
 
 import MapInfoControl from '../../components/mapping/MapInfoControl';
 
+
+const SNOTEL_URL = '/drought/data/snotel_stations_average_annual_swe.geojson';
 
 // define React component
 const IrrigUseMap = ({
@@ -26,6 +26,7 @@ const IrrigUseMap = ({
     yCenter = 45.0,
     zoom = 8,
     height = '480',
+    showSnotel = true,
     onFeatureClicked =  ()=>{}
 }) => {
 
@@ -43,6 +44,8 @@ const IrrigUseMap = ({
     const center = [yCenter, xCenter];  //
     //const geoJsonURL = '/public/articles/IrrigWaterUse/data/US_IrrigUseByState.geojson';
     //const geoJsonURL = './data/ST' + stateCode + '_IrrigUseByCounty.geojson'
+
+    const [snotelData, setSnotelData] = useState(null);
 
     const [sw, setSW] = useState(0);
     const [gww, setGWW] = useState(0);
@@ -76,6 +79,13 @@ const IrrigUseMap = ({
     // when unmounted
     //useEffect(() => {
     //}, [yourDependency]);
+
+    // fetch SNOTEL station data on mount
+    useEffect(() => {
+        axios.get(SNOTEL_URL)
+            .then(response => setSnotelData(response.data))
+            .catch(error => console.error('Failed to load SNOTEL data:', error));
+    }, []);
 
     // when mounted
     useEffect(() => {
@@ -355,24 +365,55 @@ return (
 
                 {  // geoJson layer
                     (geoData != null) && (
-                        <GeoJSON
-                            attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                            //children	ReactNode	No	Yes	ParentComponent
-                            data={geoData}
-                            //eventHandlers={{
-                            //  click: (e) => {
-                            //    console.log('marker clicked')
-                            //    },
-                            //}}
-                            //eventHandlers	LeafletEventHandlerFnMap	No	Yes	Evented
-                            //pane	string	No	No	Pane
-                            onEachFeature={InitFeature}
+                        <LayersControl position="topleft">
+                            <LayersControl.Overlay name="Drought Severity" checked>
+                                <GeoJSON
+                                    attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                    //children	ReactNode	No	Yes	ParentComponent
+                                    data={geoData}
+                                    //eventHandlers={{
+                                    //  click: (e) => {
+                                    //    console.log('marker clicked')
+                                    //    },
+                                    //}}
+                                    //eventHandlers	LeafletEventHandlerFnMap	No	Yes	Evented
+                                    //pane	string	No	No	Pane
+                                    onEachFeature={InitFeature}
 
-                            style={Style}  //	PathOptions or StyleFunction	No	Yes
-                        >
-                        </GeoJSON>
+                                    style={Style}  //	PathOptions or StyleFunction	No	Yes
+                                >
+                                </GeoJSON>
+                            </LayersControl.Overlay>
+                        </LayersControl>
                     )
                 }
+
+                {/* SNOTEL station circles - rendered after GeoJSON so they appear on top */}
+                {showSnotel && snotelData && snotelData.features.map((feature, index) => {
+                    const [lng, lat] = feature.geometry.coordinates;
+                    const { name, stationId, elevation, average_annual_mean_swe } = feature.properties;
+                    const radius = Math.max(8000, average_annual_mean_swe * 1500);
+                    return (
+                        <Circle
+                            key={stationId || index}
+                            center={[lat, lng]}
+                            radius={radius}
+                            pathOptions={{
+                                color: '#1a6eb5',
+                                fillColor: '#4aa3df',
+                                fillOpacity: 0.5,
+                                weight: 1.5
+                            }}
+                        >
+                            <Popup>
+                                <strong>{name}</strong><br />
+                                Station ID: {stationId}<br />
+                                Elevation: {elevation} ft<br />
+                                Avg Annual SWE: {average_annual_mean_swe.toFixed(2)} in
+                            </Popup>
+                        </Circle>
+                    );
+                })}
             </MapContainer>
         </div>
     )
@@ -390,6 +431,7 @@ IrrigUseMap.propTypes = {
     legendTitle: PropTypes.string,
     colorMap: PropTypes.string,
     height: PropTypes.string,
+    showSnotel: PropTypes.bool,
 }
 
 export default IrrigUseMap;

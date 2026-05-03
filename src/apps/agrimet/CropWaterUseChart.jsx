@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Checkbox, Select, Typography } from "antd";
+import { Checkbox, Select, Typography } from "antd";
 import PropTypes from "prop-types";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Legend, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -7,7 +7,6 @@ const { Title } = Typography;
 
 const CropWaterUseChart = ({cropETData}) => {
 
-    const [showMethods, setShowMethods] = useState(false);
     const [selectedCrop, setSelectedCrop] = useState('');
     const [selectedCropOptions, setSelectedCropOptions] = useState([]);
     const [visibleLines, setVisibleLines] = useState({
@@ -91,7 +90,9 @@ const CropWaterUseChart = ({cropETData}) => {
                 value={selectedCrop}
             />
             <br />
+            <br/>
             <div style={{ marginBottom: '0.75em' }}>
+                <span style={{marginRight: '1.05em'}}>What would you like to see?  </span>
                 <Checkbox checked={visibleLines.ETrs} onChange={() => toggleLineVisibility('ETrs')}>
                     Reference ET (ASCE-ESRI Alfalfa)
                 </Checkbox>
@@ -108,11 +109,11 @@ const CropWaterUseChart = ({cropETData}) => {
                 
              2)    
                 */}
-            <ResponsiveContainer width="100%" height={360} style={{ backgroundColor: '#fefefe' }}>
+            <ResponsiveContainer width="100%" height={360} style={{ backgroundColor: 'black' }}>
                 {selectedCrop && selectedCrop !== '' ? (
-                    <Title level={4} style={{ color: 'black', textAlign: 'center' }}>Crop Water Use - {selectedCrop}</Title>
+                    <Title level={4} style={{ color: 'white', textAlign: 'center' }}>Crop Water Use - {selectedCrop}</Title>
                 ) : (
-                    <Title level={4} style={{ color: 'black', textAlign: 'center' }}>Crop Water Use</Title>
+                    <Title level={4} style={{ color: 'white', textAlign: 'center' }}>Crop Water Use</Title>
                 )}
                 <LineChart
                     width='100%'
@@ -126,40 +127,45 @@ const CropWaterUseChart = ({cropETData}) => {
                 >
                     {chartData.current && chartData.current.length > 0 && visibleLines.ETrs && (
                         <Line key='ETrs' name='Reference ET (ASCE-ESRI Alfalfa)' type="monotone" dataKey='ETrs'
-                            formatter={(value) => value.toFixed(2)} unit=' in/day' stroke={"#202020"} dot={false} />
+                            formatter={(value) => value.toFixed(2)} unit=' in/day' stroke={"#dc921c"} strokeWidth={2} dot={false} />
                     )}
 
                     {chartData.current && chartData.current.length > 0 && visibleLines.ETa && (
                         <Line key='ETa' name='Actual ET' type="monotone" dataKey={"ETa"}
-                            formatter={(value) => value.toFixed(2)} unit=' in/day' stroke={"#2020EE"} dot={false} />
+                            formatter={(value) => value.toFixed(2)} unit=' in/day' stroke={"#EE2020"} strokeWidth={2} dot={false} />
                     )}
 
                     {chartData.current && chartData.current.length > 0 && visibleLines.Precipitation && (
                         <Line key='Precipitation' name='Precipitation' type="monotone" dataKey={"Precipitation"}
-                            formatter={(value) => value.toFixed(2)} unit=' in/day' stroke={"#EE2020"} dot={false} />
+                            formatter={(value) => value.toFixed(2)} unit=' in/day' stroke={"#0aabf0"} strokeWidth={2} dot={false} />
                     )}
 
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="Date" type="category" allowDuplicatedCategory={false} name='Days' />
-                    <YAxis label={{
+                    <CartesianGrid strokeDasharray="3 3" stroke='white' strokeWidth={2} />
+                    <XAxis dataKey="Date" type="category" allowDuplicatedCategory={false} name='Days' stroke='yellow' strokeWidth={2} />
+                    <YAxis stroke='yellow' strokeWidth={2} label={{
                         value: `Crop Water Use - in/day`,
-                        style: { textAnchor: 'middle' },
+                        style: { textAnchor: 'middle', stroke: 'white' },
                         angle: -90,
                         position: 'left',
                         offset: 0,
                     }}
                     />
-                    <Tooltip />
+                    <Tooltip
+                        wrapperStyle={{ backgroundColor: '#000' }}
+                        contentStyle={{ backgroundColor: '#000', color: '#fff', border: 'none', boxShadow: 'none' }}
+                        labelStyle={{ color: '#fff' }}
+                        itemStyle={{ color: '#fff' }}
+                    />
                     <Legend />
                 </LineChart>
             </ResponsiveContainer>
 
             
-            <ResponsiveContainer width="100%" height={360} style={{ backgroundColor: '#fefefe' }}>
+            <ResponsiveContainer width="100%" height={360} style={{ backgroundColor: 'black' }}>
                 {selectedCrop && selectedCrop !== '' ? (
-                    <Title level={4} style={{ color: 'black', textAlign: 'center' }}>Crop Coefficient (Kc) - {selectedCrop}</Title>
+                    <Title level={4} style={{ color: 'white', textAlign: 'center' }}>Crop Coefficient (Kc) - {selectedCrop}</Title>
                 ) : (
-                    <Title level={4} style={{ color: 'black', textAlign: 'center' }}>Crop Coefficient (Kc)</Title>
+                    <Title level={4} style={{ color: 'white', textAlign: 'center' }}>Crop Coefficient (Kc)</Title>
                 )}
                 <LineChart
                     width='100%'
@@ -172,46 +178,43 @@ const CropWaterUseChart = ({cropETData}) => {
                     }}
                 >
                     {chartData.current && chartData.current.length > 0 && (
-                        <Line key='Kc' name='Crop Coefficient (Kc)' type="monotone" dataKey='Kc'
-                            formatter={(value) => value.toFixed(2)} stroke={"#202020"} dot={false} />
+                        <>
+                            <Line yAxisId="left" key='Kc' name='Crop Coefficient (Kc)' type="monotone" dataKey='Kc'
+                                formatter={(value) => value.toFixed(2)} stroke={"#ff7a00"} strokeWidth={2} dot={false} />
+
+                            <Line yAxisId="right" key='CumGrowingDegreeDays' name='CumGrowingDegreeDays' type="monotone" dataKey='CumGrowingDegreeDays'
+                                stroke={"#0b9b09"} strokeWidth={2} dot={false} strokeDasharray="5 5" />
+                        </>
                     )}
 
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="Date" type="category" allowDuplicatedCategory={false} name='Days' />
-                    <YAxis label={{
+                    <CartesianGrid strokeDasharray="3 3" stroke='white' />
+                    <XAxis dataKey="Date" type="category" allowDuplicatedCategory={false} name='Days' stroke='yellow' />
+                    <YAxis yAxisId="left" stroke='yellow' label={{
                         value: `Crop Coefficient (Kc)`,
-                        style: { textAnchor: 'middle' },
+                        style: { textAnchor: 'middle', stroke: 'white' },
                         angle: -90,
                         position: 'left',
                         offset: 0,
                     }}
                     />
-                    <Tooltip />
+                    <YAxis yAxisId="right" orientation="right" stroke="#0b9b09" label={{
+                        value: `CumGrowingDegreeDays`,
+                        style: { textAnchor: 'middle', stroke: '#55f053' },
+                        angle: 90,
+                        position: 'right',
+                        offset: 0,
+                    }}
+                    />
+                    <Tooltip
+                        wrapperStyle={{ backgroundColor: '#000' }}
+                        contentStyle={{ backgroundColor: '#000', color: '#fff', border: 'none', boxShadow: 'none' }}
+                        labelStyle={{ color: '#fff' }}
+                        itemStyle={{ color: '#fff' }}
+                    />
                     <Legend />
                 </LineChart>
             </ResponsiveContainer>
 
-            <Button
-                type="primary"
-                style={{ marginTop: '0.75em', marginBottom: '0.75em' }}
-                onClick={() => setShowMethods((current) => !current)}
-            >
-                {showMethods ? 'Hide Methods' : 'Show Methods'}
-            </Button>
-
-            {showMethods && (
-                <div style={{ marginBottom: '1em', padding: '0.75em', border: '1px solid #d9d9d9', borderRadius: '6px'}}>
-                    <strong>Methods</strong>
-                    <p style={{ marginBottom: 0 }}>
-                        This chart is generated using Agrimet data made availalbe on their website.  Specifically, the
-                        
-                        
-                          from the station crop water use dataset passed in as `chartData`.
-                        The selected crop determines which ETc series is plotted alongside the reference ET series,
-                        and the chart only renders lines for data fields that exist in the current dataset.
-                    </p>
-                </div>
-            )}
 
             <br />
         </div>
@@ -222,12 +225,7 @@ export default CropWaterUseChart;
 
 CropWaterUseChart.propTypes = {
     cropETData: PropTypes.shape({
-        crop_codes: PropTypes.arrayOf(
-            PropTypes.shape({
-                value: PropTypes.string,
-                label: PropTypes.string,
-            })
-        ),
+        crop_codes: PropTypes.arrayOf(PropTypes.string),
         crop_names: PropTypes.object,
         data: PropTypes.object,
     }),

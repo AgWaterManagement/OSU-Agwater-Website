@@ -2,6 +2,7 @@
 
 import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal, Select } from 'antd';
 import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
 
@@ -203,6 +204,7 @@ const Drought = () => {
 	const [hucNames, setHucNames] = useState({});
 	const [currentHuc, setCurrentHuc] = useState(null);
 	const [activeMapLayer, setActiveMapLayer] = useState('forecast_pct_normal');
+	const [snotelData, setSnotelData] = useState(null);
 
 	const countyCentroids = {
 		"Baker": { latitude: 44.7661, longitude: -117.8334, zoneId: "ORZ001" },
@@ -488,108 +490,169 @@ const Drought = () => {
 			const stationsToFetch = forecastStations.slice(0, 10);
 			const streamData = [];
 
-			for (const station of stationsToFetch) {
-				console.log(`Fetching forecast for station ${station.name} (${station.stationId}) at ${station.stationTriplet}`);
+			// ── Helpers (defined once, reused per station during response processing) ──────
+
+			// Duration in days for a forecastPeriod (new array or legacy object format)
+			const periodDays = (fp) => {
+				const toDate = (mmdd) => new Date(`2000-${mmdd}`);
+				if (Array.isArray(fp)) return (toDate(fp[1]) - toDate(fp[0])) / 86400000;
+				const start = fp?.beginDate || fp?.startDate;
+				const end = fp?.endDate;
+				return start && end ? (toDate(end) - toDate(start)) / 86400000 : Infinity;
+			};
+
+			// Normalise forecastValues — new API returns plain object {"5": 110, ...},
+			// legacy returns array [{exceedanceProbability, value}]
+			const parseForecastValues = (d) => {
+				if (d.forecastValues && !Array.isArray(d.forecastValues)) {
+					return Object.entries(d.forecastValues)
+						.filter(([, val]) => val !== null && val !== undefined)
+						.map(([prob, val]) => ({ exceedanceProbability: prob, value: val }));
+				}
+				return (d.forecastValues || d.values || []).filter(
+					v => v.exceedanceProbability !== undefined && v.value !== null
+				);
+			};
+
+			// Human-readable label for a forecastPeriod
+			const periodLabel = (fp) => {
+				if (Array.isArray(fp)) return `${fp[0]}\u2013${fp[1]}`;
+				return fp?.name || `${fp?.beginDate || fp?.startDate}\u2013${fp?.endDate}`;
+			};
+
+			// Normalise unit code to display string
+			const normalizeUnit = (raw) => {
+				const u = (raw || 'kac_ft').toLowerCase();
+				if (u === 'kac_ft' || u === 'kaf') return 'KAF';
+				if (u === 'af') return 'acre-ft';
+				if (u === 'cfs') return 'CFS';
+				return u.toUpperCase();
+			};
+
+			// ── Single batched fetch for historical/prior-year data ───────────────────────
+			// The /data endpoint accepts a comma-separated list of stationTriplets and returns
+			// one result object per station, so we send all stations in one request.
+			const tripletList = stationsToFetch.map(s => s.stationTriplet).join(',');
+
+			const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
+			const dataParams = new URLSearchParams({
+				stationTriplets: tripletList,
+				elements: 'SRVO',
+				duration: 'MONTHLY',
+				beginDate: '-18', // 18 months: 6 current YTD + 12 prior year for context
+			});
+
+			// ── Single batched fetch for forecasts ───────────────────────────────────────
+			const now = new Date();
+			const endPublicationDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+
+			const forecastUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/forecasts';
+			const forecastParams = new URLSearchParams({
+				stationTriplets: tripletList,
+				elementCodes: 'SRVO',
+				endPublicationDate
+			});
+
+			// Fire both requests in parallel
+			const [dataResp, forecastResp] = await Promise.all([
+				fetch(`${dataUrl}?${dataParams}`, { headers: { 'Accept': 'application/json' } }),
+				fetch(`${forecastUrl}?${forecastParams}`, { headers: { 'Accept': 'application/json' } }),
+			]);
+
+			// Build lookup maps keyed by stationTriplet
+			const histDataByTriplet = {};
+			if (dataResp.ok) {
 				try {
-					const forecastUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/forecasts';
-
-					// Determine the start month of the current quarter so we can select the
-					// most relevant forecast period from whatever the station provides.
-					const currentMonth = new Date().getMonth() + 1;
-					const quarterStartMonth = currentMonth < 4 ? 1 : currentMonth < 7 ? 4 : currentMonth < 10 ? 7 : 10;
-					const quarterStartPrefix = String(quarterStartMonth).padStart(2, '0');
-
-					// Helper: compute duration in days for a forecastPeriod (array or legacy object).
-					const periodDays = (fp) => {
-						const toDate = (mmdd) => new Date(`2000-${mmdd}`);
-						if (Array.isArray(fp)) return (toDate(fp[1]) - toDate(fp[0])) / 86400000;
-						const start = fp?.beginDate || fp?.startDate;
-						const end = fp?.endDate;
-						return start && end ? (toDate(end) - toDate(start)) / 86400000 : Infinity;
-					};
-
-					// Fetch all available periods for this station — no forecastPeriods filter —
-					// so stations with non-standard period lengths (e.g. 04-01 to 07-31 instead
-					// of 04-01 to 06-30) are still returned.
-					const forecastParams = new URLSearchParams({
-						stationTriplets: station.stationTriplet,
-						elementCodes: 'SRVO',
+					const histJson = await dataResp.json();
+					(histJson || []).forEach(entry => {
+						const triplet = entry.stationTriplet;
+						const vals = entry?.data?.[0]?.values;
+						if (!vals) return;
+						const allParsed = vals
+							.filter(v => v.value !== null && v.value !== undefined)
+							.map(v => ({
+								date: `${String(v.year)}-${String(v.month).padStart(2, '0')}`,
+								value: parseFloat((v.value / 1000).toFixed(3)) // acre-ft → KAF
+							}));
+						histDataByTriplet[triplet] = {
+							historicalValues: allParsed.slice(-6),
+							priorYearValues:  allParsed.slice(-18, -6),
+						};
 					});
-
-					const forecastResponse = await fetch(`${forecastUrl}?${forecastParams}`, {
-						headers: { 'Accept': 'application/json' }
-					});
-
-					console.log(`Response for station ${station.name}:`, forecastResponse);
-
-					if (forecastResponse.ok) {
-						const data = await forecastResponse.json();
-						//console.log(`Forecast data for station ${station.name}:`, data);
-						if (data && data.length > 0) {
-							const stationForecast = data[0];
-
-							// Filter to periods that start in the current quarter, then pick the
-							// shortest one so stations with non-standard period lengths still show data.
-							const allDataEntries = stationForecast?.data || [];
-							const quarterEntries = allDataEntries.filter(d => {
-								const fp = d.forecastPeriod;
-								const startMM = Array.isArray(fp)
-									? fp[0].slice(0, 2)
-									: (fp?.beginDate || fp?.startDate || '').slice(0, 2);
-								return startMM === quarterStartPrefix;
-							});
-							// Among matching entries pick the shortest period; fall back to all entries.
-							const candidates = quarterEntries.length > 0 ? quarterEntries : allDataEntries;
-							candidates.sort((a, b) => periodDays(a.forecastPeriod) - periodDays(b.forecastPeriod));
-							const selectedEntries = candidates.length > 0 ? [candidates[0]] : [];
-
-							const periods = selectedEntries.map(d => {
-								// forecastPeriod: new API returns array ["MM-DD","MM-DD"],
-								// legacy returns object {name, beginDate, endDate}
-								let periodName;
-								if (Array.isArray(d.forecastPeriod)) {
-									periodName = `${d.forecastPeriod[0]}–${d.forecastPeriod[1]}`;
-								} else {
-									periodName = d.forecastPeriod?.name ||
-										`${d.forecastPeriod?.beginDate}–${d.forecastPeriod?.endDate}`;
-								}
-
-								// forecastValues: new API returns plain object {"5": 110, "30": 82, ...},
-								// legacy returns array [{exceedanceProbability, value}]
-								let forecastValues;
-								if (d.forecastValues && !Array.isArray(d.forecastValues)) {
-									forecastValues = Object.entries(d.forecastValues)
-										.filter(([, val]) => val !== null && val !== undefined)
-										.map(([prob, val]) => ({ exceedanceProbability: prob, value: val }));
-								} else {
-									forecastValues = (d.forecastValues || d.values || []).filter(
-										v => v.exceedanceProbability !== undefined && v.value !== null
-									);
-								}
-
-								const rawUnit = d.unitCode || d.unit || 'kac_ft';
-								const unit = (rawUnit === 'kac_ft' || rawUnit === 'kaf') ? 'KAF'
-									: rawUnit === 'af' ? 'acre-ft'
-									: rawUnit === 'cfs' ? 'CFS'
-									: rawUnit.toUpperCase();
-
-								return { periodName, forecastValues, unit };
-							}).filter(p => p.forecastValues.length > 0);
-
-							if (periods.length > 0) {
-								streamData.push({
-									stationName: station.name,
-									stationId: station.stationId,
-									stationTriplet: station.stationTriplet,
-									periods
-								});
-							}
-						}
-					} else {
-						console.warn(`Failed to fetch forecast for ${station.name}: ${forecastResponse.status}`);
-					}
 				} catch (err) {
-					console.warn(`Error fetching forecast for ${station.name}:`, err);
+					console.warn('Failed to parse batched historical data:', err);
+				}
+			} else {
+				console.warn(`Batched data fetch failed: ${dataResp.status}`);
+			}
+
+			const forecastByTriplet = {};
+			if (forecastResp.ok) {
+				try {
+					const forecastJson = await forecastResp.json();
+					(forecastJson || []).forEach(entry => {
+						forecastByTriplet[entry.stationTriplet] = entry.data || [];
+					});
+				} catch (err) {
+					console.warn('Failed to parse batched forecast data:', err);
+				}
+			} else {
+				console.warn(`Batched forecast fetch failed: ${forecastResp.status}`);
+			}
+
+			// ── Assemble per-station results from the lookup maps ─────────────────────────
+			for (const station of stationsToFetch) {
+				try {
+					const { historicalValues = [], priorYearValues = [] } =
+						histDataByTriplet[station.stationTriplet] || {};
+
+					const allEntries = forecastByTriplet[station.stationTriplet] || [];
+					if (allEntries.length === 0) continue;
+
+					// Parse all entries: compute duration and extract normalised forecast values
+					const parsed = allEntries.map(d => ({
+						days: periodDays(d.forecastPeriod),
+						forecastValues: parseForecastValues(d),
+						unit: normalizeUnit(d.unitCode || d.unit),
+						fp: d.forecastPeriod
+					})).filter(e => e.forecastValues.length > 0);
+
+					if (parsed.length === 0) continue;
+
+					// Pick the entry whose duration is closest to 90 days (3-month)
+					// and the entry closest to 180 days (6-month)
+					const closest = (target) => parsed.reduce((best, e) =>
+						Math.abs(e.days - target) < Math.abs(best.days - target) ? e : best
+					);
+					const threeMonth = closest(90);
+					const sixMonth = closest(180);
+
+					const periods = [{
+						label: '3-Month',
+						periodName: periodLabel(threeMonth.fp),
+						forecastValues: threeMonth.forecastValues,
+						unit: threeMonth.unit
+					}];
+					// Add the 6-month entry only when it is a distinct data entry
+					if (sixMonth !== threeMonth) {
+						periods.push({
+							label: '6-Month',
+							periodName: periodLabel(sixMonth.fp),
+							forecastValues: sixMonth.forecastValues,
+							unit: sixMonth.unit
+						});
+					}
+
+					streamData.push({
+						stationName: station.name,
+						stationId: station.stationId,
+						stationTriplet: station.stationTriplet,
+						historicalValues,
+						priorYearValues,
+						periods
+					});
+				} catch (err) {
+					console.warn(`Error processing data for ${station.name}:`, err);
 				}
 			}
 
@@ -650,55 +713,51 @@ const Drought = () => {
         const snowData = [];
         const stationsToFetch = stations.slice(0, 10); // Limit to first 10 stations
 
-        // Calculate date range (last 7 days). Using the DAILY duration,
-		// we can indicate the number of past days to fetch data for.
-		// The API will return the most recent data within that range,
-		// so we can set endDate to 0 (today) and beginDate to -365 (past calendar year).
-        const endDate = 0;
-        const beginDate = -365;
+        // Batch all stations into a single /data request using a comma-separated triplet list.
+        // The API returns one result object per station in the same order.
+        const tripletList = stationsToFetch.map(s => s.stationTriplet).join(',');
+        const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
+        const dataParams = new URLSearchParams({
+            stationTriplets: tripletList,
+            elements: 'WTEQ', // Snow Water Equivalent
+            duration: 'DAILY',
+            returnFlags: 'false',
+            beginDate: -730, // 2 years: current year-to-date + prior year for comparison
+        });
 
-        for (const station of stationsToFetch) {
-            try {
-                // Get Snow Water Equivalent (SWE) data
-                const dataUrl = `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data`;
-                const dataParams = new URLSearchParams({
-                    stationTriplets: station.stationTriplet,
-                    elements: 'WTEQ', // Snow Water Equivalent
-                    duration: 'DAILY',
-                    returnFlags: 'false',
-                    beginDate: beginDate,
-                    endDate: endDate,
-                });
+        const dataResponse = await fetch(`${dataUrl}?${dataParams}`, {
+            headers: { 'Accept': 'application/json' }
+        });
 
-                const dataResponse = await fetch(`${dataUrl}?${dataParams}`, {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (dataResponse.ok) {
-                    const data = await dataResponse.json();
-                    if (data && data.length > 0) {
-                        const stationData = data[0];
-                        const values = stationData?.data?.[0]?.values
-                            ?.filter(v => v.value !== null && v.value !== undefined)
-                            ?.map(v => ({ date: v.date, value: v.value }));
-                        if (values && values.length > 0) {
-                            snowData.push({
-                                stationName: station.name,
-                                stationId: station.stationId,
-                                elevation: station.elevation,
-                                values: values,
-                                unit: 'inches'
-                            });
-                        }
-                    }
-                } else {
-                    console.warn(`Failed to fetch data for station ${station.name}: ${dataResponse.status}`);
+        if (dataResponse.ok) {
+            const dataJson = await dataResponse.json();
+            // Build a lookup from stationTriplet → station metadata for easy access
+            const stationMeta = Object.fromEntries(stationsToFetch.map(s => [s.stationTriplet, s]));
+            // Split at exactly 1 year ago: entries on or after cutoff = current year, before = prior year
+            const cutoffDate = new Date();
+            cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+            const cutoffStr = `${cutoffDate.getFullYear()}-${String(cutoffDate.getMonth() + 1).padStart(2, '0')}-${String(cutoffDate.getDate()).padStart(2, '0')}`;
+            (dataJson || []).forEach(entry => {
+                const meta = stationMeta[entry.stationTriplet];
+                if (!meta) return;
+                const allValues = (entry?.data?.[0]?.values || [])
+                    .filter(v => v.value !== null && v.value !== undefined)
+                    .map(v => ({ date: v.date, value: v.value }));
+                const values = allValues.filter(v => v.date >= cutoffStr);
+                const priorValues = allValues.filter(v => v.date < cutoffStr);
+                if (values.length > 0 || priorValues.length > 0) {
+                    snowData.push({
+                        stationName: meta.name,
+                        stationId: meta.stationId,
+                        elevation: meta.elevation,
+                        values,
+                        priorValues,
+                        unit: 'inches'
+                    });
                 }
-            } catch (err) {
-                console.warn(`Failed to fetch data for station ${station.name}:`, err);
-            }
+            });
+        } else {
+            console.warn(`Batched snow data fetch failed: ${dataResponse.status}`);
         }
 
         setSnowForecast({
@@ -760,53 +819,50 @@ const Drought = () => {
 		const reservoirData = [];
 		const stationsToFetch = stations.slice(0, 10); // Limit to first 10 stations
 
-		// Calculate date range (past calendar year).
-		// The API will return the most recent data within that range,
-		// so we can set endDate to 0 (today) and beginDate to -365 (past calendar year).
-        const endDate = 0;
-        const beginDate = -365;
+		// Batch all stations into a single /data request using a comma-separated triplet list.
+		const tripletList = stationsToFetch.map(s => s.stationTriplet).join(',');
+		const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
+		const dataParams = new URLSearchParams({
+			stationTriplets: tripletList,
+			elements: 'RESC', // Reservoir storage volume
+			duration: 'DAILY',
+			returnFlags: 'false',
+			beginDate: -730, // 2 years: current year-to-date + prior year for comparison
+			endDate: 0,
+		});
 
-		for (const station of stationsToFetch) {
-			try {
-				// Get reservoir storage data
-				const dataUrl = `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data`;
-				const dataParams = new URLSearchParams({
-					stationTriplets: station.stationTriplet,
-					elements: 'RESC', // Reservoir storage volume
-					duration: 'DAILY',
-					returnFlags: 'false',
-					beginDate: beginDate,
-					endDate: endDate,
-				});
+		const dataResponse = await fetch(`${dataUrl}?${dataParams}`, {
+			headers: { 'Accept': 'application/json' }
+		});
 
-				const dataResponse = await fetch(`${dataUrl}?${dataParams}`, {
-					headers: {
-						'Accept': 'application/json'
-					}
-				});
-
-				if (dataResponse.ok) {
-					const data = await dataResponse.json();
-					if (data && data.length > 0) {
-						const stationData = data[0];
-						const values = stationData?.data?.[0]?.values
-							?.filter(v => v.value !== null && v.value !== undefined)
-							?.map(v => ({ date: v.date, value: v.value }));
-						if (values && values.length > 0) {
-							reservoirData.push({
-								stationName: station.name,
-								stationId: station.stationId,
-								values: values,
-								unit: 'acre-ft'
-							});
-						}
-					}
-				} else {
-					console.warn(`Failed to fetch data for station ${station.stationTriplet}: ${dataResponse.status}`);
+		if (dataResponse.ok) {
+			const dataJson = await dataResponse.json();
+			// Build a lookup from stationTriplet → station metadata for easy access
+			const stationMeta = Object.fromEntries(stationsToFetch.map(s => [s.stationTriplet, s]));
+			// Split at exactly 1 year ago: entries on or after cutoff = current year, before = prior year
+			const cutoffDate = new Date();
+			cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+			const cutoffStr = `${cutoffDate.getFullYear()}-${String(cutoffDate.getMonth() + 1).padStart(2, '0')}-${String(cutoffDate.getDate()).padStart(2, '0')}`;
+			(dataJson || []).forEach(entry => {
+				const meta = stationMeta[entry.stationTriplet];
+				if (!meta) return;
+				const allValues = (entry?.data?.[0]?.values || [])
+					.filter(v => v.value !== null && v.value !== undefined)
+					.map(v => ({ date: v.date, value: v.value }));
+				const values = allValues.filter(v => v.date >= cutoffStr);
+				const priorValues = allValues.filter(v => v.date < cutoffStr);
+				if (values.length > 0 || priorValues.length > 0) {
+					reservoirData.push({
+						stationName: meta.name,
+						stationId: meta.stationId,
+						values,
+						priorValues,
+						unit: 'acre-ft'
+					});
 				}
-			} catch (err) {
-				console.error(`Error fetching data for station ${station.stationTriplet}:`, err);
-			}
+			});
+		} else {
+			console.warn(`Batched reservoir data fetch failed: ${dataResponse.status}`);
 		}
 
 			setReservoirForecast({
@@ -856,6 +912,12 @@ const Drought = () => {
 		GetNWSForcast(44.0582, -121.3153);
 		GetWeatherAlerts('ORZ001');
 
+		// Load SNOTEL station data
+		fetch('/drought/data/snotel_stations_average_annual_swe.geojson')
+			.then(r => r.json())
+			.then(data => setSnotelData(data))
+			.catch(err => console.error('Failed to load SNOTEL data:', err));
+
 		// Load HUC-8 static data for SummaryPanel
 		Promise.all([
 			fetch('/drought/data/huc8_current_conditions.json').then(r => r.json()),
@@ -899,6 +961,32 @@ const Drought = () => {
 		} finally {
 			setLoading(false);
 		}
+	};
+
+	const snotelPointToLayer = (feature, latlng) => {
+		const swe = feature.properties.average_annual_mean_swe ?? 0;
+		const radius = Math.max(4, swe * 0.7);
+		return L.circleMarker(latlng, {
+			radius,
+			color: '#1a6eb5',
+			fillColor: '#4aa3df',
+			fillOpacity: 0.7,
+			weight: 1.5
+		});
+	};
+
+	const onEachSnotelFeature = (feature, layer) => {
+		const { name, stationId, elevation, average_annual_mean_swe } = feature.properties;
+		layer.bindPopup(
+			`<strong>${name}</strong><br />` +
+			`Station ID: ${stationId}<br />` +
+			`Elevation: ${elevation} ft<br />` +
+			`Avg Annual SWE: ${average_annual_mean_swe.toFixed(2)} in`
+		);
+		layer.on('click', (e) => {
+			e.originalEvent.stopPropagation();
+			layer.openPopup();
+		});
 	};
 
 	const countyStyle = (feature) => {
@@ -1007,58 +1095,78 @@ const Drought = () => {
 				</p>
 			);
 		}
-		const allDatesSet = new Set();
-		snowForecast.stations.forEach(s => s.values.forEach(v => allDatesSet.add(v.date)));
-		const sortedDates = Array.from(allDatesSet).sort();
-		const chartData = sortedDates.map(date => {
-			const point = { date };
-			snowForecast.stations.forEach(s => {
-				const match = s.values.find(v => v.date === date);
-				point[s.stationName] = match ? match.value : null;
-			});
-			return point;
-		});
-		const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
+
 		const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-		const lineColors = ['#8884d8','#82ca9d','#ffc658','#ff7300','#0088fe','#00C49F','#FFBB28','#FF8042','#a4de6c','#d0ed57'];
+		const chartHeight = Math.min(height, 200);
+
 		return (
 			<>
 				<p style={{ color: 'white', marginTop: '4px' }}>
 					{snowForecast.stations.length} station{snowForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'} — daily SWE (past year)
 				</p>
-				<ResponsiveContainer width="100%" height={height}>
-					<LineChart data={chartData} margin={{ top: 5, right: 5, left: 15, bottom: 5 }}>
-						<CartesianGrid strokeDasharray="3 3" stroke="#444" />
-						<XAxis
-							dataKey="date"
-							ticks={monthTicks}
-							tickFormatter={(d) => monthNames[parseInt(d.slice(5, 7)) - 1]}
-							tick={{ fill: 'white', fontSize: 10 }}
-						/>
-						<YAxis
-							tick={{ fill: 'white', fontSize: 10 }}
-							label={{ value: 'SWE (in)', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
-						/>
-						<Tooltip
-							formatter={(value, name) => [value != null ? `${value} in` : 'N/A', name]}
-							labelFormatter={(label) => label}
-							contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
-							itemStyle={{ color: 'white' }}
-							labelStyle={{ color: 'white' }}
-						/>
-						<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
-						{snowForecast.stations.map((station, idx) => (
-							<Line
-								key={station.stationId}
-								type="monotone"
-								dataKey={station.stationName}
-								stroke={lineColors[idx % lineColors.length]}
-								dot={false}
-								connectNulls={false}
-							/>
-						))}
-					</LineChart>
-				</ResponsiveContainer>
+				{snowForecast.stations.map((station) => {
+					const sortedDates = Array.from(new Set(station.values.map(v => v.date))).sort();
+
+					const priorByMmDd = {};
+					(station.priorValues || []).forEach(v => {
+						priorByMmDd[v.date.slice(5)] = v.value;
+					});
+
+					const chartData = sortedDates.map(date => ({
+						date,
+						'Current Year': station.values.find(v => v.date === date)?.value ?? null,
+						'Prior Year': priorByMmDd[date.slice(5)] ?? null,
+					}));
+
+					const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
+
+					return (
+						<div key={station.stationId} style={{ marginBottom: '16px' }}>
+							<p style={{ color: 'white', margin: '4px 0 2px 0', fontWeight: 'bold', fontSize: '12px' }}>
+								{station.stationName}
+							</p>
+							<ResponsiveContainer width="100%" height={chartHeight}>
+								<LineChart data={chartData} margin={{ top: 5, right: 5, left: 15, bottom: 5 }}>
+									<CartesianGrid strokeDasharray="3 3" stroke="#444" />
+									<XAxis
+										dataKey="date"
+										ticks={monthTicks}
+										tickFormatter={(d) => monthNames[parseInt(d.slice(5, 7)) - 1]}
+										tick={{ fill: 'white', fontSize: 10 }}
+									/>
+									<YAxis
+										tick={{ fill: 'white', fontSize: 10 }}
+										label={{ value: 'SWE (in)', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
+									/>
+									<Tooltip
+										formatter={(value, name) => [value != null ? `${value} in` : 'N/A', name]}
+										labelFormatter={(label) => label}
+										contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
+										itemStyle={{ color: 'white' }}
+										labelStyle={{ color: 'white' }}
+									/>
+									<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
+									<Line
+										type="monotone"
+										dataKey="Prior Year"
+										stroke="#82ca9d"
+										strokeOpacity={0.6}
+										strokeDasharray="4 2"
+										dot={false}
+										connectNulls={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="Current Year"
+										stroke="#8884d8"
+										dot={false}
+										connectNulls={false}
+									/>
+								</LineChart>
+							</ResponsiveContainer>
+						</div>
+					);
+				})}
 			</>
 		);
 	};
@@ -1075,58 +1183,78 @@ const Drought = () => {
 				</p>
 			);
 		}
-		const allDatesSet = new Set();
-		reservoirForecast.stations.forEach(s => s.values.forEach(v => allDatesSet.add(v.date)));
-		const sortedDates = Array.from(allDatesSet).sort();
-		const chartData = sortedDates.map(date => {
-			const point = { date };
-			reservoirForecast.stations.forEach(s => {
-				const match = s.values.find(v => v.date === date);
-				point[s.stationName] = match ? match.value : null;
-			});
-			return point;
-		});
-		const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
+
 		const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-		const lineColors = ['#8884d8','#82ca9d','#ffc658','#ff7300','#0088fe','#00C49F','#FFBB28','#FF8042','#a4de6c','#d0ed57'];
+		const chartHeight = Math.min(height, 200);
+
 		return (
 			<>
 				<p style={{ color: 'white', marginTop: '4px' }}>
 					{reservoirForecast.stations.length} reservoir{reservoirForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'} — daily storage (past year)
 				</p>
-				<ResponsiveContainer width="100%" height={height}>
-					<LineChart data={chartData} margin={{ top: 5, right: 5, left: 20, bottom: 5 }}>
-						<CartesianGrid strokeDasharray="3 3" stroke="#444" />
-						<XAxis
-							dataKey="date"
-							ticks={monthTicks}
-							tickFormatter={(d) => monthNames[parseInt(d.slice(5, 7)) - 1]}
-							tick={{ fill: 'white', fontSize: 10 }}
-						/>
-						<YAxis
-							tick={{ fill: 'white', fontSize: 10 }}
-							label={{ value: 'Storage (acre-ft)', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
-						/>
-						<Tooltip
-							formatter={(value, name) => [value != null ? `${value.toLocaleString()} acre-ft` : 'N/A', name]}
-							labelFormatter={(label) => label}
-							contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
-							itemStyle={{ color: 'white' }}
-							labelStyle={{ color: 'white' }}
-						/>
-						<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
-						{reservoirForecast.stations.map((station, idx) => (
-							<Line
-								key={station.stationId}
-								type="monotone"
-								dataKey={station.stationName}
-								stroke={lineColors[idx % lineColors.length]}
-								dot={false}
-								connectNulls={false}
-							/>
-						))}
-					</LineChart>
-				</ResponsiveContainer>
+				{reservoirForecast.stations.map((station) => {
+					const sortedDates = Array.from(new Set(station.values.map(v => v.date))).sort();
+
+					const priorByMmDd = {};
+					(station.priorValues || []).forEach(v => {
+						priorByMmDd[v.date.slice(5)] = v.value;
+					});
+
+					const chartData = sortedDates.map(date => ({
+						date,
+						'Current Year': station.values.find(v => v.date === date)?.value ?? null,
+						'Prior Year': priorByMmDd[date.slice(5)] ?? null,
+					}));
+
+					const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
+
+					return (
+						<div key={station.stationId} style={{ marginBottom: '16px' }}>
+							<p style={{ color: 'white', margin: '4px 0 2px 0', fontWeight: 'bold', fontSize: '12px' }}>
+								{station.stationName}
+							</p>
+							<ResponsiveContainer width="100%" height={chartHeight}>
+								<LineChart data={chartData} margin={{ top: 5, right: 5, left: 20, bottom: 5 }}>
+									<CartesianGrid strokeDasharray="3 3" stroke="#444" />
+									<XAxis
+										dataKey="date"
+										ticks={monthTicks}
+										tickFormatter={(d) => monthNames[parseInt(d.slice(5, 7)) - 1]}
+										tick={{ fill: 'white', fontSize: 10 }}
+									/>
+									<YAxis
+										tick={{ fill: 'white', fontSize: 10 }}
+										label={{ value: 'Storage (acre-ft)', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
+									/>
+									<Tooltip
+										formatter={(value, name) => [value != null ? `${value.toLocaleString()} acre-ft` : 'N/A', name]}
+										labelFormatter={(label) => label}
+										contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
+										itemStyle={{ color: 'white' }}
+										labelStyle={{ color: 'white' }}
+									/>
+									<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
+									<Line
+										type="monotone"
+										dataKey="Prior Year"
+										stroke="#82ca9d"
+										strokeOpacity={0.6}
+										strokeDasharray="4 2"
+										dot={false}
+										connectNulls={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="Current Year"
+										stroke="#8884d8"
+										dot={false}
+										connectNulls={false}
+									/>
+								</LineChart>
+							</ResponsiveContainer>
+						</div>
+					);
+				})}
 			</>
 		);
 	};
@@ -1144,21 +1272,21 @@ const Drought = () => {
 			);
 		}
 
-		// Color scale from red (dry/low exceedance) → yellow (median) → blue (wet/high exceedance)
-		const probabilityColorMap = {
-			'95%': '#b71c1c',
-			'90%': '#d32f2f',
-			'80%': '#f4511e',
-			'70%': '#fb8c00',
-			'60%': '#fdd835',
-			'50%': '#c6ca53',
-			'40%': '#8bc34a',
-			'30%': '#26a69a',
-			'20%': '#1e88e5',
-			'10%': '#1565c0',
-			'5%': '#0d47a1'
+		// Color scale: low exceedance % = wet/high flow (blue) → high % = dry/low flow (red)
+		const probColorMap = {
+			'5':  '#0d47a1',
+			'10': '#1565c0',
+			'20': '#1e88e5',
+			'30': '#26a69a',
+			'40': '#8bc34a',
+			'50': '#c6ca53',
+			'60': '#fdd835',
+			'70': '#fb8c00',
+			'80': '#f4511e',
+			'90': '#d32f2f',
+			'95': '#b71c1c'
 		};
-		const getProbColor = (prob) => probabilityColorMap[prob] || '#8884d8';
+		const getProbColor = (prob) => probColorMap[String(prob).replace('%', '')] || '#8884d8';
 
 		return (
 			<>
@@ -1166,73 +1294,168 @@ const Drought = () => {
 					{streamForecast.stations.length} forecast point{streamForecast.stations.length !== 1 ? 's' : ''} in {selectedCounty ? `${selectedCounty.properties.NAME.replace(/ County$/i, '')} County` : 'Oregon'}
 				</p>
 				{streamForecast.stations.map(station => {
-					// Collect all unique probability keys across all periods, sorted ascending
-					const allProbKeys = [...new Set(
-						station.periods.flatMap(p => p.forecastValues.map(v => `${v.exceedanceProbability}%`))
-					)].sort((a, b) => parseInt(b) - parseInt(a));
+					const unit = station.periods[0]?.unit || 'KAF';
 
-					// Build chart data: one row per probability threshold, one column per period
-					const chartData = allProbKeys.map(probKey => {
-						const point = { probability: probKey };
-						station.periods.forEach(p => {
-							const match = p.forecastValues.find(v => `${v.exceedanceProbability}%` === probKey);
-							point[p.periodName] = match ? match.value : null;
-						});
-						return point;
+					// Collect all unique probability keys across all periods, sorted low→high exceedance
+					const allProbKeys = [...new Set(
+						station.periods.flatMap(p => p.forecastValues.map(v => String(v.exceedanceProbability)))
+					)].sort((a, b) => parseInt(a) - parseInt(b));
+
+					// Format a YYYY-MM date string to a short label like "Nov '25"
+					const moNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+					const fmtMonth = (yyyymm) => {
+						const [yr, mo] = yyyymm.split('-');
+						return `${moNames[parseInt(mo) - 1]} '${yr.slice(2)}`;
+					};
+
+					// Build a lookup of prior-year values keyed by calendar month ("MM")
+					// so each prior-year point can be overlaid at the same x-position as
+					// the matching current-year month.
+					const priorByMonth = {};
+					(station.priorYearValues || []).forEach(v => {
+						priorByMonth[v.date.slice(5, 7)] = v.value;
 					});
 
-					const unit = station.periods[0]?.unit || 'KAF';
-					const periodLabels = station.periods.map(p => p.periodName).join(', ');
+					// Historical rows: one per observed month, CurrentYear + aligned PriorYear value
+					const historicalRows = (station.historicalValues || []).map(v => ({
+						period: fmtMonth(v.date),
+						CurrentYear: v.value,
+						PriorYear: priorByMonth[v.date.slice(5, 7)] ?? null
+					}));
+
+					// Seed every probability key on the last historical row with the CurrentYear value
+					// so that each forecast dotted line starts from the final observed data point.
+					// Mark the row as the handoff point so the tooltip can suppress probability labels there.
+					const lastHistRow = historicalRows[historicalRows.length - 1];
+					if (lastHistRow) {
+						allProbKeys.forEach(prob => { lastHistRow[prob] = lastHistRow.CurrentYear; });
+						lastHistRow.isHandoff = true;
+					}
+
+					// Build forecast tick rows: each period spans its natural number of months
+					// (3 for "3-Month", 6 for "6-Month") so the probability lines slope visually
+					// across the full interval. Forecast values land only at the period-end tick;
+					// intermediate ticks are left null and bridged by connectNulls on the Line.
+					const lastHistDate = station.historicalValues?.length > 0
+						? station.historicalValues[station.historicalValues.length - 1].date // 'YYYY-MM'
+						: null;
+
+					let forecastTickRows = [];
+					if (lastHistDate) {
+						const [baseYr, baseMo] = lastHistDate.split('-').map(Number);
+						const maxMonths = station.periods.some(p => p.label === '6-Month') ? 6 : 3;
+						for (let i = 1; i <= maxMonths; i++) {
+							const d = new Date(baseYr, baseMo - 1 + i, 1);
+							const label = fmtMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+							const row = { period: label };
+							// Extend prior-year overlay into the forecast period using the same calendar-month lookup
+							const mm = String(d.getMonth() + 1).padStart(2, '0');
+							if (priorByMonth[mm] != null) row.PriorYear = priorByMonth[mm];
+							station.periods.forEach(p => {
+								const targetMonth = p.label === '3-Month' ? 3 : p.label === '6-Month' ? 6 : null;
+								if (targetMonth === i) {
+									p.forecastValues.forEach(v => {
+										row[String(v.exceedanceProbability)] = v.value;
+									});
+									row.periodName = p.periodName;
+								}
+							});
+							forecastTickRows.push(row);
+						}
+					} else {
+						// Fallback if no historical data: one row per period
+						forecastTickRows = station.periods.map(p => {
+							const row = { period: p.label, periodName: p.periodName };
+							p.forecastValues.forEach(v => { row[String(v.exceedanceProbability)] = v.value; });
+							return row;
+						});
+					}
+
+					const chartData = [...historicalRows, ...forecastTickRows];
 
 					return (
 						<div key={station.stationId} style={{ marginBottom: '16px' }}>
 							<p style={{ color: '#ccc', fontSize: '12px', margin: '4px 0 2px 0' }}>
-								{station.stationName} — {periodLabels}
+								{station.stationName}
 							</p>
 							<ResponsiveContainer width="100%" height={height}>
-								<BarChart
-									layout="vertical"
-									data={chartData}
-									margin={{ top: 5, right: 20, left: 35, bottom: 20 }}
-								>
+								<LineChart data={chartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
 									<CartesianGrid strokeDasharray="3 3" stroke="#444" />
 									<XAxis
-										type="number"
+										dataKey="period"
 										tick={{ fill: 'white', fontSize: 10 }}
-										label={{ value: unit, position: 'insideBottom', fill: 'white', fontSize: 10, offset: -10 }}
 									/>
 									<YAxis
-										type="category"
-										dataKey="probability"
 										tick={{ fill: 'white', fontSize: 10 }}
-										label={{ value: 'Exceedance', angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
+										label={{ value: unit, angle: -90, position: 'insideLeft', fill: 'white', fontSize: 10 }}
 									/>
 									<Tooltip
-										formatter={(value, name) => [value != null ? `${value} ${unit}` : 'N/A', name]}
-										contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #555' }}
-										itemStyle={{ color: 'white' }}
-										labelStyle={{ color: 'white' }}
+										content={({ active, payload, label }) => {
+											if (!active || !payload || !payload.length) return null;
+											const entry = chartData.find(d => d.period === label);
+											const isHandoff = entry?.isHandoff;
+											// On the handoff row show only the CurrentYear value
+											const visible = isHandoff
+												? payload.filter(p => p.dataKey === 'CurrentYear')
+												: payload.filter(p => p.value != null);
+											const title = entry?.periodName ? `${label} (${entry.periodName})` : label;
+											const displayName = (key) => {
+												if (key === 'CurrentYear') return 'Current Year';
+												if (key === 'PriorYear') return 'Prior Year';
+												return `${key}% exceedance`;
+											};
+											return (
+												<div style={{ backgroundColor: '#1a1a1a', border: '1px solid #555', padding: '8px 10px' }}>
+													<p style={{ color: 'white', margin: '0 0 6px 0', fontWeight: 'bold' }}>{title}</p>
+													{visible.map(p => (
+														<p key={p.dataKey} style={{ color: p.stroke || p.color || 'white', margin: '2px 0', fontSize: '11px' }}>
+															{displayName(p.dataKey)}: {p.value} {unit}
+														</p>
+													))}
+												</div>
+											);
+										}}
 									/>
-									<Legend
-										content={() => (
-											<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '4px 0', justifyContent: 'center' }}>
-												{allProbKeys.map(prob => (
-													<span key={prob} style={{ color: 'white', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-														<span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: getProbColor(prob), borderRadius: '2px' }} />
-														{prob}
-													</span>
-												))}
-											</div>
-										)}
+									<Legend wrapperStyle={{ color: 'white', fontSize: '11px' }} />
+									{/* Solid grey line for prior year monthly totals */}
+									<Line
+										type="monotone"
+										dataKey="PriorYear"
+										name="Prior Year"
+										stroke="#888888"
+										strokeWidth={1.5}
+										dot={{ fill: '#888888', r: 2 }}
+										connectNulls={false}
 									/>
-									{station.periods.map((p) => (
-										<Bar key={p.periodName} dataKey={p.periodName}>
-											{chartData.map((entry) => (
-												<Cell key={`cell-${entry.probability}`} fill={getProbColor(entry.probability)} />
-											))}
-										</Bar>
+									{/* Solid white line for observed historical monthly totals */}
+									<Line
+										type="monotone"
+										dataKey="CurrentYear"
+										name="Current Year"
+										stroke="#ffffff"
+										strokeWidth={2}
+										dot={{ fill: '#ffffff', r: 3 }}
+										connectNulls={false}
+									/>
+									{/* Dotted colored lines for each exceedance probability forecast */}
+									{allProbKeys.map(prob => (
+										<Line
+											key={prob}
+											type="monotone"
+											dataKey={prob}
+											name={`${prob}%`}
+											stroke={getProbColor(prob)}
+											strokeDasharray="5 5"
+											strokeWidth={1.5}
+											dot={({ cx, cy, payload }) =>
+												payload[prob] != null && !payload.isHandoff
+													? <circle key={`dot-${prob}-${payload.period}`} cx={cx} cy={cy} r={4} fill={getProbColor(prob)} />
+													: null
+											}
+											connectNulls={true}
+										/>
 									))}
-								</BarChart>
+								</LineChart>
 							</ResponsiveContainer>
 						</div>
 					);
@@ -1353,6 +1576,13 @@ const Drought = () => {
 										data={countiesData}
 										style={countyStyle}
 										onEachFeature={onEachCounty}
+									/>
+								)}
+								{snotelData && (
+									<GeoJSON
+										data={snotelData}
+										pointToLayer={snotelPointToLayer}
+										onEachFeature={onEachSnotelFeature}
 									/>
 								)}
 							</MapContainer>

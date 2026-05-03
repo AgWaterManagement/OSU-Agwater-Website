@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import {
   Layout,
   Steps,
@@ -11,8 +11,13 @@ import {
   Row,
   Col,
 } from 'antd';
-import { MapContainer, TileLayer, GeoJSON, WMSTileLayer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+import Map from '@arcgis/core/Map';
+import MapView from '@arcgis/core/views/MapView';
+import WMSLayer from '@arcgis/core/layers/WMSLayer';
+import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
+import Graphic from '@arcgis/core/Graphic';
+import Polygon from '@arcgis/core/geometry/Polygon';
+import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 
 import StepWhoWhere from './StepWhoWhere';
 import StepConditions from './StepConditions';
@@ -30,12 +35,194 @@ const { Title, Text, Paragraph } = Typography;
 const API_BASE = 'https://agwater.org:5556';
 
 const TMDL_GEOJSON_URL = 'https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services/TMDLs_DEQ_by_parameter_Feb2026/FeatureServer/4/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson';
-const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/services/Framework/ODA_AdminBnds_AgWaterQualityManagementArea/MapServer/WMSServer';
+const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3'
 /*
   "Create a 'living' repository of suggested agricultural/environmental practices
    to maintain and improve the quality of water for all waters of the State."
   "Ability for landowner to identify/search for Ag Practices related to their land."
 */
+
+const WqMap = ({ feature_url, center = [-120.5, 44.0], zoom = 5, height = 400 }) => {
+  const mapContainer = useRef(null);
+  const mapView = useRef(null);
+
+  useEffect(() => {
+    if (!mapContainer.current) return;
+
+    const initializeMap = async () => {
+      try {
+        // Create map with basemap
+        const map = new Map({
+          basemap: 'osm-3d',
+        });
+
+        // Create MapView
+        mapView.current = new MapView({
+          container: mapContainer.current,
+          map: map,
+          center: center,
+          zoom: zoom,
+        });
+
+        // If feature_url is provided, load and display the feature
+        if (feature_url) {
+          try {
+            // Check if it's a FeatureServer URL
+            if (feature_url.includes('FeatureServer')) {
+              // Add the feature layer directly from the URL
+              const featureLayer = new FeatureLayer({
+                url: feature_url
+              });
+              
+              map.add(featureLayer);
+
+              // Zoom to the extent of the feature layer
+              await mapView.current.when(async () => {
+                if (featureLayer.loaded) {
+                  mapView.current.extent = featureLayer.fullExtent;
+                }
+              });
+            } else if (feature_url.includes('query')) {
+              // Handle GeoJSON or query endpoints
+              const response = await fetch(feature_url);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch feature: ${response.status}`);
+              }
+
+              const geojson = await response.json();
+              
+              // Create a graphics layer to display the features
+              const graphicsLayer = new GraphicsLayer();
+              map.add(graphicsLayer);
+
+              // Process GeoJSON features
+              const features = geojson.features || [];
+              features.forEach((feature) => {
+                const geometry = feature.geometry;
+                const properties = feature.properties;
+
+                let graphicGeometry = null;
+
+                if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
+                  const rings = geometry.coordinates;
+                  graphicGeometry = {
+                    type: 'polygon',
+                    rings: rings[0] ? [rings[0]] : [],
+                    spatialReference: { wkid: 4326 }
+                  };
+                } else if (geometry.type === 'Point') {
+                  graphicGeometry = {
+                    type: 'point',
+                    longitude: geometry.coordinates[0],
+                    latitude: geometry.coordinates[1],
+                    spatialReference: { wkid: 4326 }
+                  };
+                } else if (geometry.type === 'LineString') {
+                  graphicGeometry = {
+                    type: 'polyline',
+                    paths: [geometry.coordinates],
+                    spatialReference: { wkid: 4326 }
+                  };
+                }
+
+                if (graphicGeometry) {
+                  let symbol, label;
+
+                  if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
+                    symbol = {
+                      type: 'simple-fill',
+                      color: [51, 102, 153, 0.3],
+                      outline: {
+                        color: [51, 102, 153],
+                        width: 2
+                      }
+                    };
+                    label = properties?.name || 'Feature Area';
+                  } else if (geometry.type === 'Point') {
+                    symbol = {
+                      type: 'simple-marker',
+                      size: 10,
+                      color: [51, 102, 153],
+                      outline: {
+                        color: [255, 255, 255],
+                        width: 2
+                      }
+                    };
+                    label = properties?.name || 'Feature Point';
+                  } else if (geometry.type === 'LineString') {
+                    symbol = {
+                      type: 'simple-line',
+                      color: [51, 102, 153],
+                      width: 3
+                    };
+                    label = properties?.name || 'Feature Line';
+                  }
+
+                  const graphic = new Graphic({
+                    geometry: graphicGeometry,
+                    symbol: symbol,
+                    attributes: properties,
+                    popupTemplate: {
+                      title: label,
+                      content: properties ? Object.entries(properties)
+                        .map(([key, value]) => `<div><strong>${key}:</strong> ${value}</div>`)
+                        .join('') : 'Feature'
+                    }
+                  });
+
+                  graphicsLayer.add(graphic);
+                }
+              });
+
+              // Zoom to graphics extent
+              if (graphicsLayer.graphics.length > 0) {
+                await mapView.current.when(() => {
+                  const extent = graphicsLayer.graphics.reduce((acc, graphic) => {
+                    if (graphic.geometry && graphic.geometry.extent) {
+                      return acc ? acc.union(graphic.geometry.extent) : graphic.geometry.extent;
+                    }
+                    return acc;
+                  }, null);
+
+                  if (extent) {
+                    mapView.current.extent = extent.expand(1.2);
+                  }
+                });
+              }
+            }
+          } catch (error) {
+            console.error('Error loading feature from URL:', error);
+          }
+        }
+      } catch (err) {
+        console.error('Error initializing map:', err);
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      // Cleanup if needed
+      if (mapView.current) {
+        mapView.current.destroy();
+      }
+    };
+  }, [feature_url, center, zoom]);
+
+  return (
+    <div
+      ref={mapContainer}
+      style={{
+        width: '100%',
+        height: `${height}px`,
+        borderRadius: 8,
+        overflow: 'hidden'
+      }}
+    />
+  );
+};
+
+
 
 // Main AgWqPlan component for the Water Quality Practices Planner.
 // Loads concern questions and practices from the /agwqplan routes exposed by ag_wqplan.py.
@@ -56,7 +243,7 @@ const AgWqPlan = () => {
   const [region, setRegion] = useState();
   const [commodity, setCommodity] = useState();
   const [showMaps, setShowMaps] = useState(false);
-  const [tmdlGeoJson, setTmdlGeoJson] = useState(null);
+
 
   // Selection state across steps
   const [selectedConcerns, setSelectedConcerns] = useState([]);
@@ -170,58 +357,7 @@ const AgWqPlan = () => {
   const showMapContent = (show) => {
     console.log("Show maps:", show);
     setShowMaps(show);
-    // Implement map display logic here, e.g., navigate to a map page or open a modal
   }
-
-  useEffect(() => {
-    if (!showMaps || tmdlGeoJson ) {
-      return;
-    }
-
-    let active = true;
-
-    const loadTmdlLayer = async () => {
-      try {
-        const response = await fetch(TMDL_GEOJSON_URL);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch TMDL GeoJSON: ${response.status}`);
-        }
-
-        const geojson = await response.json();
-        if (active) {
-          setTmdlGeoJson(geojson);
-        }
-      } catch (error) {
-        console.error('Error loading TMDL GeoJSON layer:', error);
-        if (active) {
-          setTmdlGeoJson(null);
-        }
-      }
-    };
-
-    loadTmdlLayer();
-
-    return () => {
-      active = false;
-    };
-  }, [showMaps, tmdlGeoJson]);
-
-  const tmdlLayerStyle = () => ({
-    color: '#0000ff',
-    weight: 1.5,
-    fillColor: '#0000ff',
-    fillOpacity: 0.08,
-  });
-
-  const onEachTmdlFeature = (feature, layer) => {
-    const label = feature?.properties?.TMDL_name || feature?.properties?.TMDL_parameter || 'TMDL area';
-
-    layer.bindTooltip(label, {
-      sticky: true,
-      direction: 'auto',
-      opacity: 0.9,
-    });
-  };
 
   const next = () => setCurrent((c) => c + 1);
   const prev = () => setCurrent((c) => c - 1);
@@ -289,53 +425,16 @@ const AgWqPlan = () => {
               <Col xs={24} md={12}>
                 <Title level={4}>Agricultural Water Quality Management Areas</Title>
                 <Text>ODA Agricultural Water Quality Management Areas. Source: <a href="https://www.oregon.gov/oda/programs/NaturalResources/Pages/AWQMA.aspx">ODA AWQMA Mapper</a></Text>
-                 <div style={{ height: 420, width: '100%', marginTop: 16, marginBottom: 16 }}>
-                  <MapContainer
-                    center={[44.0, -120.5]}
-                    zoom={6}
-                    style={{ height: '100%', width: '100%', borderRadius: 8 }}
-                    scrollWheelZoom={false}
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    <WMSTileLayer
-                      url={ODA_AWQMA_WMS_URL}
-                      layers="0"
-                      format="image/png"
-                      transparent={true}
-                      opacity={0.75}
-                    />
-                  </MapContainer>
-                </div>
-
-              
+                 <WqMap features_url={ODA_AWQMA_WMS_URL}></WqMap>
+ 
+ 
+ 
               </Col>
               <Col xs={24} md={12}>
                 <Title level={4}>TMDL Areas</Title>
                 <Text>Oregon DEQ TMDL areas by parameter. Source: <a href="https://www.oregon.gov/deq/wq/Pages/TMDLs.aspx">DEQ TMDL Mapper</a></Text>
-                <div style={{ height: 420, width: '100%', marginTop: 16, marginBottom: 16 }}>
-                  <MapContainer
-                    center={[44.0, -120.5]}
-                    zoom={6}
-                    style={{ height: '100%', width: '100%', borderRadius: 8 }}
-                    scrollWheelZoom={false}
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    {tmdlGeoJson && (
-                      <GeoJSON
-                        data={tmdlGeoJson}
-                        style={tmdlLayerStyle}
-                        onEachFeature={onEachTmdlFeature}
-                      />
-                    )}
-                  </MapContainer>
-                </div>
-              </Col>
+                <WqMap feature_url={TMDL_GEOJSON_URL}></WqMap>
+                </Col>
             </Row>
 
             <Button type="primary" onClick={() => showMapContent(false)}>Close</Button>
