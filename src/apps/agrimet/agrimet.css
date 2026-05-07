@@ -1,0 +1,6 @@
+.no_outline button:focus,
+.no_outline button:focus-visible {
+    outline-color: yellow;
+    outline-style: none;
+    outline-width: 0px;
+}

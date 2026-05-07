@@ -4,6 +4,10 @@ const theme = {
         colorTextHeading: 'yellow'
     },
     components: {
+        Calendar: {
+            colorText: '#9E9E9E',
+            //colorBgContainer: '#ECECEC',
+        },
         Card: { 
             headerBg: 'darkslategray',
             actionsBg: 'darkslategray',

@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 
 import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal, Select } from 'antd';
-import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
@@ -205,6 +205,7 @@ const Drought = () => {
 	const [currentHuc, setCurrentHuc] = useState(null);
 	const [activeMapLayer, setActiveMapLayer] = useState('forecast_pct_normal');
 	const [snotelData, setSnotelData] = useState(null);
+	const [snotelCurrentSwe, setSnotelCurrentSwe] = useState({});
 
 	const countyCentroids = {
 		"Baker": { latitude: 44.7661, longitude: -117.8334, zoneId: "ORZ001" },
@@ -912,10 +913,41 @@ const Drought = () => {
 		GetNWSForcast(44.0582, -121.3153);
 		GetWeatherAlerts('ORZ001');
 
-		// Load SNOTEL station data
+		// Load SNOTEL station data, then fetch yesterday's WTEQ for all stations
 		fetch('/drought/data/snotel_stations_average_annual_swe.geojson')
 			.then(r => r.json())
-			.then(data => setSnotelData(data))
+			.then(data => {
+				setSnotelData(data);
+				// Batch-fetch yesterday's WTEQ for every station in the geojson
+				const triplets = data.features.map(f => `${f.properties.stationId}:OR:SNTL`);
+				const chunkSize = 50;
+				const chunks = [];
+				for (let i = 0; i < triplets.length; i += chunkSize) {
+					chunks.push(triplets.slice(i, i + chunkSize));
+				}
+				Promise.all(chunks.map(chunk => {
+					const params = new URLSearchParams({
+						stationTriplets: chunk.join(','),
+						elements: 'WTEQ',
+						duration: 'DAILY',
+						returnFlags: 'false',
+						beginDate: -1,
+					});
+					return fetch(`https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?${params}`, {
+						headers: { 'Accept': 'application/json' }
+					}).then(r => r.ok ? r.json() : []);
+				})).then(results => {
+					const sweMap = {};
+					results.flat().forEach(entry => {
+						const stationId = entry.stationTriplet?.split(':')?.[0];
+						if (!stationId) return;
+						const values = entry?.data?.[0]?.values || [];
+						const latest = values.filter(v => v.value != null).pop();
+						if (latest) sweMap[stationId] = latest.value;
+					});
+					setSnotelCurrentSwe(sweMap);
+				}).catch(err => console.error('Failed to fetch current SNOTEL SWE:', err));
+			})
 			.catch(err => console.error('Failed to load SNOTEL data:', err));
 
 		// Load HUC-8 static data for SummaryPanel
@@ -963,30 +995,45 @@ const Drought = () => {
 		}
 	};
 
+	const getSnotelSweColor = (currentSwe, avgSwe) => {
+		if (currentSwe == null || avgSwe == null || avgSwe === 0) return '#888888';
+		const ratio = currentSwe / avgSwe;
+		if (ratio >= 1.2) return '#0d47a1';
+		if (ratio >= 0.9) return '#1e88e5';
+		if (ratio >= 0.7) return '#26c6da';
+		if (ratio >= 0.5) return '#fdd835';
+		if (ratio >= 0.25) return '#fb8c00';
+		return '#d32f2f';
+	};
+
 	const snotelPointToLayer = (feature, latlng) => {
-		const swe = feature.properties.average_annual_mean_swe ?? 0;
-		const radius = Math.max(4, swe * 0.7);
+		const avgSwe = feature.properties.average_annual_mean_swe ?? 0;
+		const stationId = feature.properties.stationId;
+		const currentSwe = snotelCurrentSwe[stationId] ?? null;
+		const radius = Math.max(4, avgSwe * 0.7);
+		const fillColor = getSnotelSweColor(currentSwe, avgSwe);
 		return L.circleMarker(latlng, {
 			radius,
-			color: '#1a6eb5',
-			fillColor: '#4aa3df',
-			fillOpacity: 0.7,
-			weight: 1.5
+			color: '#333',
+			fillColor,
+			fillOpacity: 0.85,
+			weight: 1
 		});
 	};
 
 	const onEachSnotelFeature = (feature, layer) => {
 		const { name, stationId, elevation, average_annual_mean_swe } = feature.properties;
+		const currentSwe = snotelCurrentSwe[stationId] ?? null;
+		const ratio = (currentSwe != null && average_annual_mean_swe > 0)
+			? (currentSwe / average_annual_mean_swe * 100).toFixed(0) + '% of avg'
+			: 'No recent data';
 		layer.bindPopup(
 			`<strong>${name}</strong><br />` +
 			`Station ID: ${stationId}<br />` +
 			`Elevation: ${elevation} ft<br />` +
+			`Current SWE: ${currentSwe != null ? currentSwe + ' in' : 'N/A'} (${ratio})<br />` +
 			`Avg Annual SWE: ${average_annual_mean_swe.toFixed(2)} in`
 		);
-		layer.on('click', (e) => {
-			e.originalEvent.stopPropagation();
-			layer.openPopup();
-		});
 	};
 
 	const countyStyle = (feature) => {
@@ -1097,7 +1144,6 @@ const Drought = () => {
 		}
 
 		const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-		const chartHeight = Math.min(height, 200);
 
 		return (
 			<>
@@ -1125,7 +1171,7 @@ const Drought = () => {
 							<p style={{ color: 'white', margin: '4px 0 2px 0', fontWeight: 'bold', fontSize: '12px' }}>
 								{station.stationName}
 							</p>
-							<ResponsiveContainer width="100%" height={chartHeight}>
+							<ResponsiveContainer width="100%" height={height}>
 								<LineChart data={chartData} margin={{ top: 5, right: 5, left: 15, bottom: 5 }}>
 									<CartesianGrid strokeDasharray="3 3" stroke="#444" />
 									<XAxis
@@ -1185,7 +1231,6 @@ const Drought = () => {
 		}
 
 		const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-		const chartHeight = Math.min(height, 200);
 
 		return (
 			<>
@@ -1213,8 +1258,8 @@ const Drought = () => {
 							<p style={{ color: 'white', margin: '4px 0 2px 0', fontWeight: 'bold', fontSize: '12px' }}>
 								{station.stationName}
 							</p>
-							<ResponsiveContainer width="100%" height={chartHeight}>
-								<LineChart data={chartData} margin={{ top: 5, right: 5, left: 20, bottom: 5 }}>
+							<ResponsiveContainer width="100%" height={height}>
+								<LineChart data={chartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
 									<CartesianGrid strokeDasharray="3 3" stroke="#444" />
 									<XAxis
 										dataKey="date"
@@ -1571,20 +1616,25 @@ const Drought = () => {
 									placeholder="Search for a location"
 									style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
 								></arcgis-search>
-								{countiesData && (
-									<GeoJSON
-										data={countiesData}
-										style={countyStyle}
-										onEachFeature={onEachCounty}
-									/>
-								)}
-								{snotelData && (
-									<GeoJSON
-										data={snotelData}
-										pointToLayer={snotelPointToLayer}
-										onEachFeature={onEachSnotelFeature}
-									/>
-								)}
+								<Pane name="counties-pane" style={{ zIndex: 400 }}>
+									{countiesData && (
+										<GeoJSON
+											data={countiesData}
+											style={countyStyle}
+											onEachFeature={onEachCounty}
+										/>
+									)}
+								</Pane>
+								<Pane name="snotel-pane" style={{ zIndex: 450 }}>
+									{snotelData && (
+										<GeoJSON
+											key={`snotel-${Object.keys(snotelCurrentSwe).length}`}
+											data={snotelData}
+											pointToLayer={snotelPointToLayer}
+											onEachFeature={onEachSnotelFeature}
+										/>
+									)}
+								</Pane>
 							</MapContainer>
 						</div>
 					</Col>

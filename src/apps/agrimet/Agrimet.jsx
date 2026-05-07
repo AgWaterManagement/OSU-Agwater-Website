@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Layout, Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, Modal, message, Tabs } from "antd";
 
 import "leaflet/dist/leaflet.css";
+import "./agrimet.css";
 import { secrets } from "../../secrets";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 
@@ -14,16 +15,16 @@ import NWSForecast from "../../components/weather/NWSForecast";
 import Loading from "../../components/loading/Loading";
 
 import stationData from "./usbr_map.json";
-
+//import openTab from "../../../public/mages/openTab.png";
 const { Title, Text } = Typography;
-const { Header, Sider, Content } = Layout; import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
+const { Header, Sider  } = Layout;
+import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
 
 
 import {
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
+    DoubleRightOutlined,
+    DoubleLeftOutlined,
 } from '@ant-design/icons';
-
 
 
 // Color mapping for each 'type' property
@@ -75,13 +76,12 @@ const Agrimet = () => {
     // State to hold fetched station data
     const [loading, setLoading] = useState(false);
 
-    // Load initial station/crop from cookie if available
-    const [selectedState, setSelectedState] = useState(null); // () => getCookie('agrimet_state') || 'OR');
-
-
     // station info
+    // Load initial station/crop from cookie if available
+    const [selectedState, setSelectedState] = useState(() => getCookie('agrimet_state') || 'OR');
     const [selectedStation, setSelectedStation] = useState(() => getCookie('agrimet_station') || 'crvo');
     const selectedStationName = useRef(getSelectedStationName(selectedStation)); // Store the name of the selected station
+    const selectedStationLatLong = useRef(getStationLatLong(selectedStation)); // Store the lat/long of the selected station
     const stateStationOptions= useRef([]); // station options for the selected state, for the Cascader component
     const stationCropData = useRef([]); // station crop data (e.g. planting dates, harvest dates, recent water use) for all crops at station
     const [selectedStationData, setSelectedStationData] = useState(null);  // data about the selected station.
@@ -101,12 +101,32 @@ const Agrimet = () => {
 
     const [collapsed, setCollapsed] = useState(false);
 
-    const nwsForecast = useRef({}); // Store NWS forecast data
+    //const nwsForecast = useRef({}); // Store NWS forecast data
+
     const featureProps = useRef({});
     const OregonBounds = [
         [41.991794, -124.566244], // Southwest
         [46.292035, -116.463262], // Northeast
     ];
+
+    /*
+    const fetchNWSForecast = async (lat, lng) => {
+        try {
+            const response = await fetch(`https://agwater.org:5556/agrimet/nws_forecast?latitude=${lat}&longitude=${lng}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch forecast: ${response.status}`);
+            }
+            const data = await response.json();
+            if (data.success && data.forecast && data.forecast.periods) {
+                nwsForecast.current = data.forecast.periods;
+            }
+        } catch (error) {
+            console.error('Error fetching NWS forecast:', error);
+            nwsForecast.current = [];
+        }
+    };
+*/
+
 
 
     const fetchCropETData = async () => {
@@ -170,6 +190,19 @@ const Agrimet = () => {
 
         fetchCropCoefficients();
         fetchCropETData();
+
+        // get the current station from stationData.features using the selectedStation siteid, and set the user location to the station coordinates
+        const feature = stationData.features.find(f => f.properties.siteid === selectedStation);
+        if (!feature) {
+            console.error(`Station ${selectedStation} not found in station data.`);
+            return;
+        }
+        const { latitude, longitude } = feature.geometry.coordinates;
+        selectedStationLatLong.current = { lat: latitude, lng: longitude }; // Store the lat/long of the selected station
+
+        featureProps.current = feature.properties; // Store the properties of the selected station
+        // Set user location to the station's coordinates
+        setUserLocation({ lat: latitude, lng: longitude });
     }, []);
 
     // When selectedStation is updated:
@@ -177,23 +210,27 @@ const Agrimet = () => {
     // 2) update user location
     // 3) fetch crop water use data for the station
     useEffect(() => {
+
         setCookie('agrimet_station', selectedStation);
 
         selectedStationName.current = getSelectedStationName(selectedStation); // Store the name of the selected station
-
+        selectedStationLatLong.current = getStationLatLong(selectedStation); // Store the lat/long of the selected station
+        
+        setUserLocation(selectedStationLatLong.current); // Update user location to the station's coordinates
+        
         // find the station lat/long for the selected station in the stationData
         const feature = stationData.features.find(f => f.properties.siteid === selectedStation);
         if (!feature) {
             console.error(`Station ${selectedStation} not found in station data.`);
             return;
         }
-        const { latitude, longitude } = feature.geometry.coordinates;
         featureProps.current = feature.properties; // Store the properties of the selected station
-        // Set user location to the station's coordinates
-        setUserLocation({ lat: latitude, lng: longitude });
 
         // get the cropw water use chart data for the selected station
         fetchCropETData();
+        
+        // fetch the NWS forecast for the station location
+        // fetchNWSForecast(latitude, longitude);
 
     }, [selectedStation]);
 
@@ -715,20 +752,19 @@ const Agrimet = () => {
         },
         {
             key: '2',
-            label: 'Season-to-date Crop Water Use Information',
-            children: <CropWaterUseChart cropETData={cropETData} />,
-        },
-        {
-            key: '3',
-            label: 'Current Weather Conditions',
+            label: 'Weather/Crop Water Use 7-Day  Forecasts',
             children:
-                nwsForecast.current && nwsForecast.current.periods ? (
+                userLocation.lat && userLocation.lng ? (
                     <NWSForecast
                         lat={userLocation.lat}
                         lng={userLocation.lng}
                         locationName={selectedStationName.current || selectedStation}
-                        forecastData={nwsForecast.current ? nwsForecast.current.periods : []}
                     />) : (<Text>No forecast available</Text>)
+        },
+        {
+            key: '3',
+            label: 'Season-to-date Crop Water Use Information',
+            children: <CropWaterUseChart cropETData={cropETData} />,
         },
         {
             key: '4',
@@ -773,7 +809,7 @@ const Agrimet = () => {
                 The page provides access to Oregon-specific Agrimet data and products.
             </p>
 
-            <div style={{ marginLeft: '1em', marginRight: '1em', marginTop: '1em' }} >
+            <div className="no_outline" style={{ marginLeft: '1em', marginRight: '1em', marginTop: '1em' }} >
 
                 <Tabs items={tabItems} activeKey={selectedTab} onChange={setSelectedTab} />
 
@@ -797,9 +833,7 @@ const Agrimet = () => {
                                 </div>
                             ) : (
                                 <div className="" >
-                                    <Divider orientation="left">Select a Agrimet station</Divider>
-
-
+                                    <Divider orientation="left">Select an Agrimet station</Divider>
                                     {
                                     <Cascader key='stationCascader1' defaultValue={[selectedState, selectedStation]} style={{ width: '24em' }}
                                         options={stationOptions}
@@ -809,6 +843,7 @@ const Agrimet = () => {
                                             updateStation(station);
                                         }} />
                                     }
+                                    {/*
                                     <Select
                                         key='selectStateOptions'
                                         style={{width: '30em', marginTop: '1em' }}
@@ -847,7 +882,7 @@ const Agrimet = () => {
                                                 </Select.Option>
                                         ))}
                                     </Select>
-                                        
+                                    */}
 
                                     <Divider orientation="left">OR</Divider>
 
@@ -948,19 +983,21 @@ const Agrimet = () => {
                             )}
                         </Sider>
 
-                        <Layout style={{backgroundColor: '#fff', padding: 0 }}>
+                        <Layout style={{backgroundColor:'#000', padding: 0 }}>
                             <Header style={{ padding: 0 }}>
-                                <Button
+                                 <Button
                                     type="text"
-                                    icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                                    icon={collapsed ? <DoubleRightOutlined /> : <DoubleLeftOutlined />}
                                     onClick={() => setCollapsed(!collapsed)}
+                                    className="no_outline"
                                     style={{
-                                        fontSize: '16px',
-                                        width: 64,
+                                        fontSize: '24px',
+                                        width: 32,
                                         height: 64,
+
                                     }}
-                                />
-                                <span style={{fontSize:18}}>
+                                /> 
+                                    <span style={{fontSize:18, marginLeft: '1em', color: '#fff' }}>
                                     { selectedStationName.current ? `${selectedStationName.current} (${selectedStation.toUpperCase()})` : selectedStation ? selectedStation : 'Select a station to view information'}
                                 </span>
                             </Header>
