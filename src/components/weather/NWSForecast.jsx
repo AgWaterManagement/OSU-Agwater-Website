@@ -185,15 +185,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                                 nightForecast = period;
                         }
 
-                        const forecastImage = dayForecast && nwsIconMapDay[dayForecast.shortForecast] ? nwsIconMapDay[dayForecast.shortForecast]
-                                : nightForecast && nwsIconMapNight[nightForecast.shortForecast] ? nwsIconMapNight[nightForecast.shortForecast]
-                                : dayForecast && dayForecast.icon ? dayForecast.icon
-                                : nightForecast && nightForecast.icon ? nightForecast.icon
-                                : null;
-
-                        //const nightForecastImage = nightForecast && nwsIconMapNight[nightForecast.shortForecast] ? nwsIconMapNight[nightForecast.shortForecast]
-                        //        : nightForecast && nightForecast.icon ? nightForecast.icon
-                        //            : null;
+                        const forecastImage = getForecastImage(dayForecast);
 
                         const dayOfMonth = zeroPad(day.date(), 2);
                         const dayOfWeek = day.format('ddd');
@@ -290,7 +282,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                     )}
                     </div>
 
-                    <div style={{ display: 'flex', width: (cardWidth+8)* 7, justifyContent: 'center', alignItems: 'center',  gap: 8, padding: '8px 0' }}>
+                    <div style={{ display: 'flex', width: (cardWidth+8)* 7, justifyContent: 'center', alignItems: 'center',  gap: 8, padding: '8px 0', paddingBottom: '4px' }}>
                         {createForecastCharts()}
                     </div>
                 </div>
@@ -319,50 +311,6 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
         });
 
     };
-
-
-    const nwsIconMapDay = {
-
-        'Sunny': SUNNY,  // land/day/few
-        'Mostly Sunny': SUNNY,
-        'Partly Cloudy': PARTLY_CLOUDY,
-        'Mostly Cloudy': MOSTLY_CLOUDY,
-        'Partly Sunny': PARTLY_SUNNY,
-        'Mostly Clear': MOSTLY_CLEAR,
-        'Cloudy': MOSTLY_CLOUDY,
-        'Light Rain': LIGHT_RAIN,
-        'Rain': RAIN,
-        'Heavy Rain': HEAVY_RAIN,
-        'Thunderstorms': THUNDERSTORMS,
-        //'Slight Chance Light Rain then Partly Cloudy': [LIGHT_RAIN,PARTLY_CLOUDY],
-        'Slight Chance Light Rain then Partly Cloudy': LIGHT_RAIN,
-
-        /*
-            'sleet': {label: 'sleet', filename: 'icon_1_4' },
-                    'snow': {label: 'snow', filename: 'icon_2_0' },
-                    'heavy_snow': {label: 'heavy_snow', filename: 'icon_2_1' },
-                    'windy': {label: 'windy', filename: 'icon_2_2' },
-                    'fog': {label: 'fog', filename: 'icon_2_3' },
-                    'clear_night': {label: 'clear_night', filename: 'icon_2_4' },
-                    'partly_cloudy_night': {label: 'partly_cloudy_night', filename: 'icon_3_0' },
-                    'mostly_cloudy_night': {label: 'mostly_cloudy_night', filename: 'icon_3_1' },
-                    'fog_night': {label: 'fog_night', filename: 'icon_3_2' },
-                    'cold': {label: 'cold', filename: 'icon_3_3' },
-                    'hot': {label: 'hot', filename: 'icon_3_4' },
-                    */
-    };
-
-    const nwsIconMapNight = {
-        'Clear': MOSTLY_CLEAR,  // land/night/few
-        'Partly Cloudy': PARTLY_CLOUDY,
-        'Mostly Cloudy': MOSTLY_CLOUDY,
-        'Cloudy': MOSTLY_CLOUDY,
-        'Light Rain': LIGHT_RAIN,
-        'Rain': RAIN,
-        'Heavy Rain': HEAVY_RAIN,
-        'Thunderstorms': THUNDERSTORMS,
-    };
-
 
     const createForecastCharts = () => {
         if (!forecastData || !Array.isArray(forecastData) || forecastData.length === 0) return null;
@@ -419,7 +367,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                             height={rectHeight}
                             rx={2}
                             ry={2}
-                            fill="rgba(255, 255, 255, 0.4)"
+                            fill="rgba(255, 255, 255, 0.14)"
                             stroke="none"
                         />
                         <text
@@ -452,7 +400,6 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                     padding: 4, paddingBottom: 0, paddingTop: 0, marginBottom: 0,
                     background: backgroundGradient
                 }}>
-                    {console.log('   ChartContainer:', chartData, 'datakey:', datakey, 'chartType:', chartType, 'color:', color, 'label:', label, 'source:', source)   }
                     <ResponsiveContainer width="100%" height={chartHeight}>
                         <ComposedChart data={chartData} margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -521,7 +468,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                     domain={[25,100]}
                     datakey="temperature"
                     chartType="line"
-                    color="#ff7f0e"
+                    color="#ff0c0c"
                     backgroundColor="#ff7f0e"
                     label="Temperature"
                     source="Source - National Weather Service"
@@ -559,6 +506,40 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
             </div>
         );
     }
+
+    const getForecastImage = (forecast) => {
+
+        if (!forecast) return null;
+
+        const f = forecast.shortForecast;
+
+        const rain = f.includes('Rain') || f.includes('Showers');
+        const light = f.includes('Light') || f.includes('Drizzle');
+        const thunder = f.includes('Thunder');
+        const sunny = f.includes('Sunny') || f.includes('Clear');
+        const mostly = f.includes('Mostly');
+        const partly = f.includes('Partly');
+        const heavy = f.includes('Heavy');
+        const cloudy = f.includes('Cloudy') || f.includes('Clouds') || f.includes('Overcast');
+
+        if (sunny) return SUNNY;
+        if(mostly && sunny) return SUNNY;
+
+        if(partly && sunny) return PARTLY_SUNNY;
+
+        if(cloudy) return CLOUDY;
+
+        if(light && rain) return LIGHT_RAIN;
+
+        if (heavy && rain) return HEAVY_RAIN;
+
+        if(rain) return RAIN;
+
+        if(thunder) return THUNDERSTORMS;
+
+        // Implementation for getting forecast image
+        return forecast.icon || null;
+    };
 
 
     const createCalendarTable = () => {
@@ -601,7 +582,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                             const calendarDate = startSunday.add(idx, 'day');
 
                             const forecasts = getForecasts(calendarDate, forecastData);
-                            console.log('Calendar date:', calendarDate.format('YYYY-MM-DD'), 'Forecasts for this date:', forecasts);
+                            //console.log('Calendar date:', calendarDate.format('YYYY-MM-DD'), 'Forecasts for this date:', forecasts);
 
                             // pick a day and night forecast from the periods in the forecast data for this date, if they exist
                             let dayForecast = null;
@@ -614,11 +595,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                                     nightForecast = period;
                             }
 
-                            const forecastImage = dayForecast && nwsIconMapDay[dayForecast.shortForecast] ? nwsIconMapDay[dayForecast.shortForecast]
-                                : nightForecast && nwsIconMapNight[nightForecast.shortForecast] ? nwsIconMapNight[nightForecast.shortForecast]
-                                    : dayForecast && dayForecast.icon ? dayForecast.icon
-                                        : nightForecast && nightForecast.icon ? nightForecast.icon
-                                            : null;
+                            const forecastImage = getForecastImage(dayForecast);
 
                             //const _forecastImage = MOSTLY_SUNNY;
 

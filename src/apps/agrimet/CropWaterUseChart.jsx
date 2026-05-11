@@ -74,6 +74,10 @@ const CropWaterUseChart = ({cropETData}) => {
         }
     }, [cropETData, selectedCrop]);
 
+    if (!cropETData || !cropETData.data) {
+        return <div style={{ marginLeft: '1em' }}>No crop water use data available.</div>;
+    }
+    
     return (
         <div style={{ marginLeft: '1em' }}>
             <label htmlFor='selectCrop'>Select a crop from the list for crop-specific water use information: </label>

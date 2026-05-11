@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Layout, Row, Col, Button, Form, Typography, Select, Table, Divider, Cascader, Collapse, Modal, message, Tabs } from "antd";
+import { Layout, Row, Col, Button, Typography, Select, Table, Divider, Cascader, Collapse, message, Tabs } from "antd";
 
 import "leaflet/dist/leaflet.css";
 import "./agrimet.css";
+
 import { secrets } from "../../secrets";
+
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 
 import StationInfo from "./StationInfo";
@@ -82,11 +84,24 @@ const Agrimet = () => {
     const [selectedStation, setSelectedStation] = useState(() => getCookie('agrimet_station') || 'crvo');
     const selectedStationName = useRef(getSelectedStationName(selectedStation)); // Store the name of the selected station
     const selectedStationLatLong = useRef(getStationLatLong(selectedStation)); // Store the lat/long of the selected station
-    const stateStationOptions= useRef([]); // station options for the selected state, for the Cascader component
-    const stationCropData = useRef([]); // station crop data (e.g. planting dates, harvest dates, recent water use) for all crops at station
-    const [selectedStationData, setSelectedStationData] = useState(null);  // data about the selected station.
-    const [cropETData, setCropETData] = useState({}); // Store crop ET data
+    //const stateStationOptions= useRef([]); // station options for the selected state, for the Cascader component
 
+    const [selectedStationData, setSelectedStationData] = useState(null);  // data about the selected station.  This includes 
+                                        // crop information for all crops grown at the station, and is used to generate
+                                        // the crop information table and the crop water use chart.  It is fetched from 
+                                        // the API when a station is selected.
+    
+    const stationCropData = useRef([]); // station crop data (e.g. planting dates, harvest dates, recent water use) for all crops
+                                        // at station.  This is used to generate the crop water use chart and the
+                                        // tabular crop information data, and is fetched from the API when a station is selected. 
+                                        // It is stored in a ref to avoid unnecessary re-renders of the component when the data
+                                        // is updated.
+    const [cropETData, setCropETData] = useState({}); // Store crop ET data for the selected station, which is used to
+    //const cropETData = useRef({}); // Store crop ET data for the selected station, which is used to
+                                        // generate the season-to-date crop water use chart for a given crop grown at that station.
+                                        // This is fetched from the API when a station is selected.
+                                        // It is stored in a ref to avoid unnecessary re-renders of the component when the data
+                                        // is updated.
     // crop coefficient info
     const [selectedCrop, setSelectedCrop] = useState(() => getCookie('agrimet_crop') || 'WGRN');
     const selectedCropName = useRef(() => ''); // Store the name of the selected crop
@@ -94,12 +109,11 @@ const Agrimet = () => {
     const [selectedCoefficientCrop, setSelectedCoefficientCrop] = useState('ALFP');
 
     // UI state
+    const [collapsed, setCollapsed] = useState(false);  // sidebar (Sider) open/closed
     const [showMap, setShowMap] = useState(true); // State to control map visibility }
     const [selectedTab, setSelectedTab] = useState('1'); // Track selected tab
     const [showCoefficientTable, setShowCoefficientTable] = useState(false); // State to toggle coefficient table
-    const [userLocation, setUserLocation] = useState(getStationLatLong(selectedStation));  // from geolocation
-
-    const [collapsed, setCollapsed] = useState(false);
+    const userLocation = useRef({});  // from geolocation
 
     //const nwsForecast = useRef({}); // Store NWS forecast data
 
@@ -128,6 +142,10 @@ const Agrimet = () => {
 */
 
 
+    const [messageApi, contextHolder] = message.useMessage();
+    const info = () => {
+        messageApi.info('Hello, Ant Design!');
+    };
 
     const fetchCropETData = async () => {
         if (!selectedStation) {
@@ -142,15 +160,25 @@ const Agrimet = () => {
                 }
             });
             if (!response.ok) {
+                info(`Failed to fetch crop daily ET data for station ${selectedStation}: ${response.status}`);
                 throw new Error(`Failed to fetch crop_et_data: ${response.status}`);
             }
             const data = await response.json();
-            //const data = await response.text();
-            setCropETData(data);
-            console.log('Crop ET data loaded:', data);
+
+            if (data.success && data.data) {
+                setCropETData(data);
+                console.log('Crop ET data loaded:', data);
+                info(`Crop ET data loaded: ${Object.keys(data.data).length} days available.`);
+            } else {
+                setCropETData({});
+                info(`No crop ET data available for station ${selectedStation}.`);
+                console.warn(`No crop ET data available for station ${selectedStation}:`, data);
+            }
+
         } catch (error) {
-            console.error('Error loading crop ET data:', error);
             setCropETData({});
+            console.error('Error loading crop ET data:', error);
+            info(`Error loading crop ET data: ${error.message}`);
         }
     };
 
@@ -164,6 +192,7 @@ const Agrimet = () => {
                     }
                 });
                 if (!response.ok) {
+                    info(`Failed to fetch crop coefficients: ${response.status}`);
                     throw new Error(`Failed to fetch crop_coefficients: ${response.status}`);
                 }
                 const data = await response.json();
@@ -181,8 +210,10 @@ const Agrimet = () => {
                     crop.growth_stage_indicators_list = gsi;
                 });
                 setCropCoefficients(data.data);
+                info(`Crop coefficients loaded: ${Object.keys(data.data).length} crops available.`);
                 console.log('Crop coefficients loaded:', data);
             } catch (error) {
+                info(`Error loading crop coefficients: ${error.message}`);
                 console.error('Error loading crop coefficients:', error);
                 setCropCoefficients({});
             }
@@ -202,7 +233,7 @@ const Agrimet = () => {
 
         featureProps.current = feature.properties; // Store the properties of the selected station
         // Set user location to the station's coordinates
-        setUserLocation({ lat: latitude, lng: longitude });
+        userLocation.current = { lat: latitude, lng: longitude };
     }, []);
 
     // When selectedStation is updated:
@@ -215,8 +246,7 @@ const Agrimet = () => {
 
         selectedStationName.current = getSelectedStationName(selectedStation); // Store the name of the selected station
         selectedStationLatLong.current = getStationLatLong(selectedStation); // Store the lat/long of the selected station
-        
-        setUserLocation(selectedStationLatLong.current); // Update user location to the station's coordinates
+        userLocation.current = selectedStationLatLong.current; // Update user location to the station's coordinates
         
         // find the station lat/long for the selected station in the stationData
         const feature = stationData.features.find(f => f.properties.siteid === selectedStation);
@@ -273,7 +303,7 @@ const Agrimet = () => {
         return items;
     }
 
-    const stationOptions = selectStationOptions(stationData.features); //, selectedState);
+    const stationCascaderOptions = selectStationOptions(stationData.features); //, selectedState);
 
     // <Select> Crop Options
     const selectCropOptions = [];
@@ -290,25 +320,24 @@ const Agrimet = () => {
         }
     }
 
-
+/*
     const updateState = (state) => {
         // find the first station in the selected state and set it as the selected station
-        // Note that stationOptions is an array of objects with 'value' and 'children' properties, 
+        // Note that stationCascaderOptions is an array of objects with 'value' and 'children' properties, 
         // where 'value' is the state name and 'children' is an array of station options for that state.
-        if (!stationOptions || stationOptions.length === 0 || state == null) {
+        if (!stationCascaderOptions || stationCascaderOptions.length === 0 || state == null) {
             return;
         }   
 
-        const _selectedState = stationOptions.find(s => s.value === state);
+        const _selectedState = stationCascaderOptions.find(s => s.value === state);
 
         stateStationOptions.current = _selectedState?.children || [];
 
         const _selectedStation = _selectedState?.children[0]?.value || null;
         setSelectedStation(_selectedStation);
     };
-
-
-    const updateStation = (station) => {
+*/
+    const updateStation = (station, state) => {
         const fetchSelectedStationData = async () => {
             try {
                 // fetch the station crop info for the selected station from the API
@@ -329,14 +358,19 @@ const Agrimet = () => {
                 //});
 
                 setSelectedStationData(stationJson);
+                console.log(`Crop data loaded for station ${station}:`, stationJson);
+                info(`Crop data loaded for station ${station}: ${stationJson.crop_data ? stationJson.crop_data.length : 0} crops available.`);
             } catch (error) {
                 console.error("Error fetching selected station crop info", error);
                 setSelectedStationData(null);
+                info(`Error loading crop data for station ${station}: ${error.message}`);
             }
         };
 
         fetchSelectedStationData();
         setSelectedStation(station);
+        setSelectedState(state);
+        setCollapsed(true)
     };
 
     const onSelectedCropChange = (value, option) => {
@@ -370,21 +404,23 @@ const Agrimet = () => {
             (position) => {
                 setLoading(false);
                 const { latitude, longitude } = position.coords;
-                setUserLocation({ lat: latitude, lng: longitude });
+                userLocation.current = { lat: latitude, lng: longitude };
 
                 // Find nearest station
                 let minDist = Infinity;
                 let nearestStation = null;
+                let nearestState = null;
                 stationData.features.forEach(feature => {
                     const coords = feature.geometry.coordinates;
                     const dist = getDistance(latitude, longitude, coords[1], coords[0]);
                     if (dist < minDist) {
                         minDist = dist;
                         nearestStation = feature.properties.siteid;
+                        nearestState = feature.properties.state;
                     }
                 });
                 if (nearestStation) {
-                    setSelectedStation(nearestStation);
+                    updateStation(nearestStation, nearestState); 
                     message.success(`Nearest station selected: ${nearestStation}`);
                 }
             },
@@ -424,16 +460,6 @@ const Agrimet = () => {
             );
         }
         return null;
-    };
-
-
-
-    const LocationSpecificInformation = () => {
-        return (
-            <div>
-                <p>Location-specific agricultural information and recommendations will be displayed here.</p>
-            </div>
-        );
     };
 
 
@@ -563,15 +589,15 @@ const Agrimet = () => {
         );
     };
 
-    const CropInfoTable = () => {
-        if (!selectedStationData || !selectedStationData.crop_data) {
+    const CropInfoTable = (_selectedStationData) => {
+        if (!_selectedStationData || !_selectedStationData.crop_data) {
             return (<span>No crop data available</span>);
         }
         //const crop = stationCropData.current.find(c => c.code === selectedCrop);
         //if (crop == null)
         //    return (<span>No crop specified</span>);
 
-        const cropData = selectedStationData.crop_data;
+        const cropData = _selectedStationData.crop_data;
         // add a 'key' field to each crop object in the cropData list for use in the Ant Design Table component
         cropData.forEach((crop, index) => {
             crop.key = 'stcrop_' + index;
@@ -742,9 +768,7 @@ const Agrimet = () => {
         );
     }
 
-
-
-    const resultItems = [
+    const stationItems = [
         {
             key: '1',
             label: 'Station Information',
@@ -754,10 +778,10 @@ const Agrimet = () => {
             key: '2',
             label: 'Weather/Crop Water Use 7-Day  Forecasts',
             children:
-                userLocation.lat && userLocation.lng ? (
+                userLocation.current.lat && userLocation.current.lng ? (
                     <NWSForecast
-                        lat={userLocation.lat}
-                        lng={userLocation.lng}
+                        lat={userLocation.current.lat}
+                        lng={userLocation.current.lng}
                         locationName={selectedStationName.current || selectedStation}
                     />) : (<Text>No forecast available</Text>)
         },
@@ -769,7 +793,7 @@ const Agrimet = () => {
         {
             key: '4',
             label: 'Crop Planting, Harvest Date, and Seasonal Water Use',
-            children: <CropInfoTable />,
+            children: <CropInfoTable selectedStationData={selectedStationData} />,
         },
         {
             key: '5',
@@ -813,12 +837,14 @@ const Agrimet = () => {
 
                 <Tabs items={tabItems} activeKey={selectedTab} onChange={setSelectedTab} />
 
+                {/* Crop Coefficients Tab */}
                 {selectedTab === '2' && (
                     <CropCoefficientsContent />
                 )}
-
+                {/* Station Information Tab */}
                 {selectedTab === '1' && (
                     <Layout>
+                        {/* Station Selection Sider */}
                         <Sider width={'40%'} trigger={null} collapsible collapsed={collapsed} collapsedWidth={32}>
                             {collapsed ? (
                                 <div style={{
@@ -835,12 +861,14 @@ const Agrimet = () => {
                                 <div className="" >
                                     <Divider orientation="left">Select an Agrimet station</Divider>
                                     {
-                                    <Cascader key='stationCascader1' defaultValue={[selectedState, selectedStation]} style={{ width: '24em' }}
-                                        options={stationOptions}
+                                    <Cascader key='stationCascader1'
+                                        defaultValue={[selectedState, selectedStation]} 
+                                        value={[selectedState, selectedStation]}
+                                        style={{ width: '24em' }}
+                                        options={stationCascaderOptions}
                                         onChange={value => {
                                             const [state, station] = value;
-                                            setSelectedState(state);
-                                            updateStation(station);
+                                            updateStation(station, state);
                                         }} />
                                     }
                                     {/*
@@ -930,7 +958,7 @@ const Agrimet = () => {
                                                                 eventHandlers={{
                                                                     click: (e) => {
                                                                         featureProps.current = feature.properties;
-                                                                        setSelectedStation(feature.properties.siteid)
+                                                                        updateStation(feature.properties.siteid, feature.properties.state);
                                                                     }
                                                                 }}
                                                                 pathOptions={{
@@ -944,9 +972,9 @@ const Agrimet = () => {
                                                     })}
 
                                                     {/* Show user location marker if available */}
-                                                    {userLocation && userLocation.lat && userLocation.lng && (
+                                                    {userLocation.current && userLocation.current.lat && userLocation.current.lng && (
                                                         <Circle
-                                                            center={userLocation}
+                                                            center={userLocation.current}
                                                             radius={12000}
                                                             pathOptions={{
                                                                 color: "#222",
@@ -959,7 +987,27 @@ const Agrimet = () => {
                                                             <Popup>
                                                                 <div>
                                                                     <strong>Your Location</strong><br />
-                                                                    Lat: {userLocation.lat.toFixed(4)}, Lng: {userLocation.lng.toFixed(4)}
+                                                                    Lat: {userLocation.current.lat.toFixed(4)}, Lng: {userLocation.current.lng.toFixed(4)}
+                                                                </div>
+                                                            </Popup>
+                                                        </Circle>
+                                                    )}
+                                                    {userLocation.current && userLocation.current.lat && userLocation.current.lng && (
+                                                        <Circle
+                                                            center={userLocation.current}
+                                                            radius={12000}
+                                                            pathOptions={{
+                                                                color: "#222",
+                                                                fillColor: "#222",
+                                                                fillOpacity: 0.2,
+                                                                weight: 2,
+                                                                dashArray: "4 4"
+                                                            }}
+                                                        >
+                                                            <Popup>
+                                                                <div>
+                                                                    <strong>Your Location</strong><br />
+                                                                    Lat: {userLocation.current.lat.toFixed(4)}, Lng: {userLocation.current.lng.toFixed(4)}
                                                                 </div>
                                                             </Popup>
                                                         </Circle>
@@ -1001,7 +1049,11 @@ const Agrimet = () => {
                                     { selectedStationName.current ? `${selectedStationName.current} (${selectedStation.toUpperCase()})` : selectedStation ? selectedStation : 'Select a station to view information'}
                                 </span>
                             </Header>
-                            <Collapse accordion defaultActiveKey={['2']} style={{ backgroundColor: 'black', padding: 0 }} items={resultItems} />
+
+                            {/* Station Information, Station Crop Water Use, etc. panels */}
+                            <Collapse accordion defaultActiveKey={['2']} 
+                                style={{ backgroundColor: 'black', padding: 0 }}
+                                items={stationItems} />
                         </Layout>
                     </Layout>
                 )}

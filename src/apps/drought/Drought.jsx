@@ -3,7 +3,7 @@
 import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal, Select } from 'antd';
 import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
 
 import PropTypes from 'prop-types';
@@ -644,12 +644,17 @@ const Drought = () => {
 						});
 					}
 
+					const priorYearAvgSrvo = priorYearValues.length > 0
+						? parseFloat((priorYearValues.reduce((sum, v) => sum + v.value, 0) / priorYearValues.length).toFixed(3))
+						: null;
+
 					streamData.push({
 						stationName: station.name,
 						stationId: station.stationId,
 						stationTriplet: station.stationTriplet,
 						historicalValues,
 						priorYearValues,
+						priorYearAvgSrvo,
 						periods
 					});
 				} catch (err) {
@@ -746,6 +751,9 @@ const Drought = () => {
                     .map(v => ({ date: v.date, value: v.value }));
                 const values = allValues.filter(v => v.date >= cutoffStr);
                 const priorValues = allValues.filter(v => v.date < cutoffStr);
+                const priorYearAvgSwe = priorValues.length > 0
+                    ? parseFloat((priorValues.reduce((sum, v) => sum + v.value, 0) / priorValues.length).toFixed(2))
+                    : null;
                 if (values.length > 0 || priorValues.length > 0) {
                     snowData.push({
                         stationName: meta.name,
@@ -753,6 +761,7 @@ const Drought = () => {
                         elevation: meta.elevation,
                         values,
                         priorValues,
+                        priorYearAvgSwe,
                         unit: 'inches'
                     });
                 }
@@ -852,12 +861,16 @@ const Drought = () => {
 					.map(v => ({ date: v.date, value: v.value }));
 				const values = allValues.filter(v => v.date >= cutoffStr);
 				const priorValues = allValues.filter(v => v.date < cutoffStr);
+				const priorYearAvgResc = priorValues.length > 0
+					? parseFloat((priorValues.reduce((sum, v) => sum + v.value, 0) / priorValues.length).toFixed(2))
+					: null;
 				if (values.length > 0 || priorValues.length > 0) {
 					reservoirData.push({
 						stationName: meta.name,
 						stationId: meta.stationId,
 						values,
 						priorValues,
+						priorYearAvgResc,
 						unit: 'acre-ft'
 					});
 				}
@@ -1027,6 +1040,11 @@ const Drought = () => {
 		const ratio = (currentSwe != null && average_annual_mean_swe > 0)
 			? (currentSwe / average_annual_mean_swe * 100).toFixed(0) + '% of avg'
 			: 'No recent data';
+
+		feature.onClick = () => {
+			// Print an alert to the console for testing.
+			console.log(`Clicked on SNOTEL station ${name} (ID: ${stationId}) with current SWE of ${currentSwe} inches, which is ${ratio} compared to the average annual mean SWE of ${average_annual_mean_swe} inches.`);
+		}
 		layer.bindPopup(
 			`<strong>${name}</strong><br />` +
 			`Station ID: ${stationId}<br />` +
@@ -1162,6 +1180,7 @@ const Drought = () => {
 						date,
 						'Current Year': station.values.find(v => v.date === date)?.value ?? null,
 						'Prior Year': priorByMmDd[date.slice(5)] ?? null,
+						'Prior Year Avg': station.priorYearAvgSwe,
 					}));
 
 					const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
@@ -1208,6 +1227,15 @@ const Drought = () => {
 										dot={false}
 										connectNulls={false}
 									/>
+									<Line
+										type="monotone"
+										dataKey="Prior Year Avg"
+										stroke="#fdd835"
+										strokeOpacity={0.8}
+										strokeDasharray="2 2"
+										dot={false}
+										connectNulls={false}
+									/>
 								</LineChart>
 							</ResponsiveContainer>
 						</div>
@@ -1249,6 +1277,7 @@ const Drought = () => {
 						date,
 						'Current Year': station.values.find(v => v.date === date)?.value ?? null,
 						'Prior Year': priorByMmDd[date.slice(5)] ?? null,
+						'Prior Year Avg': station.priorYearAvgResc,
 					}));
 
 					const monthTicks = sortedDates.filter(d => d.slice(8) === '01');
@@ -1292,6 +1321,15 @@ const Drought = () => {
 										type="monotone"
 										dataKey="Current Year"
 										stroke="#8884d8"
+										dot={false}
+										connectNulls={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="Prior Year Avg"
+										stroke="#fdd835"
+										strokeOpacity={0.8}
+										strokeDasharray="2 2"
 										dot={false}
 										connectNulls={false}
 									/>
@@ -1385,6 +1423,9 @@ const Drought = () => {
 						? station.historicalValues[station.historicalValues.length - 1].date // 'YYYY-MM'
 						: null;
 
+					// Retrieve the calculated past year average to be displayed as a reference line.
+					const priorYearAvg = station.priorYearAvgSrvo;
+
 					let forecastTickRows = [];
 					if (lastHistDate) {
 						const [baseYr, baseMo] = lastHistDate.split('-').map(Number);
@@ -1472,6 +1513,16 @@ const Drought = () => {
 										dot={{ fill: '#888888', r: 2 }}
 										connectNulls={false}
 									/>
+									{/* Horizontal reference line for the prior year monthly average */}
+									{priorYearAvg != null && (
+										<ReferenceLine
+											y={priorYearAvg}
+											stroke="#fdd835"
+											strokeWidth={1.5}
+											strokeDasharray="4 3"
+											label={{ value: `Prev Yr Avg: ${priorYearAvg} ${unit}`, position: 'insideTopRight', fill: '#fdd835', fontSize: 10 }}
+										/>
+									)}
 									{/* Solid white line for observed historical monthly totals */}
 									<Line
 										type="monotone"
