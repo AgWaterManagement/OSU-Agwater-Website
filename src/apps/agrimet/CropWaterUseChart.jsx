@@ -5,7 +5,7 @@ import { LineChart, Line, CartesianGrid, XAxis, YAxis, Legend, Tooltip, Responsi
 
 const { Title } = Typography;
 
-const CropWaterUseChart = ({cropETData}) => {
+const CropWaterUseChart = ({selectedStation, cropETData}) => {
 
     const [selectedCrop, setSelectedCrop] = useState('');
     const [selectedCropOptions, setSelectedCropOptions] = useState([]);
@@ -75,9 +75,13 @@ const CropWaterUseChart = ({cropETData}) => {
     }, [cropETData, selectedCrop]);
 
     if (!cropETData || !cropETData.data) {
+        return <div style={{ marginLeft: '1em' }}>Crop water use data could not be fetched.</div>;
+    }
+
+    if (Object.keys(cropETData.data).length === 0) {
         return <div style={{ marginLeft: '1em' }}>No crop water use data available.</div>;
     }
-    
+
     return (
         <div style={{ marginLeft: '1em' }}>
             <label htmlFor='selectCrop'>Select a crop from the list for crop-specific water use information: </label>
@@ -219,8 +223,14 @@ const CropWaterUseChart = ({cropETData}) => {
                 </LineChart>
             </ResponsiveContainer>
 
-
             <br />
+            <span style={{ marginLeft: 8, fontSize: 12, color: '#BBB' }}>
+                Sources: Agrimet (via the agwater API) -  
+                <a style={{ color: '#93c6f5' }} 
+                   href={`https://agwater.org:5556/agrimet/station/daily_et?station=${selectedStation}`} target="_blank" rel="noopener noreferrer">
+                    Crop Water Use Data, Crop Coefficients, and Growing Degree Days
+                </a>; 
+            </span>
         </div>
     );
 };

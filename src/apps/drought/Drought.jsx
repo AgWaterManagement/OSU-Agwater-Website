@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 
 import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal, Select } from 'antd';
-import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
@@ -25,6 +25,61 @@ const droughtCategories = [
 ];
 
 
+
+const snotelLegendItems = [
+	{ color: '#0d47a1', label: '≥ 120% of avg' },
+	{ color: '#1e88e5', label: '90 \u2013 120% of avg' },
+	{ color: '#26c6da', label: '70 \u2013 90% of avg' },
+	{ color: '#fdd835', label: '50 \u2013 70% of avg' },
+	{ color: '#fb8c00', label: '25 \u2013 50% of avg' },
+	{ color: '#d32f2f', label: '< 25% of avg' },
+	{ color: '#888888', label: 'No data' },
+];
+
+const SnotelMapLegend = () => {
+	const map = useMap();
+
+	useEffect(() => {
+		const legend = L.control({ position: 'bottomleft' });
+
+		legend.onAdd = () => {
+			const div = L.DomUtil.create('div');
+			div.style.cssText = [
+				'background:rgba(20,20,20,0.88)',
+				'padding:8px 10px',
+				'border-radius:6px',
+				'color:white',
+				'font-size:11px',
+				'line-height:1.6',
+				'box-shadow:0 1px 5px rgba(0,0,0,0.5)',
+				'pointer-events:none',
+			].join(';');
+
+			const rows = snotelLegendItems.map(({ color, label }) =>
+				`<div style="display:flex;align-items:center;margin-bottom:3px;">` +
+				`<svg width="14" height="14" style="margin-right:6px;flex-shrink:0;">` +
+				`<circle cx="7" cy="7" r="6" fill="${color}" stroke="#555" stroke-width="1"/>` +
+				`</svg>` +
+				`<span>${label}</span>` +
+				`</div>`
+			).join('');
+
+			div.innerHTML =
+				`<strong style="display:block;margin-bottom:5px;font-size:12px;">SNOTEL: SWE vs. Avg</strong>` +
+				rows +
+				`<div style="margin-top:5px;border-top:1px solid #555;padding-top:4px;font-size:10px;color:#aaa;">` +
+				`Marker size reflects avg annual SWE` +
+				`</div>`;
+
+			return div;
+		};
+
+		legend.addTo(map);
+		return () => legend.remove();
+	}, [map]);
+
+	return null;
+};
 
 const DroughtSummary = ({ countyDroughtData, countyName }) => {
     // Tooltip with formatted data as a pie chart
@@ -1010,7 +1065,7 @@ const Drought = () => {
 
 	const getSnotelSweColor = (currentSwe, avgSwe) => {
 		if (currentSwe == null || avgSwe == null || avgSwe === 0) return '#888888';
-		const ratio = currentSwe / avgSwe;
+		const ratio = currentSwe / avgSwe;	// Ratio of current SWE to average annual mean SWE
 		if (ratio >= 1.2) return '#0d47a1';
 		if (ratio >= 0.9) return '#1e88e5';
 		if (ratio >= 0.7) return '#26c6da';
@@ -1667,25 +1722,22 @@ const Drought = () => {
 									placeholder="Search for a location"
 									style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
 								></arcgis-search>
-								<Pane name="counties-pane" style={{ zIndex: 400 }}>
-									{countiesData && (
-										<GeoJSON
-											data={countiesData}
-											style={countyStyle}
-											onEachFeature={onEachCounty}
-										/>
-									)}
-								</Pane>
-								<Pane name="snotel-pane" style={{ zIndex: 450 }}>
-									{snotelData && (
-										<GeoJSON
-											key={`snotel-${Object.keys(snotelCurrentSwe).length}`}
-											data={snotelData}
-											pointToLayer={snotelPointToLayer}
-											onEachFeature={onEachSnotelFeature}
-										/>
-									)}
-								</Pane>
+								<SnotelMapLegend />
+								{snotelData && (
+									<GeoJSON
+										key={`snotel-${Object.keys(snotelCurrentSwe).length}`}
+										data={snotelData}
+										pointToLayer={snotelPointToLayer}
+										onEachFeature={onEachSnotelFeature}
+									/>
+								)}
+								{countiesData && (
+									<GeoJSON
+										data={countiesData}
+										style={countyStyle}
+										onEachFeature={onEachCounty}
+									/>
+								)}
 							</MapContainer>
 						</div>
 					</Col>

@@ -435,8 +435,6 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                                 style={{ fontSize: 20, fontWeight: 'bold', fill: 'rgba(0, 0, 0, 0.7)' }}
                                 width={200}
                                 textAnchor='left'
-                                scaleToFit={true}
-                                verticalAnchor='bottom'
                             >
                                 {label}
                             </text>
@@ -458,8 +456,6 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
 
 
         return (
-
-            /* Container div for the charts */
             <div style={{ width: '100%', marginBottom: 12 }}>
                 {/* Temperature chart */}
 
@@ -470,9 +466,9 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                     chartType="line"
                     color="#ff0c0c"
                     backgroundColor="#ff7f0e"
-                    label="Temperature"
-                    source="Source - National Weather Service"
-                    y='80%'
+                    label="Temperature (&deg;F)"
+                    source=""
+                    y='90%'
                 />
 
                 { /* Precipitation chart */}
@@ -484,8 +480,8 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                     color="#1f77b4"
                     backgroundColor="#1f77b4"
                     label="Precipitation Probability (%)"
-                    source="Source - National Weather Service"
-                    y='60%'
+                    source=""
+                    y='20%'
                 />
 
                 { /* ET  chart */}
@@ -498,13 +494,24 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                         color="#71baef"
                         backgroundColor="#52c41a"
                         label="ET Forecast (inches)"
-                        source="Source - OpenET"
-                        y='80%'
+                        source=""
+                        y='90%'
                     />
                 )}
+                <br/>
+                <span style={{ marginLeft: 8, fontSize: 12, color: '#555' }}>
+                Sources: Temperature, Precipitation - 
+                
+                <a style={{color: '#043461'}} href={`https://agwater.org:5556/agrimet/nws_forecast?latitude=${lat}&longitude=${lng}`} target="_blank" rel="noopener noreferrer">
+                    National Weather Service (via the agwater API)
+                </a>; ET - <a style={{color: '#043461'}}
+                 href={`https://agwater.org:5556/fms/userfield/weather/forecast?lat=${lat}&long=${lng}`} target="_blank" rel="noopener noreferrer">
+                    OpenET (via the agwater API)
+                </a>
+                </span>
 
             </div>
-        );
+    );
     }
 
     const getForecastImage = (forecast) => {

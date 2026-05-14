@@ -1,17 +1,33 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Row, Col, Select, Card, Table, message, Collapse, Checkbox } from 'antd';
 //import PropTypes from 'prop-types';
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
-import { ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, BarChart, Bar, LineChart } from 'recharts';
+import { ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, ReferenceLine, BarChart, Bar, LineChart } from 'recharts';
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import 'leaflet/dist/leaflet.css';
 import { secrets } from "../../secrets";
+import './OregonCropWaterUse.css';
+
+/* DEPENDENCIES:
+
+Update this               <-- when this variable is changed
+------------------------  <-- ------------------------------  
+geoJSONData               <-- selectedGeoJsonFile (from layer <Select> component)
+map GeoJSON layer         <-- geoJsonData
+crop <Select> component   <-- selectedFeatureID
+crop charts and tables    <-- selectedCrop
+selectedCropLabel (for chart title) <-- selectedCrop
+cardTitle                 <--- selectedFeatureID (from map click)
+latlng                    <--- selectedFeatureID (from map click, get centroid of selected feature)
+cropSelectItems (for crop <Select> options) <-- selectedFeatureID (from map click, fetch crops for selected feature)
+*/
 
 
 const CropWaterUse = () => {
-    const [geometryData, setGeometryData] = useState(null);
-    const [selectedGeometry, setSelectedGeometry] = useState('Watermaster_District.json');
+    const [selectedGeoJsonFile, setSelectedGeoJsonFile] = useState('Watermaster_District.json');
+    const [geoJsonData, setGeoJsonData] = useState(null);
+
     const [cropData, setCropData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [chartData, setChartData] = useState([]); // State for line chart data
@@ -19,8 +35,12 @@ const CropWaterUse = () => {
     const [selectedCrop, setSelectedCrop] = useState('-1');
     const [selectedCropLabel, setSelectedCropLabel] = useState('Corn');
 
-    const [selectedDistrict, setSelectedDistrict] = useState('7');
-    const districtCropsData = useRef(null)
+    const [selectedFeatureID, setSelectedFeatureID] = useState(null);   //  this is the ID of the selected feature in the geometry layer 
+    //  (e.g. district number, HUC8 code, or county name depending on the selected geometry)
+    const cardTitle = useRef('Location not selected');
+    const samples = useRef(-1); // number of samples used to calculate the crop water use data for the selected crop and feature.  This information is avaiable in the featureCropsData which was fetched for the selected feature (district) and contains the crop options for the crop <Select> component
+
+    const featureCropsData = useRef(null)
 
     const [activePanel, setActivePanel] = useState('cwu'); // Changed from ref to state
 
@@ -48,11 +68,23 @@ const CropWaterUse = () => {
     ];
 
 
-
     const resolveGeometryFile = (file) => (file === 'Watermaster_District.json' ? 'Watermaster_Districts' : file);
+
+    const getGeometryType = (file) => {
+        if (file === 'Watermaster_District.json') {
+            return 'WMD';
+        } else if (file === 'OR_HUC8s.geojson') {
+            return 'HUC8';
+        } else if (file === 'OR_Counties.geojson') {
+            return 'County';
+        } else {
+            return null;
+        }
+    }
 
     const fetchGeometry = useCallback(async (file) => {
         setLoading(true);
+        setSelectedFeatureID(null); // Clear selected feature when geometry changes
 
         try {
             const apiUrl = `https://agwater.org:5556/json?path=oregon_crop_water_use&file=${resolveGeometryFile(file)}`;
@@ -76,6 +108,7 @@ const CropWaterUse = () => {
             }
             setLoading(false);
             console.log(`Fetched geometry data for ${file}: Found ${data.data.features.length} features`);
+            setGeoJsonData(data.data);
             return data.data;
         } catch (error) {
             setLoading(false);
@@ -85,14 +118,24 @@ const CropWaterUse = () => {
         }
     }, []);
 
-    const fetchDistrictCrops = useCallback(async (district) => {
-        const MIN_LEVEL = 24; // Minimum level to include a crop in the analysis (at least 5% of fields in the district and at least 10 inches of seasonal ET)
-        console.log('Fetching crops for district:', district);
+    const fetchFeatureCrops = useCallback(async (featureID) => {
+        if (!featureID) {
+            console.log('No feature ID selected, skipping fetchFeatureCrops');
+            setCropSelectItems([]);
+            setSelectedCrop(null);
+            setSelectedCropLabel('');
+            return;
+        }
+
+        const MIN_LEVEL = 24; // Minimum level to include a crop in the analysis (at least 5% of fields in the feature
+                              //  and at least 10 inches of seasonal ET)
+        const geometryType = getGeometryType(selectedGeoJsonFile);
+
+        console.log('Fetching crops for geometry ', geometryType, ', feature: ', featureID );
         setLoading(true);
 
         try {
-            const apiUrl = `https://agwater.org:5556/crop_management/crops/district_crops?district=${district}&min_level=${MIN_LEVEL}`;
-
+            const apiUrl = `https://agwater.org:5556/crop_management/crops?geometry=${geometryType}&featureID=${featureID}&min_level=${MIN_LEVEL}`;
             const response = await fetch(apiUrl, {
                 headers: {
                     'Accept': 'application/json',
@@ -101,15 +144,15 @@ const CropWaterUse = () => {
             });
 
             if (!response.ok) {
-                console.error('Failed to fetch district crops data, status:', response.status);
-                throw new Error('Failed to fetch district crops data');
+                console.error('Failed to fetch crops data, status:', response.status);
+                throw new Error('Failed to fetch crops data');
             }
 
             const data = await response.json();
 
             if (data.error) {
-                console.error('Error fetching district crops data:', data.error);
-                throw new Error('Failed to fetch district crops data');
+                console.error('Error fetching crops data:', data.error);
+                throw new Error('Failed to fetch crops data');
             }
 
             const _cropData = data.crops;
@@ -120,34 +163,41 @@ const CropWaterUse = () => {
                 value: crop.code,
                 label: crop.name
             }));
-            districtCropsData.current = _cropData;
+            featureCropsData.current = _cropData;
             setCropSelectItems(_cropSelectItems);
             setSelectedCrop(_cropSelectItems.length > 0 ? _cropSelectItems[0].value : '-1');
             setSelectedCropLabel(_cropSelectItems.length > 0 ? _cropSelectItems[0].label : '');
             //(_cropSelectItems.length > 0 ? _cropSelectItems[0].value : null);
-            console.log('Fetched district crops data for district:', district, 'Crops:', _cropData);
+            console.log('Fetched crops data for geometry ', geometryType, ', feature: ', featureID, 'Crops:', _cropData);
             setLoading(false);
             return data;
         } catch (error) {
             setLoading(false);
-            console.error('Error fetching district crops data:', error);
-            message.error('Unable to load district crops data');
+            console.error('Error fetching crops data:', error);
+            message.error('Unable to load crops data');
             return null;
         }
-    }, []);
+    }, [selectedGeoJsonFile]);
 
-    const fetchCropData = useCallback(async (district, crop) => {
+    const fetchCropData = useCallback(async (featureID, crop) => {
         setLoading(true);
-        console.log('Fetching crop water use data for district:', district, 'and crop:', crop);
+        console.log('Fetching crop water use data for geometry ', selectedGeoJsonFile, ', feature:', featureID, 'and crop:', crop);
 
-        if (!district || !crop || crop === -1) {
-            console.warn('District or crop not selected, skipping data fetch');
+        if (!featureID || !crop || crop === -1) {
+            console.warn('Feature ID or crop not selected, skipping data fetch');
             setLoading(false);
             return;
         }
 
         try {
-            const apiUrl = `https://agwater.org:5556/crop_management/crops/cwu_summary_data?district=${district}&crop=${crop}`;
+            const geometryType = getGeometryType(selectedGeoJsonFile);
+            if (!geometryType) {
+                console.error('Invalid geometry type');
+                setLoading(false);
+                return;
+            }
+            
+            const apiUrl = `https://agwater.org:5556/crop_management/crops/cwu_summary_data?geometry=${geometryType}&featureID=${featureID}&crop=${crop}`;
 
             const response = await fetch(apiUrl, {
                 headers: {
@@ -207,6 +257,11 @@ const CropWaterUse = () => {
                 }));
 
                 tableData.current = _tableData;
+
+                // set the number of samples for this crop.  This imformation is avaiable in the featureCropsData 
+                // which was fetched for the selected feature (district) and contains the crop options for the 
+                // crop <Select> component
+                samples.current = featureCropsData.current?.find(c => c.code === crop)?.counts ?? 0;
                 console.log('Finished fetching and processing crop water use data:');
             }
             setLoading(false);
@@ -217,7 +272,7 @@ const CropWaterUse = () => {
             setLoading(false);
             return;
         }
-    }, []);
+    }, [selectedGeoJsonFile]);
 
     const handleCropChange = (value) => {
         setSelectedCropLabel(cropSelectItems.find(item => item.value === value)?.label || '');
@@ -225,13 +280,12 @@ const CropWaterUse = () => {
     };
 
     // Function to handle search result
-    const handleSearchResult = (event) => {
+    const handleSearchResult = useCallback((event) => {
         const result = event.detail.results;
         if (result && result.length > 0) {
-            const { latitude, longitude } = result[0].location;
-            setSelectedDistrict(null); // Clear selected district
+            setSelectedFeatureID(null); // Clear selected district
         }
-    };
+    }, []);
 
     const handlePanelChange = (key) => {
         setActivePanel(key);
@@ -244,15 +298,14 @@ const CropWaterUse = () => {
         }));
     };
 
-    const handleMapChange = async (value) => {
-        setSelectedGeometry(value);
+    const handleMapChange = async (value) => {  // value is the filename (*.geojson) of the geometry to load
+        setSelectedGeoJsonFile(value);        
     };
 
     // initialization
     useEffect(() => {
         const initialize = async () => {
             console.log('Component mounted, fetching initial data');
-            await fetchDistrictCrops(selectedDistrict);
 
             // Initialize ArcGIS components
             await window.customElements.whenDefined('arcgis-search');
@@ -273,30 +326,22 @@ const CropWaterUse = () => {
             }
         };
 
-    }, [fetchDistrictCrops, fetchGeometry, selectedDistrict]);
+    }, [handleSearchResult]);
 
     useEffect(() => {
-        const loadGeometry = async () => {
-            const data = await fetchGeometry(selectedGeometry);
-            setGeometryData(data);
-        };
-
-        loadGeometry();
-
-        return () => {
-        };
-    }, [fetchGeometry, selectedGeometry]);
+        fetchCropData(selectedFeatureID, selectedCrop);
+    }, [fetchCropData, selectedCrop, selectedFeatureID]);
 
     useEffect(() => {
-        fetchCropData(selectedDistrict, selectedCrop);
-    }, [fetchCropData, selectedCrop, selectedDistrict]);
+        fetchGeometry(selectedGeoJsonFile);
+    }, [fetchGeometry, selectedGeoJsonFile]);
 
     useEffect(() => {
-        fetchDistrictCrops(selectedDistrict);
-    }, [fetchDistrictCrops, selectedDistrict]);
+        fetchFeatureCrops(selectedFeatureID);
+    }, [fetchFeatureCrops, selectedFeatureID]);
 
     const getDistrictStyle = (feature) => {
-        const isSelected = `${feature?.properties?.district_nbr}` === `${selectedDistrict}`;
+        const isSelected = `${feature?.properties?.district_nbr}` === `${selectedFeatureID}`;
 
         return {
             weight: isSelected ? 3 : 1,
@@ -305,8 +350,21 @@ const CropWaterUse = () => {
             opacity: 1
         };
     };
-    const onEachDistrict = (feature, layer) => {
-        layer.bindTooltip(`District ${feature.properties.district_nbr}`, {
+
+
+    const onEachFeature = (feature, layer) => {
+        let label = "";
+        if (selectedGeoJsonFile === 'Watermaster_District.json') {
+            label = `District ${feature.properties.district_nbr}`;
+        } else if (selectedGeoJsonFile === 'OR_HUC8s.geojson') {
+            label = `HUC 8 Watershed: ${feature.properties.HUC8_name} (${feature.properties.HUC8_code})`;
+        } else if (selectedGeoJsonFile === 'OR_Counties.geojson') {
+            label = `County: ${feature.properties.COUNTY_NAME}`;
+        } else {
+            label = feature.properties.name || 'Unknown';
+        }
+
+        layer.bindTooltip(label, {
             direction: 'top',
             sticky: true,
             opacity: 0.95
@@ -314,10 +372,22 @@ const CropWaterUse = () => {
 
         layer.on({
             click: async (e) => {
-                setSelectedDistrict(feature.properties.district_nbr);
+                if (selectedGeoJsonFile === 'Watermaster_District.json') {
+                    setSelectedFeatureID(feature.properties.district_nbr);
+                    cardTitle.current = `Crop Water Use for Water Master District ${feature.properties.district_nbr}`;
+                }
+                else if (selectedGeoJsonFile === 'OR_HUC8s.geojson') {
+                    setSelectedFeatureID(feature.properties.HUC8_code);
+                    cardTitle.current = `Crop Water Use for ${feature.properties.HUC8_name} (HUC8: ${feature.properties.HUC8_code})`;
+                }
+                else if (selectedGeoJsonFile === 'OR_Counties.geojson') {
+                    setSelectedFeatureID(feature.properties.COUNTY_NAME);
+                    cardTitle.current = `Crop Water Use for ${feature.properties.COUNTY_NAME} County`;
+                }
+
                 const centroid = feature.properties.centroid;
                 setLatlng(centroid ? [centroid[1], centroid[0]] : null); // GeoJSON format is [longitude, latitude]
-                console.log('Selected District:', feature.properties.district_nbr);
+                console.log('Selected: ', label);
             },
             mouseover: (e) => {
                 const layer = e.target;
@@ -357,6 +427,7 @@ const CropWaterUse = () => {
     //        : null
     //}));
 
+
     return (
         <>
             <div>
@@ -375,9 +446,8 @@ const CropWaterUse = () => {
                 <Row gutter={16}>
                     <Col xs={24} sm={6}>
                         <Card title="My Location" size="small">
-                            <div style={{ height: '500px', width: '100%', marginBottom: '16px' }}>
                                 <Select
-                                    value={selectedGeometry}
+                                    value={selectedGeoJsonFile}
                                     style={{ width: '100%', marginBottom: '8px' }}
                                     placeholder="Select a location layer"
                                     options={[
@@ -386,12 +456,13 @@ const CropWaterUse = () => {
                                         { value: 'OR_Counties.geojson', label: 'Counties' },
                                     ]}
                                     onChange={handleMapChange}
-                                />Re
+                                />
+                            <div style={{ height: '500px', width: '100%', marginBottom: '16px', position: 'relative', overflow: 'hidden' }}>
                                 <MapContainer
                                     center={[44.0, -120.5]}
                                     zoom={6}
                                     style={{ height: '100%', width: '100%' }}
-                                    zoomControl={false}
+                                    zoomControl={true}
                                     dragging={false}
                                     touchZoom={false}
                                     doubleClickZoom={false}
@@ -403,30 +474,34 @@ const CropWaterUse = () => {
                                         attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
                                     />
 
-                                    {geometryData && (
+                                    {geoJsonData && (
                                         <GeoJSON
-                                            data={geometryData}
-                                            onEachFeature={onEachDistrict}
+                                            key={`${geoJsonData}-${geoJsonData?.features?.length ?? 0}`}
+                                            data={geoJsonData}
+                                            onEachFeature={onEachFeature}
                                             style={(feature) => ({
                                                 color: feature.properties.stroke ?? '#0000ff',
                                                 weight: feature.properties.strokeWidth ?? 1,
                                                 fillOpacity: feature.properties.fillOpacity ?? 0,
-   
-  })}
-                                            
+
+                                            })}
+
                                         />
                                     )}
-                                    {/* <DistrictLabels districtData={districtData} onEachDistrict={onEachDistrict} /> */}
                                     <arcgis-search
                                         placeholder="Search for a location"
                                         style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
                                     ></arcgis-search>
                                 </MapContainer>
+                                <span style={{ fontSize: '12px' }}> Location: {selectedGeoJsonFile}</span>
                             </div>
                         </Card>
                     </Col>
-                    <Col xs={24} sm={18}>
-                        <Card title={`Crop Water Use Data${selectedDistrict ? ` - District ${selectedDistrict}` : ''}`} size="small">
+                    <Col className="ocwu-page" xs={24} sm={18}>
+                        <Card title={cardTitle.current} size="small">
+
+                            {selectedFeatureID ? (
+                                <>
 
                             <Select
                                 placeholder="Select a crop"
@@ -435,9 +510,11 @@ const CropWaterUse = () => {
                                 options={cropSelectItems}
                                 style={{ width: '20em', marginBottom: '16px' }}
                             />
-                            {loading && <span>Loading data...</span>}
-                            {!loading && chartData && (
+                            {loading && <span> Loading data...</span>}
+
+                            {!loading && chartData && selectedFeatureID && (
                                 <>
+                                    <div>{samples.current > 0 ? `Samples: ${samples.current}` : null}</div>
                                     <Collapse
                                         accordion={true}
                                         activeKey={activePanel}
@@ -567,6 +644,11 @@ const CropWaterUse = () => {
                                                 <p>This information can help farmers and water managers make informed decisions about irrigation scheduling and water resource management based on the expected water use of crops throughout the growing season.
                                                     By comparing these variables, users can assess whether additional irrigation may be necessary to meet crop water needs.
                                                 </p>
+                                                <p>Source: Agwater API -
+                                                    <a href={`https://agwater.org:5556/crop_management/crops/cwu_summary_data?district=${selectedFeatureID}&crop=${selectedCrop}`} target="_blank" rel="noopener noreferrer">
+                                                        Crop Water Use
+                                                    </a>
+                                                </p>
                                             </>
                                             )
                                         }, {
@@ -600,17 +682,25 @@ const CropWaterUse = () => {
                                                 <p style={{ textAlign: 'center', fontSize: '14px', fontWeight: 'bold', fontStyle: 'italic' }}>
                                                     Irrigation Requirement = (Kc * PET) - Precipitation
                                                 </p>
+
+                                                <p>
+                                                    Source: Agwater API -
+                                                    <a href={`https://agwater.org:5556/crop_management/crops/cwu_summary_data?district=${selectedFeatureID}&crop=${selectedCrop}`} target="_blank" rel="noopener noreferrer">
+                                                        Crop Water Use
+                                                    </a>
+                                                </p>
                                             </>
                                             ),
                                         }, {
                                             key: 'ccwu', label: 'Comparative Crop Water Use', children: (
+
                                                 <Row>
                                                     <Col xs={24} sm={24}>
                                                         <span style={{ paddingLeft: "10%", fontSize: "20px" }}>{`Seasonal Crop Water Use for District Crops`}</span>
 
-                                                        <ResponsiveContainer width="100%" height={districtCropsData && districtCropsData.current ? 60 * districtCropsData.current.length : 300}>
+                                                        <ResponsiveContainer width="100%" height={featureCropsData && featureCropsData.current ? 60 * featureCropsData.current.length : 300}>
                                                             <BarChart
-                                                                data={districtCropsData.current}
+                                                                data={featureCropsData.current}
                                                                 layout="vertical"
                                                                 margin={{ top: 20, right: 20, left: 100, bottom: 20 }}
                                                             >
@@ -621,12 +711,27 @@ const CropWaterUse = () => {
                                                         </ResponsiveContainer>
                                                     </Col>
                                                     <Col xs={24} sm={12}>
+                                                        <p>
+                                                            Source: Agwater API -
+                                                            <a  href={`https://agwater.org:5556/crop_management/crops/cwu_summary_data?district=${selectedFeatureID}&crop=${selectedCrop}`} target="_blank" rel="noopener noreferrer">
+                                                                Crop Water Use
+                                                            </a>
+                                                        </p>
+
                                                     </Col>
                                                 </Row>
                                             ),
                                         }, {
                                             key: 'mlta', label: 'Monthly Long-term Averages Table', children: (
-                                                <Table dataSource={tableData.current} pagination={{ pageSize: 13, placement: ['none'] }} columns={tableCols} />
+                                                <>
+                                                    <Table dataSource={tableData.current} pagination={{ pageSize: 13, placement: ['none'] }} columns={tableCols} />
+                                                    <p>
+                                                        Source: Agwater API -
+                                                        <a href={`https://agwater.org:5556/crop_management/crops/cwu_summary_data?district=${selectedFeatureID}&crop=${selectedCrop}`} target="_blank" rel="noopener noreferrer">
+                                                            Crop Water Use
+                                                        </a>
+                                                    </p>
+                                                </>
                                             )
                                         },
                                         {
@@ -676,6 +781,9 @@ const CropWaterUse = () => {
                                     />
                                 </>
                             )}
+                            </>) :
+                            ( <span>Selected a location on the map to view crop water use data for that location</span>)
+                            }
                         </Card>
                     </Col>
                 </Row>

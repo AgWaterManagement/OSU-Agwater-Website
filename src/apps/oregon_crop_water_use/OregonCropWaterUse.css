@@ -1,0 +1,22 @@
+
+
+
+.ocwu-page a {
+  color: yellow !important;
+}
+
+/* Ensure visited links also show clearly */
+.ocwu-page a:visited {
+  color: #ffd700 !important;
+}
+
+/* Optional: underline on hover for discoverability */
+.ocwu-page a:hover {
+  text-decoration: underline;
+}
+
+
+.leaflet-control-zoom a{
+  color: black !important;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.65); 
+}

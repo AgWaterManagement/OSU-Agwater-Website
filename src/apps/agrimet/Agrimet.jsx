@@ -589,15 +589,15 @@ const Agrimet = () => {
         );
     };
 
-    const CropInfoTable = (_selectedStationData) => {
-        if (!_selectedStationData || !_selectedStationData.crop_data) {
+    const CropInfoTable = (selectedStationData) => {
+        if (!selectedStationData || ! selectedStationData.selectedStationData || !selectedStationData.selectedStationData.crop_data) {
             return (<span>No crop data available</span>);
         }
         //const crop = stationCropData.current.find(c => c.code === selectedCrop);
         //if (crop == null)
         //    return (<span>No crop specified</span>);
 
-        const cropData = _selectedStationData.crop_data;
+        const cropData = selectedStationData.selectedStationData.crop_data;
         // add a 'key' field to each crop object in the cropData list for use in the Ant Design Table component
         cropData.forEach((crop, index) => {
             crop.key = 'stcrop_' + index;
@@ -788,7 +788,7 @@ const Agrimet = () => {
         {
             key: '3',
             label: 'Season-to-date Crop Water Use Information',
-            children: <CropWaterUseChart cropETData={cropETData} />,
+            children: <CropWaterUseChart selectedStation={selectedStation} cropETData={cropETData} />,
         },
         {
             key: '4',

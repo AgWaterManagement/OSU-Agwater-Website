@@ -1,5 +1,5 @@
 import { secrets } from '../../secrets';
-import AgWqplanAuthManager from '../../components/AgWqplanAuthManager';
+import AgWqplanAuthManager from './AgWqplanAuthManager';
 
 export default function AgWqPlanAdminPanel() {
   return (
