@@ -47,13 +47,14 @@
 
   
   /* Style for reference links updated as requested by users. */
+  /*
   a {
     color: #1a0dab;
     text-decoration: none;
   }
   a:hover {
     text-decoration: underline;
-  }
+  } */
 
   .chat-prompt {
     background-color: darkgrey;

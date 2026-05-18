@@ -1,0 +1,8 @@
+{
+  "query": "How much water does a drip irrigation system use on average?",
+  "model": "gemma3",
+  "stream": true,
+  "chat_history": [],
+  "num_chunks": 10,
+  "use_RAG": true
+}

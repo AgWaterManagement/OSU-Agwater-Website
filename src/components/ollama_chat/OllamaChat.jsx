@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
 import { Input, Button, Select, message, Rate } from "antd";
 
-import { Loading } from '../../components/loading/Loading';
 import { secrets } from '../../secrets';
 
 import Markdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 
-import readNDJSONStream from 'ndjson-readablestream';
 
 import './OllamaChat.css';
 
@@ -27,8 +26,7 @@ const OllamaChat = () => {
     const currentQuestion = useRef(""); // to keep track of the current input
     const currentAnswer = useRef("")
     const [currentMarkdown, setCurrentMarkdown] = useState(""); // to keep track of the current markdown content
-    const [loading, setLoading] = useState(false);
-    const [isStreaming, setIsStreaming] = useState(false);
+    const [isStreaming, setIsStreaming] = useState(true);
     const [history, setHistory] = useState([]); // a list of question/answer objects - key = input, value = response
     const [error, setError] = useState(null);
     const [selectedModel, setSelectedModel] = useState("gemma3"); // Default model");
@@ -55,13 +53,11 @@ const OllamaChat = () => {
     };
 
     async function processUserQuery(_prompt) {
+        // --- Fetch phase (isolated so fetch errors don't swallow stream/React errors) ---
+        let response;
         try {
-            console.log("input: ", _prompt); // debug
-            let modelParam = '';
-            if (selectedModel)
-                modelParam = `&model=${selectedModel}`;
-
-            const response = await fetch(CHAT_API_URL, {
+            console.log("input: ", _prompt);
+            response = await fetch(CHAT_API_URL, {
                 method: 'post',
                 headers: {
                     "X-API-Key": secrets.agwater_api_key,
@@ -70,69 +66,106 @@ const OllamaChat = () => {
                 },
                 body: JSON.stringify({
                     query: _prompt,
+                    additional_data: {},
                     model: selectedModel,
                     stream: true,
                     use_RAG: true,
                     chat_history: history
                 })
             });
-            // Check if the response is OK
             if (!response.ok) {
-                console.log("response: ", response);
-                setError("Error fetching response from the server");
-                setLoading(false);
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                console.error("HTTP error response:", response);
+                flushSync(() => {
+                    setError(`Error fetching response from the server (status ${response.status})`);
+                });
+                return;
             }
-
-            setIsStreaming(true);
-            setCurrentMarkdown(""); // Clear previous markdown before streaming new response
-            setLoading(false); // Remove fullscreen spinner so streamed text is visible
-            for await (const json of readNDJSONStream(response.body)) {
-                //console.log('Received', json);
-
-                // Update the message UI progressively with each chunk
-                if (json.content_type[0] === 'l') {   // 'llm_response' content type
-                    currentAnswer.current += json['llm_response']; // Accumulate the response
-                } else {
-                    // Finalize the response when done
-                    const refs = json['referenced_documents'] || [];
-                    const titles = json['referenced_titles'] || [];
-                    let contentStr = ""
-                    if (refs.length > 0) {
-                        contentStr += "\n\n#### References:\n";
-                        refs.forEach((ref, index) => {
-                            if (titles.length > 0 && titles[index] !== null) {
-                                //contentStr += `${index + 1}. <a style={{color: '#1a0dab'}} href=\'https://agwater.org:5556/llm/source?filename=${ref}\' target='_blank'>${titles[index]}</a>\n`; // Use the title if available
-                                // Use markdown link format to ensure compatibility with Markdown rendering in React
-                                // IMPORTANT: the angle brackets <> around the URL help prevent markdown parsing issues with special characters in URLs
-                                // specifically spaces or other whitespace characters that may be URL encoded.
-                                contentStr += `${index + 1}. [${titles[index]}](<https://agwater.org:5556/llm/source?filename=${ref}>)\n`; // Use the title if available
-                            } else {
-                                contentStr += `${index + 1}. ${ref}\n`;
-                            }
-                        });
-                    }
-                    references.current = contentStr; // Store the references for later use
-                }
-                setCurrentMarkdown(currentAnswer.current); // Update the markdown content
-            }
-            currentAnswer.current += references.current;
-
-        } catch (error) {
-            setError("Unable to fetch response. Please try again later.");
-            console.error("Error fetching response:", error);
+        } catch (fetchError) {
+            console.error("Network error:", fetchError);
+            setError("Unable to reach the server. Please try again later.");
+            return;
         }
 
-        const _currentAnswer = currentAnswer.current; // Get the final answer
+        // Atomically switch to streaming view so the first chunk is already visible
+        flushSync(() => {
+            setIsStreaming(true);
+            setCurrentMarkdown("");
+        });
+
+        // --- Stream reading phase ---
+        // Read raw bytes, decode as UTF-8, and parse newline-delimited JSON manually.
+        // This gives us full control over when each chunk is rendered.
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+
+                // Process every complete JSON line in the current buffer
+                let newlineIndex;
+                while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+                    const line = buffer.slice(0, newlineIndex).trim();
+                    buffer = buffer.slice(newlineIndex + 1);
+                    if (!line) continue;
+
+                    let json;
+                    try {
+                        json = JSON.parse(line);
+                    } catch (parseError) {
+                        console.warn('Failed to parse JSON line:', line, parseError);
+                        continue;
+                    }
+
+                    console.log('LLM Streamed Data Received', json);
+
+                    if (json.content_type && json.content_type[0] === 'l') {
+                        currentAnswer.current += json['llm_response'];
+                        // flushSync forces React to render this chunk immediately,
+                        // bypassing React 18 automatic batching in async contexts.
+                        flushSync(() => {
+                            setCurrentMarkdown(currentAnswer.current);
+                        });
+                    } else if (json.content_type) {
+                        const refs = json['referenced_documents'] || [];
+                        const titles = json['referenced_titles'] || [];
+                        let contentStr = "";
+                        if (refs.length > 0) {
+                            contentStr += "\n\n#### References:\n";
+                            refs.forEach((ref, index) => {
+                                if (titles.length > 0 && titles[index] !== null) {
+                                    contentStr += `${index + 1}. [${titles[index]}](<https://agwater.org:5556/llm/source?filename=${ref}>)\n`;
+                                } else {
+                                    contentStr += `${index + 1}. ${ref}\n`;
+                                }
+                            });
+                        }
+                        references.current = contentStr;
+                    }
+                }
+            }
+        } catch (streamError) {
+            console.error("Error reading response stream:", streamError);
+            setError("Stream interrupted. The partial response is shown above.");
+        } finally {
+            reader.releaseLock();
+        }
+
+        currentAnswer.current += references.current;
+        const _currentAnswer = currentAnswer.current;
 
         setIsStreaming(false);
-        currentQuestion.current = ""; // Clear the input field after processing
-        currentAnswer.current = ""; // Clear the response field after processing
+        currentQuestion.current = "";
+        currentAnswer.current = "";
+        references.current = "";
 
-        // add a question mark to end os _prompt if not present
+        // add a question mark to end of _prompt if not present
         if (_prompt.endsWith('?') == false && (_prompt[0] == 'w' || _prompt[0] == 'W' || _prompt[0] == 'h' || prompt[0] == 'H'))
-            _prompt =  `${_prompt}?`;
-        setHistory([...history, { question: _prompt, answer: _currentAnswer }]); // Add the question/response pair to history
+            _prompt = `${_prompt}?`;
+        setHistory([...history, { question: _prompt, answer: _currentAnswer }]);
     }
 
     const sendQuery = async () => {
@@ -141,7 +174,6 @@ const OllamaChat = () => {
         if (prompt.slice().trim() === "") return;
 
         try {
-            setLoading(true);
             let _prompt = prompt.slice().trim()
             setPrompt(""); // Clear the input ref
 
@@ -222,7 +254,6 @@ const OllamaChat = () => {
                     </div>
                 </div>
                 <br />
-                {loading && (<Loading tip="Running Query..." />)}
                 {
                     isStreaming && (
                         <div className="message-container">
@@ -231,6 +262,7 @@ const OllamaChat = () => {
                             </div>
                             <br />
                             <div className="ai-message">
+                                
                                 <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
                                     {currentMarkdown || "Waiting for response..."}
                                 </Markdown>

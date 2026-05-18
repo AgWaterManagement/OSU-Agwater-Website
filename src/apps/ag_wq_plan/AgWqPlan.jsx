@@ -19,6 +19,7 @@ import Graphic from '@arcgis/core/Graphic';
 import Polygon from '@arcgis/core/geometry/Polygon';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 
+import StartUp from './StartUp';
 import StepWhoWhere from './StepWhoWhere';
 import StepConditions from './StepConditions';
 import StepGoals from './StepGoals';
@@ -35,7 +36,7 @@ const { Title, Text, Paragraph } = Typography;
 const API_BASE = 'https://agwater.org:5556';
 
 const TMDL_GEOJSON_URL = 'https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services/TMDLs_DEQ_by_parameter_Feb2026/FeatureServer/4/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson';
-const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3'
+const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson'
 /*
   "Create a 'living' repository of suggested agricultural/environmental practices
    to maintain and improve the quality of water for all waters of the State."
@@ -73,7 +74,7 @@ const WqMap = ({ feature_url, center = [-120.5, 44.0], zoom = 5, height = 400 })
               const featureLayer = new FeatureLayer({
                 url: feature_url
               });
-              
+
               map.add(featureLayer);
 
               // Zoom to the extent of the feature layer
@@ -90,7 +91,7 @@ const WqMap = ({ feature_url, center = [-120.5, 44.0], zoom = 5, height = 400 })
               }
 
               const geojson = await response.json();
-              
+
               // Create a graphics layer to display the features
               const graphicsLayer = new GraphicsLayer();
               map.add(graphicsLayer);
@@ -228,7 +229,10 @@ const WqMap = ({ feature_url, center = [-120.5, 44.0], zoom = 5, height = 400 })
 // Loads concern questions and practices from the /agwqplan routes exposed by ag_wqplan.py.
 const AgWqPlan = () => {
   // Current step in the wizard (0-4)
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(-1);
+
+  const [sites, setSites] = useState([]);
+  const [commodities, setCommodities] = useState([]);
   const [concerns, setConcerns] = useState([]);
   const [concernQuestions, setConcernQuestions] = useState([]);
   const [practices, setPractices] = useState([]);
@@ -273,7 +277,9 @@ const AgWqPlan = () => {
       setLoadingData(true);
 
       try {
-        const [concernsData, questionsData, practicesData, goalsData] = await Promise.all([
+        const [sitesData, commoditiesData, concernsData, questionsData, practicesData, goalsData] = await Promise.all([
+          fetchJson('/agwqplan/sites'),
+          fetchJson('/agwqplan/commodities'),
           fetchJson('/agwqplan/concerns'),
           fetchJson('/agwqplan/concernQuestions'),
           fetchJson('/agwqplan/practices'),
@@ -282,17 +288,21 @@ const AgWqPlan = () => {
 
         if (!active) return;
 
+        setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
         setConcerns(Array.isArray(concernsData) ? concernsData : []);
         setConcernQuestions(Array.isArray(questionsData) ? questionsData : []);
         setPractices(Array.isArray(practicesData) ? practicesData : []);
         setGoals(Array.isArray(goalsData) ? goalsData : []);
+        setSites(Array.isArray(sitesData) ? sitesData : []);
       } catch (error) {
         console.error('Error loading ag_wqplan data:', error);
         if (active) {
+          setCommodities([]);
           setConcerns([]);
           setConcernQuestions([]);
           setPractices([]);
           setGoals([]);
+          setSites([]);
         }
       } finally {
         if (active) {
@@ -335,7 +345,9 @@ const AgWqPlan = () => {
         .filter((q) => selectedQuestions.includes(q.id))
         .map((q) => q.concern),
     );
-    return practices.filter((p) => p.tags.some((t) => questionTags.has(t)));
+    return practices.filter((p) =>
+      p.tags.some((t) =>
+        questionTags.has(t)));
   }, [selectedQuestions, concernQuestions, practices]);
 
   const filteredRecommendedPractices = useMemo(() => {
@@ -364,8 +376,6 @@ const AgWqPlan = () => {
 
   return (
     <>
-
-
       {loggingIn && (
         <AgWqplanLogin
           onLoginSuccess={(result) => {
@@ -384,7 +394,7 @@ const AgWqPlan = () => {
             setUserRole(null);
             setLoggingIn(false);
           }}
-        ></AgWqplanLogin>
+        />
       )}
       {!loginName && !loggingIn && (
         <div style={{ padding: 4, textAlign: 'right' }} >
@@ -425,16 +435,16 @@ const AgWqPlan = () => {
               <Col xs={24} md={12}>
                 <Title level={4}>Agricultural Water Quality Management Areas</Title>
                 <Text>ODA Agricultural Water Quality Management Areas. Source: <a href="https://www.oregon.gov/oda/programs/NaturalResources/Pages/AWQMA.aspx">ODA AWQMA Mapper</a></Text>
-                 <WqMap features_url={ODA_AWQMA_WMS_URL}></WqMap>
- 
- 
- 
+                <WqMap features_url={ODA_AWQMA_WMS_URL}></WqMap>
+
+
+
               </Col>
               <Col xs={24} md={12}>
                 <Title level={4}>TMDL Areas</Title>
                 <Text>Oregon DEQ TMDL areas by parameter. Source: <a href="https://www.oregon.gov/deq/wq/Pages/TMDLs.aspx">DEQ TMDL Mapper</a></Text>
                 <WqMap feature_url={TMDL_GEOJSON_URL}></WqMap>
-                </Col>
+              </Col>
             </Row>
 
             <Button type="primary" onClick={() => showMapContent(false)}>Close</Button>
@@ -445,98 +455,105 @@ const AgWqPlan = () => {
 
       <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
         <Card>
-          <Title level={3}>Water Quality Practices Planner</Title>
-          <Paragraph>
-            This tool connects land conditions and goals to agricultural water quality
-            practices, technical assistance, and reference materials.
-          </Paragraph>
+            <Title level={3}>Water Quality Practices Planner</Title>
+            <Paragraph>
+                This tool connects land conditions and goals to agricultural water quality
+                practices, technical assistance, and reference materials.
+            </Paragraph>
+            <Divider />
 
           <Spin spinning={loadingData} tip="Loading planner data...">
-            <UserTypeGuide
-              userType={userType}
-              selectedTMDLs={selectedTMDLs}
-              onTMDLChange={setSelectedTMDLs}
-              availableTMDLs={availableTMDLs}
-            >
-              <Steps current={current} onChange={setCurrent} style={{ marginBottom: 24 }}>
-                <Step title="Who & Where" />
-                <Step title="Conditions" />
-                <Step title="Goals" />
-                <Step title="Practices" />
-                <Step title="Plan Summary" />
-              </Steps>
+            {current === -1 && (
+              <StartUp userType={userType} setUserType={setUserType} selectedTMDLs={selectedTMDLs} 
+              setSelectedTMDLs={setSelectedTMDLs} availableTMDLs={availableTMDLs}
+              setLoginName={setLoginName} setUserRole={setUserRole} setLoggingIn={setLoggingIn} />
+            )}
 
-              {current === 0 && (
-                <StepWhoWhere
-                  userType={userType}
-                  setUserType={setUserType}
-                  region={region}
-                  setRegion={setRegion}
-                  commodity={commodity}
-                  setCommodity={setCommodity}
-                />
+            {current >= 0 && (
+              <>
+                <Steps current={current} onChange={setCurrent} style={{ marginBottom: 24 }}>
+                  <Step title="Location" />
+                  <Step title="Conditions" />
+                  <Step title="Goals" />
+                  <Step title="Practices" />
+                  <Step title="Plan Summary" />
+                </Steps>
+                <Divider />
+              </>
+            )}
+
+            {current === 0 && (
+              <StepWhoWhere
+                userType={userType}
+                setUserType={setUserType}
+                region={region}
+                setRegion={setRegion}
+                commodity={commodity}
+                setCommodity={setCommodity}
+                commoditiesData={commodities}
+                sitesData={sites}
+              />
+            )}
+
+            {current === 1 && (
+              <StepConditions
+                concernData={concerns}
+                selectedConcerns={selectedConcerns}
+                setSelectedConcerns={setSelectedConcerns}
+                filteredQuestions={filteredQuestions}
+                selectedQuestions={selectedQuestions}
+                setSelectedQuestions={setSelectedQuestions}
+              />
+            )}
+
+            {current === 2 && (
+              <StepGoals
+                selectedGoals={selectedGoals}
+                setSelectedGoals={setSelectedGoals}
+                goalData={goals}
+              />
+            )}
+
+            {current === 3 && (
+              <StepPractices
+                userType={userType}
+                recommendedPractices={filteredRecommendedPractices}
+                selectedPracticeIds={selectedPracticeIds}
+                setSelectedPracticeIds={setSelectedPracticeIds}
+              />
+            )}
+
+            {current === 4 && (
+              <StepSummary
+                userType={userType}
+                region={region}
+                commodity={commodity}
+                selectedConcerns={selectedConcerns}
+                selectedQuestions={selectedQuestions}
+                selectedGoals={selectedGoals}
+                goalData={goals}
+                selectedPractices={selectedPractices}
+                concernQuestions={concernQuestions}
+              />
+            )}
+
+            <Divider />
+
+            <Space>
+              {current > 0 && (
+                <Button ghost onClick={prev}>
+                  Back
+                </Button>
               )}
-
-              {current === 1 && (
-                <StepConditions
-                  concernData={concerns}
-                  selectedConcerns={selectedConcerns}
-                  setSelectedConcerns={setSelectedConcerns}
-                  filteredQuestions={filteredQuestions}
-                  selectedQuestions={selectedQuestions}
-                  setSelectedQuestions={setSelectedQuestions}
-                />
+              {current < 4 && (
+                <Button type="primary" onClick={next}>
+                  Next
+                </Button>
               )}
-
-              {current === 2 && (
-                <StepGoals
-                  selectedGoals={selectedGoals}
-                  setSelectedGoals={setSelectedGoals}
-                  goalData={goals}
-                />
-              )}
-
-              {current === 3 && (
-                <StepPractices
-                  userType={userType}
-                  recommendedPractices={filteredRecommendedPractices}
-                  selectedPracticeIds={selectedPracticeIds}
-                  setSelectedPracticeIds={setSelectedPracticeIds}
-                />
-              )}
-
-              {current === 4 && (
-                <StepSummary
-                  userType={userType}
-                  region={region}
-                  commodity={commodity}
-                  selectedConcerns={selectedConcerns}
-                  selectedQuestions={selectedQuestions}
-                  selectedGoals={selectedGoals}
-                  goalData={goals}
-                  selectedPractices={selectedPractices}
-                  concernQuestions={concernQuestions}
-                />
-              )}
-
-              <Divider />
-
-              <Space>
-                {current > 0 && (
-                  <Button ghost onClick={prev}>
-                    Back
-                  </Button>
-                )}
-                {current < 4 && (
-                  <Button type="primary" onClick={next}>
-                    Next
-                  </Button>
-                )}
-              </Space>
-            </UserTypeGuide>
-          </Spin>
-        </Card>
-      </Content>
+            </Space>
+        </Spin>
+      </Card>
+    </Content >
       <Footer style={{ textAlign: 'center' }}>
         Oregon Ag Water Quality Practices – prototype planner
       </Footer>

@@ -309,13 +309,13 @@ const EvalChat = () => {
                 </p>
                 <h4>Instructions:</h4>
                 <ol style={{ color: 'white', fontSize: '0.9em' }}>
-                    <li style={{ color: 'white', fontSize: '0.9em' }}>Type your question or prompt in the input box below.</li>
-                    <li style={{ color: 'white', fontSize: '0.9em' }}>Click the "Submit" button to send your query.</li>
-                    <li style={{ color: 'white', fontSize: '0.9em' }}>Wait for the AI to respond. The response will be displayed below, with one 
+                    <li style={{fontSize: '0.9em' }}>Type your question or prompt in the input box below.</li>
+                    <li style={{fontSize: '0.9em' }}>Click the "Submit" button to send your query.</li>
+                    <li style={{fontSize: '0.9em' }}>Wait for the AI to respond. The response will be displayed below, with one 
                         response from each models we are evaluating.</li>
-                    <li style={{ color: 'white', fontSize: '0.9em' }}>Rate the quality of each of the AI's response using the star rating system.</li>
-                    <li style={{ color: 'white', fontSize: '0.9em' }}>Optionally, provide additional comments about the response.</li>
-                    <li style={{ color: 'white', fontSize: '0.9em' }}>Click the "Submit Rating/Comment" button to save your feedback.</li>
+                    <li style={{fontSize: '0.9em' }}>Rate the quality of each of the AI's response using the star rating system.</li>
+                    <li style={{fontSize: '0.9em' }}>Optionally, provide additional comments about the response.</li>
+                    <li style={{fontSize: '0.9em' }}>Click the "Submit Rating/Comment" button to save your feedback.</li>
                 </ol>
 
       

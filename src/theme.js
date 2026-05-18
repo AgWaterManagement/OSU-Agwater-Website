@@ -4,9 +4,18 @@ const theme = {
         colorTextHeading: 'yellow'
     },
     components: {
-        Calendar: {
-            colorText: '#9E9E9E',
-            //colorBgContainer: '#ECECEC',
+        Alert: {
+            //colorText: 'darkblue',
+            //colorTextHeading: 'darkslategray',
+            //colorBgElevated: '#2b1d11',
+            colorInfoBg: '#232323'
+        },
+        Button: {
+            colorLink: 'yellow',
+            colorLinkActive: '#0958d9',
+            colorLinkHover: 'brown',
+            colorBgContainerDisabled: '#555',
+            colorTextDisabled: '#777',
         },
         Card: { 
             headerBg: 'darkslategray',

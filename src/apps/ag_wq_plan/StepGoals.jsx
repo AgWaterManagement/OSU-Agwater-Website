@@ -17,8 +17,8 @@ const StepGoals = ({ selectedGoals, setSelectedGoals, goalData }) => {
           return { label: goal, value: goal };
         }
 
-        const value = goal.value ?? goal.id ?? goal.name ?? goal.text ?? goal.label;
-        const label = goal.label ?? goal.name ?? goal.text ?? goal.goal ?? value;
+        const value = goal.id;
+        const label = goal.goal;
 
         return { label, value };
       }).filter((option) => option.value != null),
@@ -46,7 +46,7 @@ const StepGoals = ({ selectedGoals, setSelectedGoals, goalData }) => {
 };
 
 StepGoals.propTypes = {
-  selectedGoals: PropTypes.arrayOf(PropTypes.string).isRequired,
+  selectedGoals: PropTypes.arrayOf(PropTypes.number).isRequired,
   setSelectedGoals: PropTypes.func.isRequired,
   goalData: PropTypes.arrayOf(
     PropTypes.oneOfType([

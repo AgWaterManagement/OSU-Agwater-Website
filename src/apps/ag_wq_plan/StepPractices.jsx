@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { Card, Collapse, Tag, Typography, Checkbox } from 'antd';
+import { Card, Collapse, Tag, Typography, Checkbox, Carousel } from 'antd';
 import ComplianceInfo from './ComplianceInfo';
 
 const { Title, Paragraph, Text } = Typography;
@@ -24,6 +24,20 @@ const StepPractices = ({
         : [...selectedPracticeIds, id],
     );
   };
+
+
+  const carouselContentStyle = {
+    /*
+    margin: 0,
+    height: '160px',
+    color: '#fff',
+    lineHeight: '160px',
+    textAlign: 'center',
+    background: '#364d79',*/
+    width: '100%',
+    height: '100%',
+  };
+
 
   return (
     <>
@@ -53,7 +67,7 @@ const StepPractices = ({
                   />
                 </span>
                 {/* <Text strong>{p.id}</Text> – {p.title} */}
-                <Text strong style={{color:'yellow'}}>{p.title}</Text>
+                <Text strong style={{ color: 'yellow' }}>{p.title}</Text>
               </span>
             }
           >
@@ -77,15 +91,37 @@ const StepPractices = ({
                 <Text strong>Benefits (potential):</Text> {p.benefits}
               </Paragraph>
               <Paragraph>
-                <Text strong>References:</Text>{' '}
+                <Text strong>References:</Text>&nbsp; | &nbsp;
                 {p.links.map((l) => (<>
                   <a key={l.url} href={l.url} target="_blank" rel="noreferrer">
                     {l.label}
                   </a> <span> | </span>
-                  </>
+                </>
                 ))}
               </Paragraph>
               <ComplianceInfo practice={p} userType={userType} />
+
+
+
+
+              <Carousel arrows infinite={false} style={{width: 800, height:800 }}>
+                <div>
+                  <img src="/images/AgWqPlan/OIP-1912167953.jpg" alt="Practice image 1" style={carouselContentStyle} />
+                  <h3 style={carouselContentStyle}>1</h3>
+                </div>
+                <div>
+                  <h3 style={carouselContentStyle}>2</h3>
+                </div>
+                <div>
+                  <h3 style={carouselContentStyle}>3</h3>
+                </div>
+                <div>
+                  <h3 style={carouselContentStyle}>4</h3>
+                </div>
+              </Carousel>
+
+
+
             </Card>
           </Collapse.Panel>
         ))}

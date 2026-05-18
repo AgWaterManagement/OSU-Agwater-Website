@@ -172,7 +172,7 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
         <>
             {loading && (
                 <div style={{ textAlign: "center", marginBottom: 16, backgroundColor: 'white' }}>
-                    <Spin tip="Loading Articles..." size="large" fullscreen />
+                    <Spin tip="Loading Articles..." size="large" />
                 </div>
             )}
 

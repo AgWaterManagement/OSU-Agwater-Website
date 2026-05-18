@@ -19,9 +19,7 @@ async function parseJsonResponse(response) {
   }
 }
 
-export default function AgWqplanLogin({
-  onLoginSuccess,
-}) {
+export default function AgWqplanLogin({ onLoginSuccess, showCancel = true }) {
   const [loading, setLoading] = useState(false);
   const [authState, setAuthState] = useState({ isAuthenticated: false, user: null });
 
@@ -43,8 +41,6 @@ export default function AgWqplanLogin({
     });
     return { response, body: await parseJsonResponse(response) };
   };
-
-
 
   const handleLogin = async (values) => {
     setLoading(true);
@@ -72,47 +68,52 @@ export default function AgWqplanLogin({
   };
 
   return (<>
-  <div style={{ padding: 4, textAlign: 'center' }} >
-    <Title level={4}>Sign In to the Ag Water Quality Planner</Title>
-    <Text style={{width: '100%', maxWidth: 600, display: 'inline-block'}}>
-      Use this interface to log in to the Ag WQPlan application. If you do not have an account, please contact your administrator.
-    </Text>
-    <br/>
-    <br/>
+    {authState.isAuthenticated === false && (
+      <>
+        <div style={{ padding: 4, textAlign: 'center' }} >
+          <Title level={4}>Sign In to the Ag Water Quality Planner</Title>
+          <Text style={{ width: '100%', maxWidth: 600, display: 'inline-block' }}>
+            Use this interface to log in to the Ag WQPlan application. If you do not have an account, please contact your administrator.
+          </Text>
+          <br />
+          <br />
 
-      <Space direction="vertical" size="large" style={{ display: "flex", alignItems: "center", width: "100%" }}>
-      <Form layout="vertical" onFinish={handleLogin}>
-        <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-          <Input autoComplete="username" />
-        </Form.Item>
-        <Form.Item name="password" label="Password" rules={[{ required: true }]}>
-          <Input.Password autoComplete="current-password" />
-        </Form.Item>
-        <Form.Item
-          name="otpCode"
-          label="One-Time Code"
-          rules={[{ required: true, message: "Enter your 6-digit OTP" }]}
-        >
-          <Input maxLength={6} placeholder="123456" />
-        </Form.Item>
-        <Button htmlType="submit" type="primary" loading={loading} style={{ marginRight: 8 }}>
-          Sign In
-        </Button>
-        <Button ghost type="primary" onClick={() => {}} style={{ marginLeft: 8 }}>
-          Cancel
-        </Button>
-      </Form>
+          <Space direction="vertical" size="large" style={{ display: "flex", alignItems: "center", width: "100%" }}>
+            <Form layout="vertical" onFinish={handleLogin}>
+              <Form.Item name="username" label="Username" rules={[{ required: true }]}>
+                <Input autoComplete="username" />
+              </Form.Item>
+              <Form.Item name="password" label="Password" rules={[{ required: true }]}>
+                <Input.Password autoComplete="current-password" />
+              </Form.Item>
+              <Form.Item
+                name="otpCode"
+                label="One-Time Code"
+                rules={[{ required: true, message: "Enter your 6-digit OTP" }]}
+              >
+                <Input maxLength={6} placeholder="123456" />
+              </Form.Item>
+              <Button htmlType="submit" type="primary" loading={loading} style={{ marginRight: 8 }}>
+                Sign In
+              </Button>
+              {showCancel && (
+                <Button ghost type="primary" onClick={() => { }} style={{ marginLeft: 8 }}>
+                  Cancel
+                </Button>
+              )}
+            </Form>
+          </Space>
+        </div>
+      </>
+    )}
 
-      {authState.isAuthenticated && (
-        <Alert
-          type="success"
-          showIcon
-          message="Authenticated"
-          description={`Logged in as ${authState.user?.username || "unknown"}`}
-        />
-      )}
-      </Space>
-      </div>
-  </>
-  );
+    {authState.isAuthenticated && (
+      <Alert
+        type="info"
+        showIcon
+        message="Authenticated"
+        description={`Logged in as ${authState.user?.username || "unknown"}`}
+      />
+    )}
+  </>);
 }

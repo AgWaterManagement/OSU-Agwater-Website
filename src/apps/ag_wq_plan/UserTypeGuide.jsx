@@ -88,7 +88,7 @@ const UserTypeGuide = ({ userType, children, selectedTMDLs, onTMDLChange, availa
         message={guide.title}
         description={guide.description}
         type="info"
-        style={{ backgroundColor: '#232323', marginBottom: 16 }}
+        style={{ marginBottom: 16 }}
       />
 
       {userType === 'Board / TMDL' && (

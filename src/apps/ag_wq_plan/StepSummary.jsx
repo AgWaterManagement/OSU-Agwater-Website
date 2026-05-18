@@ -50,13 +50,8 @@ const StepSummary = ({
   const goalLabelMap = useMemo(() => {
     const map = new Map();
     (Array.isArray(goalData) ? goalData : []).forEach((goal) => {
-      if (typeof goal === 'string') {
-        map.set(goal, goal);
-        return;
-      }
-
-      const value = goal.value ?? goal.id ?? goal.name ?? goal.text ?? goal.label;
-      const label = goal.label ?? goal.name ?? goal.text ?? goal.goal ?? value;
+      const value = goal.id;
+      const label = goal.goal;
       if (value != null) {
         map.set(String(value), String(label));
       }
@@ -106,8 +101,8 @@ const StepSummary = ({
               const q = questionMap.get(id);
               if (!q) return null;
               return (
-                <li key={id} style={{ color: 'white' }}>
-                  {q.text} <Tag key={q.concern}>{q.concern}</Tag>
+                <li key={id}>
+                  {q.question} <Tag key={q.concern}>{q.concern}</Tag>
                 </li>
               );
             })}
@@ -121,11 +116,13 @@ const StepSummary = ({
         {selectedGoals.length === 0 ? (
           <Paragraph>No goals selected.</Paragraph>
         ) : (
-          <Space wrap>
+          <ul>
             {selectedGoals.map((g) => (
-              <Tag key={g}>{goalLabelMap.get(String(g)) ?? g}</Tag>
+                <li key={g}>
+                  {goalLabelMap.get(String(g))}
+                </li>
             ))}
-          </Space>
+          </ul>
         )}
 
         <Divider />
@@ -206,14 +203,14 @@ StepSummary.propTypes = {
   concernQuestions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      category: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
+      concern: PropTypes.string.isRequired,
+      question: PropTypes.string.isRequired,
     })
   ).isRequired,
   selectedQuestions: PropTypes.arrayOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   ).isRequired,
-  selectedGoals: PropTypes.arrayOf(PropTypes.string).isRequired,
+  selectedGoals: PropTypes.arrayOf(PropTypes.number).isRequired,
   selectedPractices: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,

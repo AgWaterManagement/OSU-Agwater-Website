@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import { secrets } from '../../secrets';
 import WeatherForecast from './WeatherForecast';
 import SummaryPanel from '../../components/drought/SummaryPanel';
+import OllamaChat from '../../components/ollama_chat/OllamaChat';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 
 const { Title} = Typography;
@@ -1878,6 +1879,16 @@ const Drought = () => {
 			)}
 
 
+
+			<Divider />
+			<Collapse
+				items={[{
+					key: 'chat',
+					label: 'Ask a Question about Drought',
+					children: <OllamaChat />
+				}]}
+			/>
+			<Divider />
 
 			<div className="row">
 				<h5>More Information</h5>

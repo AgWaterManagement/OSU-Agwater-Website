@@ -7,7 +7,6 @@ import Malena from '../../assets/images/malena-150X150.jpg';
 import Floyid from '../../assets/images/Floyid-150X150.jpg';
 import Salini from '../../assets/images/salini-150X150.jpg';
 import Manuel from '../../assets/images/Jamarillo-150X150.jpg';
-import Jen from '../../assets/images/Jen-150X150.jpg';
 import Derek from '../../assets/images/DerekGodwin-150x150.jpg';
 import Yu from '../../assets/images/YuLu-150X150.jpg';
 import Sean from '../../assets/images/sean-higgens-150x150.jpg';

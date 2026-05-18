@@ -761,14 +761,14 @@ const CropWaterUse = () => {
                                                 <p>
                                                     References:
                                                     <ul>
-                                                        <li style={{ textAlign: 'left', color: 'white' }}>
+                                                        <li style={{ textAlign: 'left' }}>
                                                             <a href="https://www.dri.edu/project/owrd-et/" target="_blank"
                                                                 rel="noopener noreferrer">Crop Evapotranspiration, Consumptive Use, and Open Water Evaporation for Oregon</a>.  2024.
                                                             J Huntington,B Minor, M Bromley, C Pearson, J Beamer, K Ingwersen, K Carrara, J Atkin, J Brito,
                                                             C Morton, C Dunkerly, J Volk, T Ott, P ReVelle, A Fellows, M Hoskinson.
                                                             Report prepared by Desert Research Institute for the Oregon Water Resources Department.
                                                         </li>
-                                                        <li style={{ textAlign: 'left', color: 'white' }}>
+                                                        <li style={{ textAlign: 'left' }}>
                                                             <a href='https://extension.oregonstate.edu/sites/extd8/files/documents/em8530.pdf' target="_blank" rel="noopener noreferrer">
                                                                 Oregon Crop Water Use and Irrigation </a>Requirements. 1992. R. Cuenca, J. Nuss, A. Martinez-Cob, and G. Katul.
                                                             Extension Miscellaneous Publication 8530. Oregon State University Extension Service.

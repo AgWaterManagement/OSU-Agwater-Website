@@ -62,7 +62,7 @@ const StepConditions = ({
       >
         {filteredQuestions.map((q) => (
           <Checkbox key={q.id} value={q.id}>
-            {q.text} <span style={{ color: '#999' }}>({q.concern})</span>
+            {q.question} <span style={{ color: '#999' }}>({q.concern})</span>
           </Checkbox>
         ))}
       </Checkbox.Group>
@@ -89,7 +89,7 @@ StepConditions.propTypes = {
   filteredQuestions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      text: PropTypes.string.isRequired,
+      question: PropTypes.string.isRequired,
       concern: PropTypes.string.isRequired,
     })
   ).isRequired,
