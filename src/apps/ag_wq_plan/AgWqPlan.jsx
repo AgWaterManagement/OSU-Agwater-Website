@@ -1,22 +1,10 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import {
-  Layout,
-  Steps,
-  Card,
-  Typography,
-  Divider,
-  Space,
-  Button,
-  Spin,
-  Row,
-  Col,
-} from 'antd';
+
+import {Alert,Layout,Steps,Card,Typography,Divider,Space,Button,Spin,Row,Col,} from 'antd';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
-import WMSLayer from '@arcgis/core/layers/WMSLayer';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
-import Polygon from '@arcgis/core/geometry/Polygon';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 
 import StartUp from './StartUp';
@@ -25,9 +13,9 @@ import StepConditions from './StepConditions';
 import StepGoals from './StepGoals';
 import StepPractices from './StepPractices';
 import StepSummary from './StepSummary';
-import UserTypeGuide from './UserTypeGuide';
 
 import AgWqplanLogin from "./AgWqplanLogin";
+import ValidationError from './ValidationError';
 
 
 const { Content, Footer } = Layout;
@@ -36,7 +24,7 @@ const { Title, Text, Paragraph } = Typography;
 const API_BASE = 'https://agwater.org:5556';
 
 const TMDL_GEOJSON_URL = 'https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services/TMDLs_DEQ_by_parameter_Feb2026/FeatureServer/4/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson';
-const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson'
+const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=MA_Index>0&outFields=*&returnGeometry=true&f=geojson'
 /*
   "Create a 'living' repository of suggested agricultural/environmental practices
    to maintain and improve the quality of water for all waters of the State."
@@ -231,30 +219,61 @@ const AgWqPlan = () => {
   // Current step in the wizard (0-4)
   const [current, setCurrent] = useState(-1);
 
+  //------------------------------------------------------------------------------------
+  // Global state for planner data and user inputs
+  //------------------------------------------------------------------------------------
   const [sites, setSites] = useState([]);
   const [commodities, setCommodities] = useState([]);
   const [concerns, setConcerns] = useState([]);
   const [concernQuestions, setConcernQuestions] = useState([]);
   const [practices, setPractices] = useState([]);
   const [goals, setGoals] = useState([]);
+  const [areaRules, setAreaRules] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [loggingIn, setLoggingIn] = useState(false);
-  const [loginName, setLoginName] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-
-  // User identification and location state
-  const [userType, setUserType] = useState('Landowner');
-  const [region, setRegion] = useState();
-  const [commodity, setCommodity] = useState();
   const [showMaps, setShowMaps] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  
+  // -----------------------------------------------------------------------------------
+  // global report data state that gets passed to summary and used for PDF generation
+  // useStates() reflect data that is reactive
+  // useRef() for data that doesn't need to trigger re-renders
+  // -----------------------------------------------------------------------------------
+  const [loginName, setLoginName] = useState(null);
+  const [userType, setUserType] = useState('Landowner');
+  const commodity = useRef('Pasture/Hay');
+  const [siteName, setSiteName] = useState('');
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [agwqmArea, setAgwqmArea] = useState(null);   // MA_Index from ODA AWQMA dataset
+  const [agwqRegion, setAgwqRegion] = useState(null);
+  const [regionalSpecialist, setRegionalSpecialist] = useState(null);
+  const [regionalSpecialistEmail, setRegionalSpecialistEmail] = useState(null);
+  const [regionalSpecialistPhone, setRegionalSpecialistPhone] = useState(null);
+  const [adminRulesLink, setAdminRulesLink] = useState(null);
+  const [areaPlanLink, setAreaPlanLink] = useState(null);
 
-
-  // Selection state across steps
+  // -----------------------------------------------------------------------------------
+  // Step-specific state
+  // Each step component receives relevant pieces of state and setters as props
+  // to manage user inputs and selections for that step
+  //------------------------------------------------------------------------------------
   const [selectedConcerns, setSelectedConcerns] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [selectedGoals, setSelectedGoals] = useState([]);
   const [selectedPracticeIds, setSelectedPracticeIds] = useState([]);
   const [selectedTMDLs, setSelectedTMDLs] = useState([]);
+
+  // ------------------------------------------------------------------------------------
+  // Success/Error status of each Step for validation and user feedback
+  // possible values are wait process finish error
+  //------------------------------------------------------------------------------------
+  const [stepLocationStatus, setStepLocationStatus] = useState('process');
+  const [stepConditionsStatus, setStepConditionsStatus] = useState('wait');
+  const [stepGoalsStatus, setStepGoalsStatus] = useState('wait');
+  const [stepPracticesStatus, setStepPracticesStatus] = useState('wait');
+  
+
 
   useEffect(() => {
     let active = true;
@@ -277,13 +296,15 @@ const AgWqPlan = () => {
       setLoadingData(true);
 
       try {
-        const [sitesData, commoditiesData, concernsData, questionsData, practicesData, goalsData] = await Promise.all([
+        const [sitesData, commoditiesData, concernsData, questionsData, practicesData, goalsData,areaRulesData] = await Promise.all([
           fetchJson('/agwqplan/sites'),
           fetchJson('/agwqplan/commodities'),
           fetchJson('/agwqplan/concerns'),
           fetchJson('/agwqplan/concernQuestions'),
           fetchJson('/agwqplan/practices'),
           fetchJson('/agwqplan/goals'),
+          fetchJson('/agwqplan/areaRules'),
+          
         ]);
 
         if (!active) return;
@@ -294,6 +315,7 @@ const AgWqPlan = () => {
         setPractices(Array.isArray(practicesData) ? practicesData : []);
         setGoals(Array.isArray(goalsData) ? goalsData : []);
         setSites(Array.isArray(sitesData) ? sitesData : []);
+        setAreaRules(Array.isArray(areaRulesData) ? areaRulesData : []);
       } catch (error) {
         console.error('Error loading ag_wqplan data:', error);
         if (active) {
@@ -303,6 +325,7 @@ const AgWqPlan = () => {
           setPractices([]);
           setGoals([]);
           setSites([]);
+          setAreaRules([]);
         }
       } finally {
         if (active) {
@@ -371,8 +394,20 @@ const AgWqPlan = () => {
     setShowMaps(show);
   }
 
-  const next = () => setCurrent((c) => c + 1);
-  const prev = () => setCurrent((c) => c - 1);
+
+  const next = () => {
+    //if (!validateInputs())
+    //  return;
+    setCurrent((c) => c + 1);
+  };
+  
+  const prev = () => {
+    //if (validateInputs())
+    //  return;
+
+    setCurrent((c) => c - 1);
+  };
+
 
   return (
     <>
@@ -426,11 +461,6 @@ const AgWqPlan = () => {
         <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
           <Card>
             <Title level={3}>Maps</Title>
-            <Paragraph>
-              This tool connects land conditions and goals to agricultural water quality
-              practices, technical assistance, and reference materials.
-            </Paragraph>
-
             <Row>
               <Col xs={24} md={12}>
                 <Title level={4}>Agricultural Water Quality Management Areas</Title>
@@ -456,26 +486,34 @@ const AgWqPlan = () => {
       <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
         <Card>
             <Title level={3}>Water Quality Practices Planner</Title>
-            <Paragraph>
+            {current === -1 && (
+              <Paragraph>
                 This tool connects land conditions and goals to agricultural water quality
                 practices, technical assistance, and reference materials.
-            </Paragraph>
-            <Divider />
+              </Paragraph>
+            )}
+            <Divider />            
 
           <Spin spinning={loadingData} tip="Loading planner data...">
             {current === -1 && (
-              <StartUp userType={userType} setUserType={setUserType} selectedTMDLs={selectedTMDLs} 
-              setSelectedTMDLs={setSelectedTMDLs} availableTMDLs={availableTMDLs}
-              setLoginName={setLoginName} setUserRole={setUserRole} setLoggingIn={setLoggingIn} />
+              <StartUp 
+                userType={userType} 
+                setUserType={setUserType} 
+                selectedTMDLs={selectedTMDLs} 
+                setSelectedTMDLs={setSelectedTMDLs} 
+                availableTMDLs={availableTMDLs}
+                setLoginName={setLoginName}
+                setUserRole={setUserRole}
+                setLoggingIn={setLoggingIn} />
             )}
 
             {current >= 0 && (
               <>
                 <Steps current={current} onChange={setCurrent} style={{ marginBottom: 24 }}>
-                  <Step title="Location" />
-                  <Step title="Conditions" />
-                  <Step title="Goals" />
-                  <Step title="Practices" />
+                  <Step title="Location" status={stepLocationStatus} />
+                  <Step title="Conditions" status={stepConditionsStatus} />
+                  <Step title="Goals" status={stepGoalsStatus} />
+                  <Step title="Practices" status={stepPracticesStatus} />
                   <Step title="Plan Summary" />
                 </Steps>
                 <Divider />
@@ -485,13 +523,20 @@ const AgWqPlan = () => {
             {current === 0 && (
               <StepWhoWhere
                 userType={userType}
-                setUserType={setUserType}
-                region={region}
-                setRegion={setRegion}
-                commodity={commodity}
-                setCommodity={setCommodity}
-                commoditiesData={commodities}
                 sitesData={sites}
+                commodity={commodity}
+                commoditiesData={commodities}
+                siteName={siteName} setSiteName={setSiteName}
+                _latitude={latitude} setLatitude={setLatitude}
+                _longitude={longitude} setLongitude={setLongitude}
+                agwqmArea={agwqmArea} setAgwqmArea={setAgwqmArea}
+                agwqRegion={agwqRegion} setAgwqRegion={setAgwqRegion}
+                regionalSpecialist={regionalSpecialist} setRegionalSpecialist={setRegionalSpecialist}
+                regionalSpecialistEmail={regionalSpecialistEmail} setRegionalSpecialistEmail={setRegionalSpecialistEmail}
+                regionalSpecialistPhone={regionalSpecialistPhone} setRegionalSpecialistPhone={setRegionalSpecialistPhone}
+                adminRulesLink={adminRulesLink} setAdminRulesLink={setAdminRulesLink}
+                areaPlanLink={areaPlanLink} setAreaPlanLink={setAreaPlanLink}
+                setError={setStepLocationStatus}
               />
             )}
 
@@ -503,6 +548,7 @@ const AgWqPlan = () => {
                 filteredQuestions={filteredQuestions}
                 selectedQuestions={selectedQuestions}
                 setSelectedQuestions={setSelectedQuestions}
+                setError={setStepConditionsStatus}
               />
             )}
 
@@ -511,22 +557,25 @@ const AgWqPlan = () => {
                 selectedGoals={selectedGoals}
                 setSelectedGoals={setSelectedGoals}
                 goalData={goals}
+                setError={setStepGoalsStatus}
               />
             )}
 
             {current === 3 && (
               <StepPractices
                 userType={userType}
+                areaRules={areaRules}
+                agwqmArea={agwqmArea}
                 recommendedPractices={filteredRecommendedPractices}
                 selectedPracticeIds={selectedPracticeIds}
                 setSelectedPracticeIds={setSelectedPracticeIds}
+                setError={setStepPracticesStatus}
               />
             )}
 
             {current === 4 && (
               <StepSummary
                 userType={userType}
-                region={region}
                 commodity={commodity}
                 selectedConcerns={selectedConcerns}
                 selectedQuestions={selectedQuestions}
@@ -545,11 +594,25 @@ const AgWqPlan = () => {
                   Back
                 </Button>
               )}
-              {current < 4 && (
+              {current < 4 && stepLocationStatus !== 'error' &&  stepConditionsStatus !== 'error' && stepGoalsStatus !== 'error' && stepPracticesStatus !== 'error' && (
                 <Button type="primary" onClick={next}>
                   Next
                 </Button>
               )}
+              {current < 4 && ( stepLocationStatus === 'error' ||  stepConditionsStatus === 'error' || stepGoalsStatus === 'error' || stepPracticesStatus === 'error' ) && (
+                <Button type="primary" disabled>
+                  Next
+                </Button>
+              )}
+
+              <span style={{ marginLeft: 8, fontStyle: 'italic', fontSize: 14, color: 'red' }}>
+                {stepLocationStatus === 'error' && 'Please complete the Location step before proceeding.'}
+                {stepConditionsStatus === 'error' && 'Please complete the Conditions step before proceeding.'}
+                {stepGoalsStatus === 'error' && 'Please complete the Goals step before proceeding.'}
+                {stepPracticesStatus === 'error' && 'Please complete the Practices step before proceeding.'}
+              </span>
+
+
             </Space>
         </Spin>
       </Card>

@@ -1,14 +1,14 @@
 ﻿import { useState, useEffect } from 'react';
 
 import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal, Select } from 'antd';
-import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
 
 import PropTypes from 'prop-types';
 import { secrets } from '../../secrets';
-import WeatherForecast from './WeatherForecast';
+import NWSForecast from '../../components/weather/NWSForecast';
 import SummaryPanel from '../../components/drought/SummaryPanel';
 import OllamaChat from '../../components/ollama_chat/OllamaChat';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
@@ -38,48 +38,35 @@ const snotelLegendItems = [
 ];
 
 const SnotelMapLegend = () => {
-	const map = useMap();
+	const sizeExamples = [
+		{ label: '~5 in', r: 4 },
+		{ label: '~10 in', r: 7 },
+		{ label: '~20 in', r: 14 },
+	];
 
-	useEffect(() => {
-		const legend = L.control({ position: 'bottomleft' });
-
-		legend.onAdd = () => {
-			const div = L.DomUtil.create('div');
-			div.style.cssText = [
-				'background:rgba(20,20,20,0.88)',
-				'padding:8px 10px',
-				'border-radius:6px',
-				'color:white',
-				'font-size:11px',
-				'line-height:1.6',
-				'box-shadow:0 1px 5px rgba(0,0,0,0.5)',
-				'pointer-events:none',
-			].join(';');
-
-			const rows = snotelLegendItems.map(({ color, label }) =>
-				`<div style="display:flex;align-items:center;margin-bottom:3px;">` +
-				`<svg width="14" height="14" style="margin-right:6px;flex-shrink:0;">` +
-				`<circle cx="7" cy="7" r="6" fill="${color}" stroke="#555" stroke-width="1"/>` +
-				`</svg>` +
-				`<span>${label}</span>` +
-				`</div>`
-			).join('');
-
-			div.innerHTML =
-				`<strong style="display:block;margin-bottom:5px;font-size:12px;">SNOTEL: SWE vs. Avg</strong>` +
-				rows +
-				`<div style="margin-top:5px;border-top:1px solid #555;padding-top:4px;font-size:10px;color:#aaa;">` +
-				`Marker size reflects avg annual SWE` +
-				`</div>`;
-
-			return div;
-		};
-
-		legend.addTo(map);
-		return () => legend.remove();
-	}, [map]);
-
-	return null;
+	return (
+		<Card title="SNOTEL: SWE vs. Avg" size="small" style={{ marginTop: '12px' }}>
+			{snotelLegendItems.map(({ color, label }) => (
+				<div key={label} style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+					<svg width="14" height="14" style={{ marginRight: '8px', flexShrink: 0 }}>
+						<circle cx="7" cy="7" r="6" fill={color} stroke="#555" strokeWidth="1" />
+					</svg>
+					<span>{label}</span>
+				</div>
+			))}
+			<div style={{ marginTop: '8px', borderTop: '1px solid #444', paddingTop: '6px' }}>
+				<div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>Marker size = avg annual SWE</div>
+				{sizeExamples.map(({ label, r }) => (
+					<div key={label} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+						<svg width="28" height="28" style={{ marginRight: '8px', flexShrink: 0 }}>
+							<circle cx="14" cy="14" r={r} fill="#1e88e5" stroke="#555" strokeWidth="1" />
+						</svg>
+						<span style={{ fontSize: '12px' }}>{label} avg annual SWE</span>
+					</div>
+				))}
+			</div>
+		</Card>
+	);
 };
 
 const DroughtSummary = ({ countyDroughtData, countyName }) => {
@@ -255,6 +242,7 @@ const Drought = () => {
 	const [snowForecast, setSnowForecast] = useState(null);
 	const [reservoirForecast, setReservoirForecast] = useState(null);
 	const [modalChart, setModalChart] = useState(null);
+	const [clickedLocation, setClickedLocation] = useState({ lat: null, lng: null });
 	const [hucConditions, setHucConditions] = useState(null);
 	const [hucForecasts, setHucForecasts] = useState(null);
 	const [hucNames, setHucNames] = useState({});
@@ -1140,8 +1128,8 @@ const Drought = () => {
 					console.log('No active weather alerts for this county.');
 				}
 
-				// Get drought data for the clicked location
-				const latlng = e.latlng;
+				// Store clicked lat/lng for the NWSForecast component
+				setClickedLocation({ lat: e.latlng.lat, lng: e.latlng.lng });
 				
 			},
 			mouseover: (e) => {
@@ -1674,7 +1662,7 @@ const Drought = () => {
 
 				<Row gutter={16}>
 					<Col xs={24} sm={5}>
-						<Card title="U.S. Drought Monitor Legend" size="small">
+						<Card title="U.S. Drought Monitor Legend" size="small" style={{ marginBottom: 0 }}>
 							{droughtCategories.map(category => (
 								<div key={category.level} style={{ marginBottom: '12px' }}>
 									<div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
@@ -1696,6 +1684,7 @@ const Drought = () => {
 								Data Source: <a href="https://droughtmonitor.unl.edu/" target="_blank" rel="noopener noreferrer">U.S. Drought Monitor</a>
 							</div>
 						</Card>
+						<SnotelMapLegend />
 					</Col>
 					<Col xs={24} sm={12}>
 						<div style={{ height: '100%', width: '100%' }}>
@@ -1723,7 +1712,6 @@ const Drought = () => {
 									placeholder="Search for a location"
 									style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
 								></arcgis-search>
-								<SnotelMapLegend />
 								{snotelData && (
 									<GeoJSON
 										key={`snotel-${Object.keys(snotelCurrentSwe).length}`}
@@ -1758,7 +1746,11 @@ const Drought = () => {
 							items={[
 								{
 								key: '0', label: 'Current Weather', children: (
-									<WeatherForecast forecast={forecast} />
+									<NWSForecast
+										lat={clickedLocation.lat}
+										lng={clickedLocation.lng}
+										locationName={selectedCounty ? `${selectedCounty.properties.NAME} County` : null}
+									/>
 								),
 							}, {
 								key: '1', label: 'Short Term Drought Forecast', children: (

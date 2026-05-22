@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 import { Checkbox, Divider, Typography } from 'antd';
+import ValidationError from './ValidationError';
 
 const { Title, Paragraph } = Typography;
 
@@ -19,6 +20,7 @@ const StepConditions = ({
   filteredQuestions,
   selectedQuestions,
   setSelectedQuestions,
+  setError
 }) => {
   const concernOptions = useMemo(
     () =>
@@ -37,6 +39,16 @@ const StepConditions = ({
     [concernData],
   );
 
+  if ( selectedConcerns.length === 0 || selectedQuestions.length === 0) {
+    setError('error');
+  }
+
+  if (selectedConcerns.length > 0 && selectedQuestions.length > 0) {
+    setError('finish');
+  }
+
+
+
   return (
     <>
       <Title level={4}>Select conditions or concerns on the land</Title>
@@ -49,11 +61,28 @@ const StepConditions = ({
         value={selectedConcerns}
         onChange={(vals) => setSelectedConcerns(vals)}
       />
+
+      {selectedConcerns.length === 0 && (
+        <Paragraph style={{ marginTop: 16 }}>
+          <ValidationError message="Please select at least one concern to proceed." />
+        </Paragraph>
+      )}
+
       <Divider />
+      {selectedConcerns.length > 0 && (
+        <>
+
       <Title level={4}>Questions</Title>
       <Paragraph>
         Select any questions below that apply to the selected conditions or concerns.
       </Paragraph>
+
+      {selectedQuestions.length === 0 && (
+        <Paragraph style={{ marginTop: 16 }}>
+          <ValidationError message="Please select at least one question to proceed." />
+        </Paragraph>
+      )}
+
       {/* Detailed questions matching selected concerns */}
       <Checkbox.Group
         style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
@@ -66,6 +95,8 @@ const StepConditions = ({
           </Checkbox>
         ))}
       </Checkbox.Group>
+        </>
+      )}
     </>
   );
 };

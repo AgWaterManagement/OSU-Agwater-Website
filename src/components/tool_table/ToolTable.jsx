@@ -71,7 +71,7 @@ const toolsData = [
         </>),
         keywords: ['Agrimet', 'BLM', 'weather', 'crop water use', 'Oregon', 'irrigation', 'water consumption'],
         link: '/apps/agrimet',
-        status: 'live'
+        status: 'under_development'
       },
       {
         title: 'Protected Waters of the US',

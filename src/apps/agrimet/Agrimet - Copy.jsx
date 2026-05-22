@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Layout, Button, Typography, Select, Table, Divider, Cascader, Collapse, message, Tabs } from "antd";
+import { Row, Col, Layout, Button, Typography, Select, Table, Divider, Cascader, Collapse, message, Tabs } from "antd";
 
 import "./agrimet.css";
 
@@ -8,6 +8,7 @@ import { secrets } from "../../secrets";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 import { MapContainer, TileLayer, Circle, Popup, Marker } from 'react-leaflet';
 
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import StationInfo from "./StationInfo";
@@ -21,7 +22,7 @@ import Loading from "../../components/loading/Loading";
 import stationData from "./usbr_map.json";
 //import openTab from "../../../public/mages/openTab.png";
 const { Title, Text } = Typography;
-const { Header, Sider } = Layout;
+const { Header, Sider  } = Layout;
 
 
 import {
@@ -115,21 +116,21 @@ const Agrimet = () => {
     //const stateStationOptions= useRef([]); // station options for the selected state, for the Cascader component
 
     const [selectedStationData, setSelectedStationData] = useState(null);  // data about the selected station.  This includes 
-    // crop information for all crops grown at the station, and is used to generate
-    // the crop information table and the crop water use chart.  It is fetched from 
-    // the API when a station is selected.
-
+                                        // crop information for all crops grown at the station, and is used to generate
+                                        // the crop information table and the crop water use chart.  It is fetched from 
+                                        // the API when a station is selected.
+    
     const stationCropData = useRef([]); // station crop data (e.g. planting dates, harvest dates, recent water use) for all crops
-    // at station.  This is used to generate the crop water use chart and the
-    // tabular crop information data, and is fetched from the API when a station is selected. 
-    // It is stored in a ref to avoid unnecessary re-renders of the component when the data
-    // is updated.
+                                        // at station.  This is used to generate the crop water use chart and the
+                                        // tabular crop information data, and is fetched from the API when a station is selected. 
+                                        // It is stored in a ref to avoid unnecessary re-renders of the component when the data
+                                        // is updated.
     const [cropETData, setCropETData] = useState({}); // Store crop ET data for the selected station, which is used to
     //const cropETData = useRef({}); // Store crop ET data for the selected station, which is used to
-    // generate the season-to-date crop water use chart for a given crop grown at that station.
-    // This is fetched from the API when a station is selected.
-    // It is stored in a ref to avoid unnecessary re-renders of the component when the data
-    // is updated.
+                                        // generate the season-to-date crop water use chart for a given crop grown at that station.
+                                        // This is fetched from the API when a station is selected.
+                                        // It is stored in a ref to avoid unnecessary re-renders of the component when the data
+                                        // is updated.
     // crop coefficient info
     const [selectedCrop, setSelectedCrop] = useState(() => getCookie('agrimet_crop') || 'WGRN');
     const selectedCropName = useRef(() => ''); // Store the name of the selected crop
@@ -278,7 +279,7 @@ const Agrimet = () => {
         selectedStationName.current = getSelectedStationName(selectedStation); // Store the name of the selected station
         selectedStationLatLong.current = getStationLatLong(selectedStation); // Store the lat/long of the selected station
         setUserLocation(selectedStationLatLong.current); // Update user location to the station's coordinates
-
+        
         // find the station lat/long for the selected station in the stationData
         const feature = stationData.features.find(f => f.properties.siteid === selectedStation);
         if (!feature) {
@@ -289,7 +290,7 @@ const Agrimet = () => {
 
         // get the cropw water use chart data for the selected station
         fetchCropETData(selectedStation);
-
+        
         // fetch the NWS forecast for the station location
         // fetchNWSForecast(latitude, longitude);
 
@@ -351,23 +352,23 @@ const Agrimet = () => {
         }
     }
 
-    /*
-        const updateState = (state) => {
-            // find the first station in the selected state and set it as the selected station
-            // Note that stationCascaderOptions is an array of objects with 'value' and 'children' properties, 
-            // where 'value' is the state name and 'children' is an array of station options for that state.
-            if (!stationCascaderOptions || stationCascaderOptions.length === 0 || state == null) {
-                return;
-            }   
-    
-            const _selectedState = stationCascaderOptions.find(s => s.value === state);
-    
-            stateStationOptions.current = _selectedState?.children || [];
-    
-            const _selectedStation = _selectedState?.children[0]?.value || null;
-            setSelectedStation(_selectedStation);
-        };
-    */
+/*
+    const updateState = (state) => {
+        // find the first station in the selected state and set it as the selected station
+        // Note that stationCascaderOptions is an array of objects with 'value' and 'children' properties, 
+        // where 'value' is the state name and 'children' is an array of station options for that state.
+        if (!stationCascaderOptions || stationCascaderOptions.length === 0 || state == null) {
+            return;
+        }   
+
+        const _selectedState = stationCascaderOptions.find(s => s.value === state);
+
+        stateStationOptions.current = _selectedState?.children || [];
+
+        const _selectedStation = _selectedState?.children[0]?.value || null;
+        setSelectedStation(_selectedStation);
+    };
+*/
     const updateStation = (station, state) => {
         const fetchSelectedStationData = async () => {
             try {
@@ -422,7 +423,7 @@ const Agrimet = () => {
         return R * c; // in meters
     }
 
-
+    
 
     const handleGetLocation = () => {
         if (!navigator.geolocation) {
@@ -450,12 +451,12 @@ const Agrimet = () => {
                     }
                 });
                 if (nearestStation) {
-                    updateStation(nearestStation, nearestState);
+                    updateStation(nearestStation, nearestState); 
                     message.success(`Nearest station selected: ${nearestStation}`);
                 }
 
                 if (map) {
-                    try { map.setView([latitude, longitude], 8); } catch (e) { }
+                    try { map.setView([latitude, longitude], 8); } catch(e) {}
                 }
             },
             (error) => {
@@ -502,7 +503,7 @@ const Agrimet = () => {
         const handleResize = () => {
             //if (!map) {
             //    return;
-            // }
+           // }
 
             //requestAnimationFrame(() => {
             //    if (map && map.invalidateSize) {
@@ -510,9 +511,9 @@ const Agrimet = () => {
             //    }
             //});
 
-            //const mapDiv = document.querySelector('.agrimet-map');
-            //const _map = L.map(mapDiv);
-            //_map.invalidateSize();
+            const mapDiv = document.querySelector('.agrimet-map');
+            const _map = L.map(mapDiv);
+            _map.invalidateSize();
 
         };
 
@@ -667,52 +668,15 @@ const Agrimet = () => {
         );
     };
 
-    const CropInfoTable = ({ selectedStation, selectedStationData }) => {
-        if (!selectedStationData || !selectedStationData.crop_data) {
-            return (
-                <>
-                    <span>No crop data available</span>
-                    <br />
-                    <br />
-                    <span style={{ fontSize: '12px', color: '#ccc' }}>
-                        Attempted to retrieve data for this station from the agwater API at:
-                        <a href={`https://agwater.org:5556/agrimet/station_crop_info?station=${selectedStation}`} target="_blank" rel="noopener noreferrer">
-                            https://agwater.org:5556/agrimet/station_crop_info?station=${selectedStation}
-                        </a>
-                        <br />
-                        <br />
-                        Agrimet Source:
-                        <a href={`https://www.usbr.gov/pn/agrimet/chart/${selectedStation}ch.txt`} target="_blank" rel="noopener noreferrer">
-                            `https://www.usbr.gov/pn/agrimet/chart/${selectedStation}ch.txt`
-                        </a>
-                    </span>
-                </>
-            )
+    const CropInfoTable = (selectedStationData) => {
+        if (!selectedStationData || ! selectedStationData.selectedStationData || !selectedStationData.selectedStationData.crop_data) {
+            return (<span>No crop data available</span>);
         }
         //const crop = stationCropData.current.find(c => c.code === selectedCrop);
         //if (crop == null)
         //    return (<span>No crop specified</span>);
 
-        if (!selectedStationData || !selectedStationData.crop_data || selectedStationData.crop_data.length === 0) {
-            return (
-                <>
-                    <span>No crop data available for the selected station</span>
-                    <br />
-                    <br />
-                    <span style={{ fontSize: '12px', color: '#ccc' }}>
-                        Attempted to retrieve data for this station from the agwater API at:
-                        <a href={`https://agwater.org:5556/agrimet/station_crop_info?station=${selectedStation}`} target="_blank" rel="noopener noreferrer">
-                            https://agwater.org:5556/agrimet/station_crop_info?station=${selectedStation}
-                        </a>
-                    </span>
-                </>
-            )
-        }
-        //const crop = stationCropData.current.find(c => c.code === selectedCrop);
-        //if (crop == null)
-        //    return (<span>No crop specified</span>);
-
-        const cropData = selectedStationData.crop_data;
+        const cropData = selectedStationData.selectedStationData.crop_data;
         // add a 'key' field to each crop object in the cropData list for use in the Ant Design Table component
         cropData.forEach((crop, index) => {
             crop.key = 'stcrop_' + index;
@@ -732,12 +696,6 @@ const Agrimet = () => {
         return (
             <>
                 <Table dataSource={cropData} columns={columns} />
-
-                <br />
-                Data for this station is retrieved from the agwater API at:
-                <a href={`https://agwater.org:5556/agrimet/station_crop_info?station=${selectedStation}`} target="_blank" rel="noopener noreferrer">
-                    https://agwater.org:5556/agrimet/station_crop_info?station=${selectedStation}
-                </a>
             </>
         );
     };
@@ -914,7 +872,7 @@ const Agrimet = () => {
         {
             key: '4',
             label: 'Crop Planting, Harvest Date, and Seasonal Water Use',
-            children: <CropInfoTable selectedStation={selectedStation} selectedStationData={selectedStationData} />,
+            children: <CropInfoTable selectedStationData={selectedStationData} />,
         },
         {
             key: '5',
@@ -963,13 +921,15 @@ const Agrimet = () => {
                 )}
                 {/* Station Information Tab */}
                 {selectedTab === '1' && (
+                    {/* map panel and station selection */}
+
                     <Layout>
                         {/* Station Selection Sider */}
                         <Sider ref={siderPanelRef} width={'40%'} trigger={null} collapsible collapsed={collapsed} collapsedWidth={32}
-                            onCollapse={(collapsed, type) => {
-                                console.log(`Sider collapse triggered. Collapsed: ${collapsed}, Type: ${type}`);
-                            }}>
-                            {collapsed && (
+                                onCollapse={(collapsed, type) => {
+                                    console.log(`Sider collapse triggered. Collapsed: ${collapsed}, Type: ${type}`);
+                                }}>
+                            {collapsed ? (
                                 <div style={{
                                     transform: 'rotate(90deg)',
                                     transformOrigin: 'left top 0',
@@ -980,12 +940,12 @@ const Agrimet = () => {
                                         Select Station
                                     </Button>
                                 </div>
-                            )}
-                            <div style={{ display: collapsed ? 'none' : 'block' }} className="" >
-                                <Divider orientation="left">Select an Agrimet station</Divider>
-                                {
+                            ) : (
+                                <div className="" >
+                                    <Divider orientation="left">Select an Agrimet station</Divider>
+                                    {
                                     <Cascader key='stationCascader1'
-                                        defaultValue={[selectedState, selectedStation]}
+                                        defaultValue={[selectedState, selectedStation]} 
                                         value={[selectedState, selectedStation]}
                                         style={{ width: '24em' }}
                                         options={stationCascaderOptions}
@@ -993,116 +953,75 @@ const Agrimet = () => {
                                             const [state, station] = value;
                                             updateStation(station, state);
                                         }} />
-                                }
-                                {/*
-                                    <Select
-                                        key='selectStateOptions'
-                                        style={{width: '30em', marginTop: '1em' }}
-                                        showSearch
-                                        placeholder="Select a state"
-                                        optionFilterProp="children"
-                                        filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                                        onChange={value => {
-                                            setSelectedState(value);
-                                            updateState(value);
-                                        }}
-                                    >
-                                        {stationOptions.map(station => (
-                                            <Select.Option key={station.value} value={station.value}>
-                                                {station.label} ({station.children.length} stations)
-                                            </Select.Option>
-                                        ))}
-                                    </Select>
+                                    }
 
-                                    <Select
-                                        key='selectStationOptions'
-                                        style={{width: '30em', marginTop: '1em' }}
-                                        showSearch
-                                        placeholder="Select a station"
-                                        //optionFilterProp="children"
-                                        //filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                                        onChange={value => {
-                                            setSelectedStation(value);
-                                            updateStation(value);
-                                        }}
-                                    >
-                                        { stateStationOptions.current && stateStationOptions.current.length > 0 && selectedState && 
-                                            stateStationOptions.current.map(station => (
-                                                <Select.Option key={station.value} value={station.value}>
-                                                    {station.label} ({station.value})
-                                                </Select.Option>
-                                        ))}
-                                    </Select>
-                                    */}
+                                    <Divider orientation="left">OR</Divider>
 
-                                <Divider orientation="left">OR</Divider>
+                                    <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleGetLocation}>
+                                        Use My Location
+                                    </Button>
 
-                                <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleGetLocation}>
-                                    Use My Location
-                                </Button>
+                                    <Divider orientation="left">OR</Divider>
 
-                                <Divider orientation="left">OR</Divider>
+                                    {showMap && (
+                                        <>
+                                            <div style={{ fontSize: 'medium' }}>Select a station on the map below for station information, crop water use, and related information</div>
+                                            <div style={{ fontSize: 'medium', width: '100%', maxWidth: '100%', height: '640px', overflow: 'hidden', position: 'relative', boxSizing: 'border-box' }}>
+                                                <MapContainer
+                                                    center={[selectedStationLatLong.current.lat || 44.0, selectedStationLatLong.current.lng || -120.5]}
+                                                    zoom={6}
+                                                    //whenReady={(map) => { mapRef.current = map; }}
+                                                    ref={setMap}
+                                                    className="agrimet-map"
+                                                    style={{ width: '100%', maxWidth: '100%', height: '100%', display: 'block' }}
+                                                >
+                                                    <TileLayer
+                                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                        attribution='&copy; OpenStreetMap contributors'
+                                                    />
+                                                    {stationData.features.map((feature) => {
+                                                        const [lng, lat] = feature.geometry.coordinates;
+                                                        const isActive = feature.properties.siteid === selectedStationRef.current;
+                                                        const color = typeColorMap[feature.properties.type?.toUpperCase()] || typeColorMap.default;
+                                                        const radius = isActive ? 12000 : 8000;
+                                                        return (
+                                                            <Circle
+                                                                key={feature.properties.siteid}
+                                                                center={[lat, lng]}
+                                                                radius={radius}
+                                                                pathOptions={{ color: isActive ? color : 'red', fillColor: isActive ? color : 'red', fillOpacity: 0.6 }}
+                                                                eventHandlers={{ click: () => updateStation(feature.properties.siteid, feature.properties.state) }}
+                                                            >
+                                                                <Popup>{feature.properties.title}</Popup>
+                                                            </Circle>
+                                                        );
+                                                    })}
+                                                    {userLocation?.lat && userLocation?.lng && (
+                                                        <Marker position={[userLocation.lat, userLocation.lng]}>
+                                                            <Popup>Your location</Popup>
+                                                        </Marker>
+                                                    )}
+                                                </MapContainer>
+                                            </div>
+                                            <br />
+                                        </>
+                                    )}
+                                    {showMap && (
+                                        <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleToggleMap}>
+                                            Hide the Map
+                                        </Button>)}
 
-                                {showMap && (
-                                    <>
-                                        <div style={{ fontSize: 'medium' }}>Select a station on the map below for station information, crop water use, and related information</div>
-                                        <div style={{ fontSize: 'medium', width: '100%', maxWidth: '100%', height: '480px', overflow: 'hidden', position: 'relative', boxSizing: 'border-box' }}>
-                                            <MapContainer
-                                                key='sider_map'
-                                                center={[selectedStationLatLong.current.lat || 44.0, selectedStationLatLong.current.lng || -120.5]}
-                                                zoom={6}
-                                                //whenReady={(map) => { mapRef.current = map; }}
-                                                ref={setMap}
-                                                className="agrimet-map"
-                                                style={{ width: '100%', maxWidth: '100%', height: '100%', display: 'block' }}
-                                            >
-                                                <TileLayer
-                                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                                    attribution='&copy; OpenStreetMap contributors'
-                                                />
-                                                {stationData.features.map((feature, index) => {
-                                                    const [lng, lat] = feature.geometry.coordinates;
-                                                    const isActive = feature.properties.siteid === selectedStationRef.current;
-                                                    const color = typeColorMap[feature.properties.type?.toUpperCase()] || typeColorMap.default;
-                                                    const radius = isActive ? 12000 : 8000;
-                                                    return (
-                                                        <Circle
-                                                            key={`${feature.properties.siteid}_${index}`}
-                                                            center={[lat, lng]}
-                                                            radius={radius}
-                                                            pathOptions={{ color: isActive ? color : 'red', fillColor: isActive ? color : 'red', fillOpacity: 0.6 }}
-                                                            eventHandlers={{ click: () => updateStation(feature.properties.siteid, feature.properties.state) }}
-                                                        >
-                                                            <Popup>{feature.properties.title}</Popup>
-                                                        </Circle>
-                                                    );
-                                                })}
-                                                {userLocation?.lat && userLocation?.lng && (
-                                                    <Marker position={[userLocation.lat, userLocation.lng]}>
-                                                        <Popup>Your location</Popup>
-                                                    </Marker>
-                                                )}
-                                            </MapContainer>
-                                        </div>
-                                        <br />
-                                    </>
-                                )}
-                                {showMap && (
-                                    <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleToggleMap}>
-                                        Hide the Map
-                                    </Button>)}
-
-                                {!showMap && (
-                                    <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleToggleMap}>
-                                        Pick from a Map
-                                    </Button>)}
-                            </div>
-
+                                    {!showMap && (
+                                        <Button type="primary" style={{ marginLeft: '1em', marginBottom: '1em' }} onClick={handleToggleMap}>
+                                            Pick from a Map
+                                        </Button>)}
+                                </div>
+                            )}
                         </Sider>
 
-                        <Layout style={{ backgroundColor: '#000', padding: 0 }}>
+                        <Layout style={{backgroundColor:'#000', padding: 0 }}>
                             <Header style={{ padding: 0 }}>
-                                <Button
+                                 <Button
                                     type="text"
                                     icon={collapsed ? <DoubleRightOutlined /> : <DoubleLeftOutlined />}
                                     onClick={() => setCollapsed(!collapsed)}
@@ -1113,14 +1032,14 @@ const Agrimet = () => {
                                         height: 64,
 
                                     }}
-                                />
-                                <span style={{ fontSize: 18, marginLeft: '1em', color: '#fff' }}>
-                                    {selectedStationName.current ? `${selectedStationName.current} (${selectedStation.toUpperCase()})` : selectedStation ? selectedStation : 'Select a station to view information'}
+                                /> 
+                                    <span style={{fontSize:18, marginLeft: '1em', color: '#fff' }}>
+                                    { selectedStationName.current ? `${selectedStationName.current} (${selectedStation.toUpperCase()})` : selectedStation ? selectedStation : 'Select a station to view information'}
                                 </span>
                             </Header>
 
                             {/* Station Information, Station Crop Water Use, etc. panels */}
-                            <Collapse accordion defaultActiveKey={['2']}
+                            <Collapse accordion defaultActiveKey={['2']} 
                                 style={{ backgroundColor: 'black', padding: 0 }}
                                 items={stationItems} />
                         </Layout>

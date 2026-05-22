@@ -74,7 +74,7 @@ const StepSummary = ({
           <Text strong>Region:</Text> {region || 'Not specified'}
         </Paragraph>
         <Paragraph>
-          <Text strong>Commodity / operation:</Text> {commodity || 'Not specified'}
+          <Text strong>Commodity / operation:</Text> {commodity.current || 'Not specified'}
         </Paragraph>
 
         <Divider />
@@ -185,7 +185,7 @@ const StepSummary = ({
 StepSummary.propTypes = {
   userType: PropTypes.string.isRequired,
   region: PropTypes.string,
-  commodity: PropTypes.string,
+  commodity: PropTypes.object,
   selectedConcerns: PropTypes.arrayOf(PropTypes.string).isRequired,
   goalData: PropTypes.arrayOf(
     PropTypes.oneOfType([

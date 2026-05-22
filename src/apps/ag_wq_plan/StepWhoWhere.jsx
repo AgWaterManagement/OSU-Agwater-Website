@@ -1,43 +1,21 @@
 // Import React and Ant Design components for form building
 import { useEffect, useRef, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Checkbox, Col, Form, Input, Modal, Popconfirm, Row, Select, Space, Typography } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
-import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
-import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 
+import { Button, Checkbox, Col, Form, Input, Modal, Popconfirm, Row, Select, Space, Typography } from 'antd';
+import ValidationError from './ValidationError';
+import {DeleteOutlined} from '@ant-design/icons';
+
+import Map from '@arcgis/core/Map';
+import MapView from '@arcgis/core/views/MapView'; 
+import Graphic from '@arcgis/core/Graphic';
+import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
+import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
+import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
+import "@arcgis/map-components/components/arcgis-zoom"; // Import ArcGIS Zoom component
 
 // Extract Typography.Paragraph component for use in the form description
-const { Paragraph } = Typography;
-
-const MousePositionTracker = ({ setMousePosition }) => {
-  useMapEvents({
-    mousemove: (event) => {
-      const { lat, lng } = event.latlng;
-      setMousePosition(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
-    },
-  });
-
-  return null;
-};
-
-MousePositionTracker.propTypes = {
-  setMousePosition: PropTypes.func.isRequired,
-};
-
-const MarkerClickTracker = ({ setMarkerPosition }) => {
-  useMapEvents({
-    click: (event) => {
-      setMarkerPosition([event.latlng.lat, event.latlng.lng]);
-    },
-  });
-
-  return null;
-};
-
-MarkerClickTracker.propTypes = {
-  setMarkerPosition: PropTypes.func.isRequired,
-};
+const { Paragraph, Title } = Typography;
 
 const getSearchResultLatLng = (searchResult) => {
   const location = searchResult?.location;
@@ -75,11 +53,20 @@ const getSearchResultLatLng = (searchResult) => {
 //   - setCommodity: Function to update commodity
 const StepWhoWhere = ({
   userType,
-  setUserType,
-  commodity,
-  setCommodity,
-  commoditiesData,
   sitesData,
+  commoditiesData, commodity,
+
+  siteName, setSiteName,
+  _latitude, setLatitude,
+  _longitude, setLongitude,
+  agwqmArea, setAgwqmArea,
+  agwqRegion, setAgwqRegion,
+  regionalSpecialist, setRegionalSpecialist,
+  regionalSpecialistEmail, setRegionalSpecialistEmail,
+  regionalSpecialistPhone, setRegionalSpecialistPhone,
+  adminRulesLink, setAdminRulesLink,
+  areaPlanLink, setAreaPlanLink,
+  setError
 }) => {
   const [mousePosition, setMousePosition] = useState('');
   const [markerPosition, setMarkerPosition] = useState(null);
@@ -88,35 +75,17 @@ const StepWhoWhere = ({
   const [pendingPhoto, setPendingPhoto] = useState(null);
   const [useExistingSite, setUseExistingSite] = useState(false);
   const [selectedExistingSite, setSelectedExistingSite] = useState(null);
-  const [siteName, setSiteName] = useState('');
+  
   const arcgisSearchRef = useRef(null);
+  const arcgisZoomRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const mapViewRef = useRef(null);
+  const markerLayerRef = useRef(null);
   const uploadInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
-  const commodityOptions = useMemo(() => {
-    if (!Array.isArray(commoditiesData) || commoditiesData.length === 0) {
-      return [];
-    }
+  const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=MA_Index>0&outFields=*&returnGeometry=true&f=geojson'
 
-    return commoditiesData.map((item) => {
-      if (typeof item === 'string') {
-        return { label: item, value: item };
-      }
-
-      if (!item || typeof item !== 'object') {
-        return null;
-      }
-
-      const value = item.value ?? item.id ?? item.code ?? item.name ?? item.label;
-      const label = item.label ?? item.name ?? item.displayName ?? value;
-
-      if (value == null || label == null) {
-        return null;
-      }
-
-      return { label: String(label), value: String(value) };
-    }).filter(Boolean);
-  }, [commoditiesData]);
 
   const handlePhotoFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -187,7 +156,8 @@ const StepWhoWhere = ({
 
   useEffect(() => {
     const searchElement = arcgisSearchRef.current;
-    if (!searchElement) {
+    const view = mapViewRef.current;
+    if (!searchElement || !view) {
       return undefined;
     }
 
@@ -201,6 +171,27 @@ const StepWhoWhere = ({
         const latLng = getSearchResultLatLng(result[0]);
         if (latLng) {
           setMarkerPosition(latLng);
+          setError('process');
+          const [latitude, longitude] = latLng;
+          const point = {
+            type: 'point',
+            latitude,
+            longitude,
+          };
+          markerLayerRef.current?.removeAll();
+          markerLayerRef.current?.add(new Graphic({
+            geometry: point,
+            symbol: {
+              type: 'simple-marker',
+              color: '#d7191c',
+              size: 12,
+              outline: {
+                color: '#ffffff',
+                width: 1,
+              },
+            },
+          }));
+          view.goTo({ center: [longitude, latitude], zoom: 11 });
         }
       }
     };
@@ -219,279 +210,392 @@ const StepWhoWhere = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (!mapContainerRef.current || mapViewRef.current) {
+      return undefined;
+    }
+
+    const map = new Map({
+      basemap: 'streets-vector',
+    });
+
+    const markerLayer = new GraphicsLayer({
+      title: 'Selected site marker',
+    });
+    markerLayerRef.current = markerLayer;
+    map.add(markerLayer);
+
+    const awqmaLayer = new GeoJSONLayer({
+      url: ODA_AWQMA_WMS_URL,
+      title: 'ODA AWQMA',
+      renderer: {
+        type: 'simple',
+        symbol: {
+          type: 'simple-fill',
+          color: [0, 0, 0, 0], // fully transparent fill
+          outline: {
+            type: 'simple-line',
+            color: [0, 0, 0, 0.6],
+            width: 1
+          }
+        }
+      }
+    });
+    map.add(awqmaLayer);
+
+    const view = new MapView({
+      container: mapContainerRef.current,
+      map,
+      center: [-120.5, 44.0],
+      zoom: 5,
+      ui: {
+        components: [] // disable default UI (prevents duplicate zoom control)
+      },
+      constraints: {
+        rotationEnabled: false,
+      },
+    });
+    mapViewRef.current = view;
+
+    const updateMousePosition = (event) => {
+      const mapPoint = view.toMap({ x: event.x, y: event.y });
+      if (mapPoint) {
+        setMousePosition(`${mapPoint.latitude.toFixed(5)}, ${mapPoint.longitude.toFixed(5)}`);
+      }
+    };
+
+    const handleClick = (event) => {
+      if (!event.mapPoint) {
+        return;
+      }
+
+      const { latitude, longitude } = event.mapPoint;
+      // Log click coordinates
+
+      console.log('map click lat,long:', latitude, longitude);
+
+      // Query the AWQMA GeoJSON layer for attributes at the clicked point
+      if (awqmaLayer && typeof awqmaLayer.queryFeatures === 'function') {
+        console.log('Querying AWQMA layer for clicked location...');
+        awqmaLayer.queryFeatures({
+          geometry: event.mapPoint,
+          spatialRelationship: 'intersects',
+          outFields: '*', // ['MA_Index'], //, 'AgWQ_Reporting_Area','Administrative_rules','Area_plan','Phone','Email'],
+          returnGeometry: false,
+        }).then((result) => {
+          console.log('AWQMA query result:', result);
+          const features = result?.features || [];
+          if (features.length > 0) {
+            const attrs = features[0].attributes || {};
+            setLatitude(latitude);
+            setLongitude(longitude);
+            setAgwqRegion(attrs.AgWQ_Reporting_Area);
+            setAgwqmArea(attrs.MA_Index);
+            setRegionalSpecialist(attrs.Water_quality_specialist);
+            setRegionalSpecialistEmail(attrs.Email);
+            setRegionalSpecialistPhone(attrs.Phone);
+            setAdminRulesLink(attrs.Administrative_rules ? attrs.Administrative_rules : null);
+            setAreaPlanLink(attrs.Area_plan ? attrs.Area_plan : null);
+            setError('process');
+
+            //console.log('AWQMA feature attributes:', { MA_Index: attrs.MA_Index, Region: attrs.Region, all: attrs });
+          } else {
+            console.log('No AWQMA feature found at clicked location');
+          }
+        }).catch((err) => {
+          console.error('Error querying AWQMA layer:', err);
+        });
+      }
+
+      console.log('Setting marker at clicked location');
+      setMarkerPosition([latitude, longitude]);
+      setError('process');
+      markerLayer.removeAll();
+      markerLayer.add(new Graphic({
+        geometry: event.mapPoint,
+        symbol: {
+          type: 'simple-marker',
+          color: '#d7191c',
+          size: 12,
+          outline: {
+            color: '#ffffff',
+            width: 1,
+          },
+        },
+      }));
+    };
+
+    const handleViewReady = async () => {
+      await view.when();
+      const searchElement = arcgisSearchRef.current;
+      const zoomElement = arcgisZoomRef.current;
+      if (searchElement) {
+        searchElement.view = view;
+      }
+      if (zoomElement) {
+        zoomElement.view = view;
+      }
+    };
+
+    view.on('pointer-move', updateMousePosition);
+    view.on('click', handleClick);
+    handleViewReady();
+
+    return () => {
+      markerLayerRef.current = null;
+      mapViewRef.current = null;
+      view.destroy();
+    };
+  }, []);
+
+  
+      const commodityOptions = useMemo(() => {
+          if (!Array.isArray(commoditiesData) || commoditiesData.length === 0) {
+              return [];
+          }
+  
+          return commoditiesData.map((item) => {
+              if (typeof item === 'string') {
+                  return { label: item, value: item };
+              }
+  
+              if (!item || typeof item !== 'object') {
+                  return null;
+              }
+  
+              const value = item.value ?? item.id ?? item.code ?? item.name ?? item.label;
+              const label = item.label ?? item.name ?? item.displayName ?? value;
+  
+              if (value == null || label == null) {
+                  return null;
+              }
+  
+              return { label: String(label), value: String(value) };
+          }).filter(Boolean);
+      }, [commoditiesData]);
+  
+
+  if (!siteName || _latitude == null || _longitude == null) {
+    setError('error');
+  }
+
+  const _setSiteName = (value) => {
+    setSiteName(value);
+    if (value) {
+      setError('process');
+    }
+  };
+
+  if (siteName && _latitude != null && _longitude != null) {
+    setError('finish');
+  }
+
   return (
     <>
       {/* Instructions for the user */}
       <Paragraph>
-        Select who you are and where the operation is located. This helps tailor practices
-        and resources to your situation.
+        Select where the operation is located. This helps tailor practices and resources to your location.
       </Paragraph>
       <Form layout="vertical">
-        {/* Form field for selecting user type */}
-        {/* Each user type has different perspectives and needs */}
         <Row gutter={16}>
           <Col sm={24} md={12}>
-            <Form.Item label="User type">
-              <Select
-                value={userType}
-                onChange={setUserType}
-                style={{ width: '30em', maxWidth:'100%' }}
-                options={[
-                  { label: 'Landowner', value: 'Landowner' },
-                  { label: 'SWCD / Technical Assistant', value: 'SWCD / TA' },
-                  { label: 'ODA - Compliance', value: 'ODA - Compliance' },
-                  { label: 'Board / TMDL', value: 'Board / TMDL' },
-                ]}
-              />
-            </Form.Item>
 
-            {/* Form field for selecting commodity or operation type */}
-            {/* Optional field to tailor recommendations to specific crop/livestock types */}
-            <Form.Item label="Commodity / operation type">
-                <Select
-                value={commodity}
-                onChange={(v) => setCommodity(v)}
-                allowClear
-                placeholder="e.g., pasture, row crops, orchards, livestock"
-                style={{ width: '30em', maxWidth:'100%' }}
-              options={commodityOptions}
-                />
-            </Form.Item>
-
-
-            <div>Site location </div>
-            
+            <Title level={5}>Site location </Title>
+            <br />
             <div>
               <Checkbox checked={useExistingSite} onChange={(e) => setUseExistingSite(e.target.checked)}>
                 Use Existing Site?
               </Checkbox>
             </div>
-            <br/>
+            <br />
 
-            { useExistingSite ? (
+            {useExistingSite ? (
               <>
-              <Select
-                value={selectedExistingSite}
-                onChange={(v) => setSelectedExistingSite(v)}
-                placeholder="Select an existing site"
-                style={{ width: '30em', maxWidth: '100%' }}
-                disabled={!useExistingSite}
-                options={[sitesData.map((site) => {
-                  const value = site.id;
-                  const label = site.name || `Site ${site.id}`;
-                  return { label, value };
-                })]}
-              />
+                <Select
+                  value={selectedExistingSite}
+                  onChange={(v) => setSelectedExistingSite(v)}
+                  placeholder="Select an existing site"
+                  style={{ width: '30em', maxWidth: '100%' }}
+                  disabled={!useExistingSite}
+                  options={[sitesData.map((site) => {
+                    const value = site.id;
+                    const label = site.name || `Site ${site.id}`;
+                    return { label, value };
+                  })]}
+                />
               </>
             ) : (
               <>
-            
+                {!siteName && <ValidationError message="" />}
 
-            
-
-
-
-            <Form.Item label="Site name">
-              <Input
-                value={siteName}
-                onChange={(e) => setSiteName(e.target.value)}
-                placeholder="Enter a name for this site"
-                style={{ width: '30em', maxWidth: '100%' }}
-              />
-            </Form.Item>
-
-            {/* BELOW NEEDS TO BE UPDATED */}
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item label="Latitude">
-                  <Input
-                    value={siteName}
-                    disabled={true}
-                    onChange={(e) => setSiteName(e.target.value)}
-                    placeholder="Enter a name for this site"
-                    style={{ width: '30em', maxWidth: '100%' }}
-                  />
-                </Form.Item>
-                </Col>
-              <Col span={12}>
-
-                <Form.Item label="Longitude">
-                  <Input
-                    disabled={true}
-                    value={siteName}
-                    onChange={(e) => setSiteName(e.target.value)}
-                    placeholder="Enter a name for this site"
-                    style={{ width: '30em', maxWidth: '100%' }}
-                  />
-                </Form.Item>
-                </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item label="Ag Water Quality Management Area">
-                  <Input
-                    value={siteName}
-                    disabled={true}
-                    onChange={(e) => setSiteName(e.target.value)}
-                    placeholder="Enter a name for this site"
-                    style={{ width: '30em', maxWidth: '100%' }}
-                  />
-                </Form.Item>
-                </Col>
-              <Col span={12}>
-
-                <Form.Item label="TMDL Area">
-                  <Input
-                    disabled={true}
-                    value={siteName}
-                    onChange={(e) => setSiteName(e.target.value)}
-                    placeholder="Enter a name for this site"
-                    style={{ width: '30em', maxWidth: '100%' }}
-                  />
-                </Form.Item>
-                </Col>
-            </Row>
-
-            After specifying the site location on the map below, you can save the site...
-            
-            <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} disabled={true}>
-              Save Site
-            </Button>
-
-
-            <div style={{ fontSize: '0.9rem', fontStyle: 'italic', marginBottom: 8 }}>
-              Click on the map to set the location of your operation, or search for an address or place using the search box in the top right corner of the map.
-            </div>
-            <div style={{ width: '100%', maxWidth: '800px', height: 500, marginBottom: 12, position: 'relative' }}>
-              <MapContainer center={[44.0, -120.5]} zoom={6} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false} doubleClickZoom={false}>
-                <MousePositionTracker setMousePosition={setMousePosition} />
-                <MarkerClickTracker setMarkerPosition={setMarkerPosition} />
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+                <span>Site Name: </span>
+                <Input
+                  value={siteName}
+                  onChange={(e) => _setSiteName(e.target.value)}
+                  placeholder="Enter a name for this site"
+                  style={{ width: '30em', maxWidth: '100%' }}
                 />
-                {markerPosition && <Marker position={markerPosition} />}
-                <arcgis-search
-                  ref={arcgisSearchRef}
-                  placeholder="Search for a location"
-                  countries="US"
-                  style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
-                ></arcgis-search>
-              </MapContainer>
-            </div>
-            <div style={{ fontSize: '0.9rem' }}>
-              Location Lat/Long: {mousePosition || 'move the mouse over the map'}
-            </div>
-</>
+
+                <br />
+                <br />
+
+                <Paragraph>
+                  After specifying the site name and selecting the site location on the map below, you can save the site for future reference.
+                </Paragraph>
+
+                {siteName.trim() === '' && _latitude && _longitude ? (
+                  <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} disabled>
+                    Save Site
+                  </Button>
+                ) : (
+                  <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} onClick={() => {
+                    console.log('Saving site with details:', {
+                      name: siteName,
+                      latitude: _latitude,
+                      longitude: _longitude,
+                      agwqmArea,
+                      regionalSpecialist,
+                      regionalSpecialistEmail,
+                      regionalSpecialistPhone,
+                      adminRulesLink,
+                      areaPlanLink,
+                    });
+                  }}>
+                    Save Site
+                  </Button>
+                )}
+
+                {!_latitude && !_longitude && (<><br/><ValidationError message="Below, specify the location of the site." /></>)}
+
+                <div style={{ fontSize: '0.9rem', fontStyle: 'italic', marginBottom: 8 }}>
+                  Click on the map to set the location of your operation, or search for an address or place using the search box in the top right corner of the map.
+                </div>
+                <div style={{ width: '100%', maxWidth: '800px', height: 500, marginBottom: 12, position: 'relative' }}>
+                  <div ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />
+                  <arcgis-zoom
+                    ref={arcgisZoomRef}
+                    style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
+                  ></arcgis-zoom>
+                  <arcgis-search
+                    ref={arcgisSearchRef}
+                    placeholder="Search for a location"
+                    countries="US"
+                    style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
+                  ></arcgis-search>
+                </div>
+
+                {_latitude && _longitude && (
+                  <>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Site Details</span>
+                    <Paragraph>
+                      <span style={{ fontStyle: 'italic' }}>Lat/Long: </span>({_latitude ? _latitude.toFixed(5) : ''}, {_longitude ? _longitude.toFixed(5) : ''})
+                      <br />
+                      <span style={{ fontStyle: 'italic' }}>Ag Water Quality Management Area: </span>{agwqmArea ? agwqmArea : ''}
+                      <br />
+                      <span style={{ fontStyle: 'italic' }}>Region: </span>{agwqRegion ? agwqRegion : ''}
+                      <br />
+                      <span style={{ fontStyle: 'italic' }}>Regional Specialist: </span>{regionalSpecialist ? regionalSpecialist : ''}
+                      <br />
+                      <span style={{ fontStyle: 'italic' }}>Email: </span>{regionalSpecialistEmail ? regionalSpecialistEmail : ''}
+                      <br />
+                      <span style={{ fontStyle: 'italic' }}>Phone: </span>{regionalSpecialistPhone ? regionalSpecialistPhone : ''}
+                      <br />
+                      <span style={{ fontStyle: 'italic' }}>Admin Rules: </span>{adminRulesLink ? <a href={adminRulesLink} target="_blank" rel="noreferrer">Link</a> : ''}
+                      <br />
+                      <span style={{ fontStyle: 'italic' }}>Area Plan: </span>{areaPlanLink ? <a href={areaPlanLink} target="_blank" rel="noreferrer">Link</a> : ''}
+                    </Paragraph>
+                  </>
+                )}
+              </>
             )}
-
-
 
           </Col>
 
           <Col sm={24} md={12}>
-            {/* Form field for selecting geographic region */}
-            {/* Optional field to limit recommendations to specific regions */}
-            {/*}
-            <Form.Item label="Region">
-              <Select
-                value={region}
-                onChange={(v) => setRegion(v)}
-                allowClear
-                placeholder="Select region"
-                style={{ width: '30em' }}
-                options={[
-                  { label: 'All Oregon', value: 'All' },
-                  { label: 'Western Oregon', value: 'Western OR' },
-                  { label: 'Eastern Oregon', value: 'Eastern OR' },
-                ]}
-              />
-            </Form.Item>
+            <Title level={5}>Commodity Type</Title>
+                {/* Form field for selecting commodity or operation type */}
+                {/* Optional field to tailor recommendations to specific crop/livestock types */}
+                <Select
+                    value={commodity.current || undefined}
+                    onChange={(v) => commodity.current = v}
+                    allowClear
+                    style={{ width: '30em', maxWidth: '100%' }}
+                    options={commodityOptions}
+                />
 
-            <Divider>OR</Divider>
-            */}
+            <Title level={5}>Site Photos</Title>
 
-          <div>Site Photos</div>
+            <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
+              <Button type="primary" onClick={() => setPhotoPickerOpen(true)}>
+                Add site photo
+              </Button>
 
-          <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
-            <Button type="primary" onClick={() => setPhotoPickerOpen(true)}>
-              Add site photo
-            </Button>
-
-            {sitePhotoPreviews.length > 0 && (
-              <Space wrap>
-                {sitePhotoPreviews.map((photo) => (
-                  <div key={photo.url} style={{ width: 360 }}>
-                    <img
-                      src={photo.url}
-                      alt={photo.name}
-                      style={{ width: '100%', height: 360, objectFit: 'cover', borderRadius: 8, display: 'block' }}
-                    />
-                    <div style={{ fontSize: '0.8rem', marginTop: 8, wordBreak: 'break-word', textAlign: 'center' }}>{photo.name}</div>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
-                      <Popconfirm title="Delete this photo?" onConfirm={() => handleDeletePhoto(photo.url)} okText="Delete" cancelText="Cancel">
-                        <Button type="text" danger icon={<DeleteOutlined />} />
-                      </Popconfirm>
+              {sitePhotoPreviews.length > 0 && (
+                <Space wrap>
+                  {sitePhotoPreviews.map((photo) => (
+                    <div key={photo.url} style={{ width: 360 }}>
+                      <img
+                        src={photo.url}
+                        alt={photo.name}
+                        style={{ width: '100%', height: 360, objectFit: 'cover', borderRadius: 8, display: 'block' }}
+                      />
+                      <div style={{ fontSize: '0.8rem', marginTop: 8, wordBreak: 'break-word', textAlign: 'center' }}>{photo.name}</div>
+                      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
+                        <Popconfirm title="Delete this photo?" onConfirm={() => handleDeletePhoto(photo.url)} okText="Delete" cancelText="Cancel">
+                          <Button type="text" danger icon={<DeleteOutlined />} />
+                        </Popconfirm>
+                      </div>
                     </div>
+                  ))}
+                </Space>
+              )}
+            </Space>
+
+            <Modal
+              open={photoPickerOpen}
+              title="Add a site photo"
+              onCancel={() => { cancelPendingPhoto(); setPhotoPickerOpen(false); }}
+              footer={null}
+              style={{ textAlign: 'center' }}
+              destroyOnHidden
+            >
+              {pendingPhoto ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                  <img src={pendingPhoto.url} alt={pendingPhoto.name} style={{ width: '100%', maxWidth: 480, borderRadius: 8 }} />
+                  <div style={{ fontSize: '0.9rem' }}>{pendingPhoto.name}</div>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <Button type="primary" onClick={confirmAddPendingPhoto}>Add photo</Button>
+                    <Button onClick={cancelPendingPhoto}>Cancel</Button>
                   </div>
-                ))}
-              </Space>
-            )}
-          </Space>
-
-          <Modal
-            open={photoPickerOpen}
-            title="Add a site photo"
-            onCancel={() => { cancelPendingPhoto(); setPhotoPickerOpen(false); }}
-            footer={null}
-            style={{ textAlign: 'center' }}
-            destroyOnClose
-          >
-            {pendingPhoto ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                <img src={pendingPhoto.url} alt={pendingPhoto.name} style={{ width: '100%', maxWidth: 480, borderRadius: 8 }} />
-                <div style={{ fontSize: '0.9rem' }}>{pendingPhoto.name}</div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <Button type="primary" onClick={confirmAddPendingPhoto}>Add photo</Button>
-                  <Button onClick={cancelPendingPhoto}>Cancel</Button>
                 </div>
-              </div>
-            ) : (
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button type='primary' onClick={() => uploadInputRef.current?.click()}>
-                  Upload image from device
-                </Button>
-                <Button type='primary' onClick={() => cameraInputRef.current?.click()}>
-                  Take a photo with camera
-                </Button>
-              </Space>
-            )}
-          </Modal>
+              ) : (
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Button type='primary' onClick={() => uploadInputRef.current?.click()}>
+                    Upload image from device
+                  </Button>
+                  <Button type='primary' onClick={() => cameraInputRef.current?.click()}>
+                    Take a photo with camera
+                  </Button>
+                </Space>
+              )}
+            </Modal>
 
-          <input
-            ref={uploadInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoFileChange}
-            style={{ display: 'none' }}
-          />
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoFileChange}
+              style={{ display: 'none' }}
+            />
 
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handlePhotoFileChange}
-            style={{ display: 'none' }}
-          />
-
-
-              
-
-
-
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoFileChange}
+              style={{ display: 'none' }}
+            />
 
 
           </Col>
@@ -501,14 +605,26 @@ const StepWhoWhere = ({
   );
 };
 StepWhoWhere.propTypes = {
-  userType: PropTypes.string.isRequired,
-  setUserType: PropTypes.func.isRequired,
-  region: PropTypes.string,
-  setRegion: PropTypes.func.isRequired,
-  commodity: PropTypes.string,
-  setCommodity: PropTypes.func.isRequired,
-  commoditiesData: PropTypes.array,
+  userType: PropTypes.string,
   sitesData: PropTypes.array,
+  _latitude: PropTypes.number,
+  setLatitude: PropTypes.func.isRequired,
+  _longitude: PropTypes.number,
+  setLongitude: PropTypes.func.isRequired,
+  agwqmArea: PropTypes.number,
+  setAgwqmArea: PropTypes.func.isRequired,
+  agwqRegion: PropTypes.string,
+  setAgwqRegion: PropTypes.func.isRequired,
+  regionalSpecialist: PropTypes.string,
+  setRegionalSpecialist: PropTypes.func.isRequired,
+  regionalSpecialistEmail: PropTypes.string,
+  setRegionalSpecialistEmail: PropTypes.func.isRequired,
+  regionalSpecialistPhone: PropTypes.string,
+  setRegionalSpecialistPhone: PropTypes.func.isRequired,
+  adminRulesLink: PropTypes.string,
+  setAdminRulesLink: PropTypes.func.isRequired,
+  areaPlanLink: PropTypes.string,
+  setAreaPlanLink: PropTypes.func.isRequired,
 };
 
 // Export the component as default

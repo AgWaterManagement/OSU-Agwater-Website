@@ -93,7 +93,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
         const fetchEtForecast = async () => {
             try {
                 const response = await fetch(
-                    `https://agwater.org:5556/fms/userfield/weather/forecast?lat=${lat}&long=${lng}`,
+                    `https://agwater.org:5556/fms/userfield/weather/forecast/?lat=${lat}&long=${lng}`,
                     {
                         method: 'GET',
                         headers: {
@@ -103,10 +103,12 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                 );
 
                 if (!response.ok) {
+                    console.error('Failed to fetch ET forecast:', response.status, await response.text());
                     throw new Error(`Failed to fetch ET forecast: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('Fetched ET forecast data:', data);
                 setEtForecastData(data?.data ?? data?.forecast ?? data?.forecasts ?? data ?? []);
             } catch (error) {
                 console.error('Error fetching ET forecast:', error);
@@ -114,7 +116,35 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
             }
         };
 
-        fetchEtForecast();
+
+        const fetchEtForecastV2 = async () => {
+            try {
+                const response = await fetch(
+                    `https://agwater.org:5556/fms/userfield/weather/forecast/v2?lat=${lat}&long=${lng}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'X-API-Key': secrets.agwater_api_key
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    console.error('Failed to fetch ET forecast:', response.status, await response.text());
+                    throw new Error(`Failed to fetch ET forecast: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Fetched ET forecast data:', data);
+                setEtForecastData(data?.data ?? null);
+            } catch (error) {
+                console.error('Error fetching ET forecast:', error);
+                setEtForecastData([]);
+            }
+        };
+
+
+        fetchEtForecastV2();
     }, [lat, lng]);
 
     // Set equal card heights
@@ -173,7 +203,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                     {/* Make individual calendar day containers next for the daily forecasts  */}
                     {days.map((day, i) => {
                         const forecasts = getForecasts(day, forecastData);
-                        console.log('Calendar date:', day.format('YYYY-MM-DD'), 'Forecasts for this date:', forecasts);
+                        //console.log('Calendar date:', day.format('YYYY-MM-DD'), 'Forecasts for this date:', forecasts);
 
                         let dayForecast = null;
                         let nightForecast = null;
@@ -326,16 +356,17 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
 
         const etSource = Array.isArray(etForecastData)
             ? etForecastData
-            : etForecastData?.daily ?? etForecastData?.forecast ?? etForecastData?.forecasts ?? etForecastData?.data ?? [];
+            : [];
 
         const etChartData = Array.isArray(etSource)
             ? etSource.map((period) => {
-                const time = period.time;
-                const et = period.eto ? period.eto : 0;
-
-                const parsedDate = dayjs(time);
-                const label = parsedDate.isValid() ? parsedDate.format('ddd M/D') : String(time);
-
+                //const time = period.time;
+                //const et = period.eto ? period.eto : 0;
+                //const parsedDate = dayjs(time);
+                //const label = parsedDate.isValid() ? parsedDate.format('ddd M/D') : String(time);
+                const label = period['Date'];
+                const et = period['eto (mm)'] || 0;
+                    
                 return {
                     date: label,
                     et: Number(et) || 0, // Use the 'eto' value if it's a valid number, otherwise default to 0
@@ -400,7 +431,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                     padding: 4, paddingBottom: 0, paddingTop: 0, marginBottom: 0,
                     background: backgroundGradient
                 }}>
-                    <ResponsiveContainer width="100%" height={chartHeight}>
+                    <ResponsiveContainer width="100%" height={chartHeight} key={label}>
                         <ComposedChart data={chartData} margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <YAxis domain={domain2} stroke={color} />
@@ -460,6 +491,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                 {/* Temperature chart */}
 
                 <ChartContainer
+                    key="TempChart"
                     chartData={chartData}
                     domain={[25,100]}
                     datakey="temperature"
@@ -473,6 +505,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
 
                 { /* Precipitation chart */}
                 <ChartContainer
+                    key="PrecipChart"
                     chartData={chartData}
                     domain={[0, 100]}
                     datakey="precipitation"
@@ -487,6 +520,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                 { /* ET  chart */}
                 {etChartData.length > 0 && (
                     <ChartContainer
+                        key="ETChart"
                         chartData={etChartData}
                         domain={[0, 8]}
                         datakey="et"

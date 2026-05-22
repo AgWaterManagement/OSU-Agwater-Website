@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
-import { Card, Collapse, Tag, Typography, Checkbox, Carousel } from 'antd';
+import { Alert, Card, Collapse, Tag, Typography, Checkbox, Carousel } from 'antd';
 import ComplianceInfo from './ComplianceInfo';
+
+import ValidationError from './ValidationError'; 
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -12,10 +14,14 @@ const { Title, Paragraph, Text } = Typography;
 //   - setSelectedPracticeIds: Function to update selected practice IDs
 const StepPractices = ({
   userType,
+  areaRules,
+  agwqmArea,
   recommendedPractices,
   selectedPracticeIds,
   setSelectedPracticeIds,
+  setError
 }) => {
+
   // Toggle a practice's selection state
   const togglePractice = (id) => {
     setSelectedPracticeIds(
@@ -24,7 +30,6 @@ const StepPractices = ({
         : [...selectedPracticeIds, id],
     );
   };
-
 
   const carouselContentStyle = {
     /*
@@ -38,6 +43,34 @@ const StepPractices = ({
     height: '100%',
   };
 
+  const applicableAreaRules = () => {
+    if (!areaRules || areaRules.length === 0) {
+      return null;
+    }
+    const matchingRules = areaRules.filter((rule) => {
+      return rule.MA_Index && rule.MA_Index === agwqmArea;
+    });
+    return matchingRules.length > 0 ? (
+      <>
+      <Paragraph>
+        {"Area-specific rules or TMDL requirements may apply in this management area (" + agwqmArea + "). Please review the information for each practice carefully."}
+      </Paragraph>
+      <Collapse items={matchingRules.map((rule, index) => ({
+          key: "rule_" + index,
+          label: rule.CATEGORY,
+          children: <p>{rule['Oregon Administrative Rules (OAR)']}</p>
+        }))}/>
+      </>
+    ) : null;
+  };
+
+  if (selectedPracticeIds.length === 0) { 
+    setError('error');
+  }
+
+  if (selectedPracticeIds.length > 0) {
+    setError('finish');
+  }
 
   return (
     <>
@@ -47,8 +80,27 @@ const StepPractices = ({
         rules and TMDL expectations. Select any that you are interested in implementing to see more details and
         to include them in your plan.
       </Paragraph>
+ 
+
+      {applicableAreaRules() && (
+        <Alert
+          style={{ marginBottom: 16 }}
+          title={"Area-specific rules or TMDL requirements may apply in this management area (" + agwqmArea + "). Please review the information for each practice carefully."}
+          description={applicableAreaRules()}
+          type="info"
+          showIcon
+          closable={{ closeIcon: true, 'aria-label': 'close' }}
+        />
+      )}
 
       {/* Accordion list of API-backed recommended practices with detailed information */}
+
+      {selectedPracticeIds.length === 0 && (
+        <Paragraph style={{ marginTop: 16 }}>
+          <ValidationError message="Please select at least one practice to proceed." />
+        </Paragraph>
+      )}
+
       <Collapse accordion>
         {recommendedPractices.map((p) => (
           <Collapse.Panel
@@ -91,20 +143,21 @@ const StepPractices = ({
                 <Text strong>Benefits (potential):</Text> {p.benefits}
               </Paragraph>
               <Paragraph>
-                <Text strong>References:</Text>&nbsp; | &nbsp;
-                {p.links.map((l) => (<>
-                  <a key={l.url} href={l.url} target="_blank" rel="noreferrer">
-                    {l.label}
-                  </a> <span> | </span>
-                </>
-                ))}
+                <Text strong>References:</Text>
+                <ul style={{ paddingLeft: 20, margin: 0 }}>
+                  {p.links.map((l) => (
+                    <li key={l.url}>
+                      <a href={l.url} target="_blank" rel="noreferrer">
+                        {l.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </Paragraph>
+
               <ComplianceInfo practice={p} userType={userType} />
 
-
-
-
-              <Carousel arrows infinite={false} style={{width: 800, height:800 }}>
+              <Carousel arrows infinite={false} style={{width: 400, height:400 }}>
                 <div>
                   <img src="/images/AgWqPlan/OIP-1912167953.jpg" alt="Practice image 1" style={carouselContentStyle} />
                   <h3 style={carouselContentStyle}>1</h3>
@@ -132,6 +185,12 @@ const StepPractices = ({
 
 StepPractices.propTypes = {
   userType: PropTypes.string.isRequired,
+  areaRules: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    })
+  ).isRequired,
+  agwqmArea: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   recommendedPractices: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,

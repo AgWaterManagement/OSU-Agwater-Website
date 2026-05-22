@@ -26,7 +26,7 @@ const OllamaChat = () => {
     const currentQuestion = useRef(""); // to keep track of the current input
     const currentAnswer = useRef("")
     const [currentMarkdown, setCurrentMarkdown] = useState(""); // to keep track of the current markdown content
-    const [isStreaming, setIsStreaming] = useState(true);
+    const [isStreaming, setIsStreaming] = useState(false);
     const [history, setHistory] = useState([]); // a list of question/answer objects - key = input, value = response
     const [error, setError] = useState(null);
     const [selectedModel, setSelectedModel] = useState("gemma3"); // Default model");
@@ -53,14 +53,15 @@ const OllamaChat = () => {
     };
 
     async function processUserQuery(_prompt) {
-        // --- Fetch phase (isolated so fetch errors don't swallow stream/React errors) ---
+        // --- Fetch phase ---
+        // Isolated in its own try/catch so network errors never swallow stream or React errors.
         let response;
         try {
-            console.log("input: ", _prompt);
+            // console.log("input: ", _prompt);
             response = await fetch(CHAT_API_URL, {
-                method: 'post',
+                method: 'POST',
                 headers: {
-                    "X-API-Key": secrets.agwater_api_key,
+                    'X-API-Key': secrets.agwater_api_key,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
@@ -74,27 +75,21 @@ const OllamaChat = () => {
                 })
             });
             if (!response.ok) {
-                console.error("HTTP error response:", response);
-                flushSync(() => {
-                    setError(`Error fetching response from the server (status ${response.status})`);
-                });
+                console.error('HTTP error response:', response);
+                setError(`Error fetching response from the server (status ${response.status})`);
+                setIsStreaming(false);
                 return;
             }
         } catch (fetchError) {
-            console.error("Network error:", fetchError);
-            setError("Unable to reach the server. Please try again later.");
+            console.error('Network error:', fetchError);
+            setError('Unable to reach the server. Please try again later.');
+            setIsStreaming(false);
             return;
         }
 
-        // Atomically switch to streaming view so the first chunk is already visible
-        flushSync(() => {
-            setIsStreaming(true);
-            setCurrentMarkdown("");
-        });
-
         // --- Stream reading phase ---
-        // Read raw bytes, decode as UTF-8, and parse newline-delimited JSON manually.
-        // This gives us full control over when each chunk is rendered.
+        // Manually decode UTF-8 bytes and parse newline-delimited JSON so we control
+        // exactly when each chunk is flushed to the DOM.
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
@@ -105,7 +100,7 @@ const OllamaChat = () => {
 
                 buffer += decoder.decode(value, { stream: true });
 
-                // Process every complete JSON line in the current buffer
+                // Drain every complete JSON line from the buffer.
                 let newlineIndex;
                 while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
                     const line = buffer.slice(0, newlineIndex).trim();
@@ -120,73 +115,74 @@ const OllamaChat = () => {
                         continue;
                     }
 
-                    console.log('LLM Streamed Data Received', json);
+                    // console.log('LLM Streamed Data Received', json);
 
                     if (json.content_type && json.content_type[0] === 'l') {
+                        // LLM response chunk — append and flush to DOM immediately.
                         currentAnswer.current += json['llm_response'];
-                        // flushSync forces React to render this chunk immediately,
-                        // bypassing React 18 automatic batching in async contexts.
-                        flushSync(() => {
-                            setCurrentMarkdown(currentAnswer.current);
-                        });
+                        flushSync(() => setCurrentMarkdown(currentAnswer.current));
                     } else if (json.content_type) {
+                        // Final message — collect referenced document links.
                         const refs = json['referenced_documents'] || [];
                         const titles = json['referenced_titles'] || [];
-                        let contentStr = "";
                         if (refs.length > 0) {
-                            contentStr += "\n\n#### References:\n";
+                            let contentStr = '\n\n#### References:\n';
                             refs.forEach((ref, index) => {
-                                if (titles.length > 0 && titles[index] !== null) {
-                                    contentStr += `${index + 1}. [${titles[index]}](<https://agwater.org:5556/llm/source?filename=${ref}>)\n`;
-                                } else {
-                                    contentStr += `${index + 1}. ${ref}\n`;
-                                }
+                                const title = titles.length > 0 ? titles[index] : null;
+                                contentStr += title
+                                    ? `${index + 1}. [${title}](<https://agwater.org:5556/llm/source?filename=${ref}>)\n`
+                                    : `${index + 1}. ${ref}\n`;
                             });
+                            references.current = contentStr;
                         }
-                        references.current = contentStr;
                     }
                 }
             }
         } catch (streamError) {
-            console.error("Error reading response stream:", streamError);
-            setError("Stream interrupted. The partial response is shown above.");
+            console.error('Error reading response stream:', streamError);
+            setError('Stream interrupted. The partial response is shown above.');
         } finally {
             reader.releaseLock();
         }
 
+        // Append references to the final answer, then move everything into history.
         currentAnswer.current += references.current;
         const _currentAnswer = currentAnswer.current;
 
         setIsStreaming(false);
-        currentQuestion.current = "";
-        currentAnswer.current = "";
-        references.current = "";
+        currentQuestion.current = '';
+        currentAnswer.current = '';
+        references.current = '';
 
-        // add a question mark to end of _prompt if not present
-        if (_prompt.endsWith('?') == false && (_prompt[0] == 'w' || _prompt[0] == 'W' || _prompt[0] == 'h' || prompt[0] == 'H'))
+        // Append a question mark if the prompt looks like a question.
+        if (!_prompt.endsWith('?') && (_prompt[0] === 'w' || _prompt[0] === 'W' || _prompt[0] === 'h' || _prompt[0] === 'H'))
             _prompt = `${_prompt}?`;
         setHistory([...history, { question: _prompt, answer: _currentAnswer }]);
     }
 
     const sendQuery = async () => {
-        setError(null); // Clear previous errors
+        setError(null);
 
-        if (prompt.slice().trim() === "") return;
+        const _prompt = prompt.trim();
+        if (!_prompt) return;
+
+        // Show the user's question and the "Waiting for response..." placeholder
+        // immediately — before the network round-trip begins.
+        currentQuestion.current = _prompt.endsWith('?') ? _prompt : `${_prompt}?`;
+        flushSync(() => {
+            setPrompt('');
+            setIsStreaming(true);
+            setCurrentMarkdown('');
+        });
 
         try {
-            let _prompt = prompt.slice().trim()
-            setPrompt(""); // Clear the input ref
-
-            currentQuestion.current = _prompt.endsWith('?') ? _prompt : `${_prompt}?`; // Update the current question
             await processUserQuery(_prompt);
-        } catch (error) {
-            setError(error.message);
-            console.error('Error sending message:', error);
+        } catch (err) {
+            setError(err.message);
+            console.error('Error sending message:', err);
         }
 
-        if (promptCtrl.current) {
-            promptCtrl.current.focus();
-        }
+        promptCtrl.current?.focus();
     }
 
 

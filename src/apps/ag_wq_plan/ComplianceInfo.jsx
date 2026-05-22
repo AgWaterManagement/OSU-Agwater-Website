@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 const { Text } = Typography;
 
 const ComplianceInfo = ({ practice, userType }) => {
-  const showComplianceNotes = userType === 'ODA – Compliance';
+  const showComplianceNotes = userType === 'ODA - Compliance';
   const showTMDLInfo = userType === 'Board / TMDL';
 
   if (!showComplianceNotes && !showTMDLInfo) {
@@ -26,16 +26,16 @@ const ComplianceInfo = ({ practice, userType }) => {
         </div>
       )}
 
-      {showComplianceNotes && practice.complianceNotes && (
+      {showComplianceNotes && practice.compliance_notes && (
         <Alert
           message="Compliance Information"
-          description={practice.complianceNotes}
-          type="warning"
+          description={practice.compliance_notes}
+          type="info"
           style={{ marginBottom: 12 }}
         />
       )}
 
-      {showTMDLInfo && !practice.tmdls && !practice.complianceNotes && (
+      {showTMDLInfo && !practice.tmdls && !practice.compliance_notes && (
         <Text type="secondary" style={{ fontSize: 12 }}>
           Not currently associated with a specific TMDL requirement.
         </Text>
@@ -47,7 +47,7 @@ const ComplianceInfo = ({ practice, userType }) => {
 ComplianceInfo.propTypes = {
   practice: PropTypes.shape({
     tmdls: PropTypes.arrayOf(PropTypes.string),
-    complianceNotes: PropTypes.string,
+    compliance_notes: PropTypes.string,
   }).isRequired,
   userType: PropTypes.string.isRequired,
 };

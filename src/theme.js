@@ -50,6 +50,13 @@ const theme = {
             colorText: 'black',
             addonBg: 'lightgrey',
         },
+        Message: {
+            colorText: 'blue',
+            colorTextSuccess: 'green',
+            colorTextError: 'red',
+            colorTextWarning: 'orange',
+            //colorBgElevated: '#2b1d11',
+        },
         Modal: {
             colorText: 'white',
             contentBg: 'darkslategray',
@@ -79,6 +86,10 @@ const theme = {
         
         Statistic: {
             colorTextDescription: 'white',
+        },
+        Steps: {
+            colorTextSecondary: 'lightgray',
+            colorFillTertiary: 'lightgray',
         },
         Table : {
             headerBg: 'darkslategray',

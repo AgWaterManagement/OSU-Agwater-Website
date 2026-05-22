@@ -28,7 +28,7 @@ const userTypeGuides = {
       'Use the summary to generate reports for landowners and programs',
     ],
   },
-  'ODA – Compliance': {
+  'ODA - Compliance': {
     title: 'ODA Compliance View',
     description:
       'This tool supports water quality compliance tracking and enforcement. Review practices and their compliance implications for agricultural operations.',
@@ -110,8 +110,6 @@ const UserTypeGuide = ({ userType, children, selectedTMDLs, onTMDLChange, availa
           ))}
         </ul>
       </div>
-
-      <Divider />
 
       {children}
     </div>

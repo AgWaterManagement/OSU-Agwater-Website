@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 import { Checkbox, Typography } from 'antd';
 
+import ValidationError from './ValidationError';
+
 const { Paragraph } = Typography;
 
 // Step 3: Select desired goals and benefits from implementing practices
@@ -9,7 +11,7 @@ const { Paragraph } = Typography;
 //   - selectedGoals: Array of selected goal strings
 //   - setSelectedGoals: Function to update selected goals
 //   - goalData: Array of goal records fetched by AgWqPlan
-const StepGoals = ({ selectedGoals, setSelectedGoals, goalData }) => {
+const StepGoals = ({ selectedGoals, setSelectedGoals, goalData, setError }) => {
   const goalOptions = useMemo(
     () =>
       (Array.isArray(goalData) ? goalData : []).map((goal) => {
@@ -25,12 +27,24 @@ const StepGoals = ({ selectedGoals, setSelectedGoals, goalData }) => {
     [goalData],
   );
 
+  if ( selectedGoals.length === 0) {
+    setError('error');
+  }
+  if (selectedGoals.length > 0) {
+    setError('finish');
+  }
+
+
   return (
     <>
       <Paragraph>
         Select any goals or benefits you would like to see from implementing practices.
       </Paragraph>
       {/* Checkbox group for water quality goals */}
+
+      {selectedGoals.length === 0 && (
+        <ValidationError message="Please select at least one goal to help us recommend the most relevant practices for your operation." />
+      )}
 
       <Checkbox.Group
         options={goalOptions}
