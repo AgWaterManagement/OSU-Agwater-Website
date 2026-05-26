@@ -88,6 +88,8 @@ const theme = {
             colorTextDescription: 'white',
         },
         Steps: {
+            //colorPrimary: 'white',
+            //colorText: 'yellow',
             colorTextSecondary: 'lightgray',
             colorFillTertiary: 'lightgray',
         },

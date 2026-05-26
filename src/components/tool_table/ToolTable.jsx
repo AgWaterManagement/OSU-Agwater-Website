@@ -51,6 +51,25 @@ const toolsData = [
         status: 'live'
       },
       {
+        title: 'Protected Waters of the US',
+        description: (<><img src={imagePath + 'Tidal-Creek-in-Salt-Marsh-688.jpg'} alt='Protected Waters' width={360}/>
+                    This tool provides information on the extent of protected waters in the United States, 
+                    including streams and wetlands, based on the Clean Water Act. It allows users to explore
+                    the data by state and water type, specify alternative protection criteria, 
+                    and visualize, in charts, tables, and maps, the protection status of these waters.</>),
+        keywords: ['protected waters', 'Clean Water Act', 'streams', 'wetlands', 'water quality'],
+        link: '/apps/wotus',
+        status: 'live'
+      },
+      {
+        title: 'Water Calculators',
+        description: (<><img src={imagePath + 'WaterCalculator.png'} alt='Water Calculators' width={360} />This tool provides a numbers of calculators
+        for water-related calculations. It includes tools for estimating water usage, irrigation needs, and other water management metrics.</>),
+        keywords: ['water calculation', 'irrigation', 'water usage', 'estimation'],
+        link: '/pages/calculators',
+        status: 'live'
+      },
+      {
         title: 'Crop Water Use in Oregon',
         description: (<><img src={imagePath + 'OIP-2795785401.jpg'} alt='Crop Water Use' width={360} />This tool provides information on crop water
                      use in Oregon, including data on irrigation practices and water
@@ -59,7 +78,7 @@ const toolsData = [
                      precipitation, monthly crop coefficient (Kc) values, and seasonal crop water use estimates for 95 crops grown in Oregon.</>),
         keywords: ['crop water use', 'Oregon', 'irrigation', 'water consumption'],
         link: '/apps/oregonCropWaterUse',
-        status: 'live'
+        status: 'under_development'
       },
       {
         title: 'Agrimet Portal',
@@ -74,17 +93,6 @@ const toolsData = [
         status: 'under_development'
       },
       {
-        title: 'Protected Waters of the US',
-        description: (<><img src={imagePath + 'Tidal-Creek-in-Salt-Marsh-688.jpg'} alt='Protected Waters' width={360}/>
-                    This tool provides information on the extent of protected waters in the United States, 
-                    including streams and wetlands, based on the Clean Water Act. It allows users to explore
-                    the data by state and water type, specify alternative protection criteria, 
-                    and visualize, in charts, tables, and maps, the protection status of these waters.</>),
-        keywords: ['protected waters', 'Clean Water Act', 'streams', 'wetlands', 'water quality'],
-        link: '/apps/wotus',
-        status: 'live'
-      },
-      {
         title: 'Managing Drought In Oregon',
         description: (<><img src={imagePath + 'OIP-1495046469.jpg'} alt='Managing Drought' width={360} />This tool provides information on drought
          management strategies in Oregon, including data on precipitation, soil moisture, and water availability.
@@ -95,20 +103,22 @@ const toolsData = [
         status: 'under_development'
       },
       {
-        title: 'Water Calculators',
-        description: (<><img src={imagePath + 'WaterCalculator.png'} alt='Water Calculators' width={360} />This tool provides a numbers of calculators
-        for water-related calculations. It includes tools for estimating water usage, irrigation needs, and other water management metrics.</>),
-        keywords: ['water calculation', 'irrigation', 'water usage', 'estimation'],
-        link: '/pages/calculators',
-        status: 'live'
+        title: 'OSU Irrigation Scheduler',
+        description: (<><img src={imagePath + 'FMS/FarmerWithTablet.png'} alt='Irrigation Scheduler' width={360} />This tool provides field-level irrigation scheduling support for
+          farmers and irrigation managers in the Pacific Northwest. It uses data on field characteristics, weather forecasts, and crop water use history to provide recommendations on when and how much to irrigate.</>),
+        keywords: ['irrigation scheduling', 'soil moisture', 'weather forecasts', 'crop water use'],
+        link: '/fms',
+        status: 'under_development'
       },
       {
-        title: 'Water Quality TMDL Planning',
-        description: (<><img src={imagePath + 'AgWaterQuality.png'} alt='Water Quality TMDL Planning' width={360} />This tool provides information on water quality Total Maximum Daily Load (TMDL) planning, including data on pollutant loads and water quality standards.</>),
+        title: 'ODA Ag Water Quality Planner',
+        description: (<><img src={imagePath + 'AgWaterQuality.png'} alt='Water Quality TMDL Planning' width={360} />This tool, developed in partnership with the Oregon Department of Agriculture,
+        generates site-specific water quality assessments and provides localized recommendations of farming practices to allow landowners to meet TMDL requirements, reduce pollutant loads and improve water quality.</>),
         keywords: ['water quality', 'TMDL', 'pollutant loads', 'water quality standards'],
         link: '/apps/agWqPlan',
         status: 'under_development'
       },
+
     ];
 
 

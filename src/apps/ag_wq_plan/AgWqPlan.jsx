@@ -15,8 +15,7 @@ import StepPractices from './StepPractices';
 import StepSummary from './StepSummary';
 
 import AgWqplanLogin from "./AgWqplanLogin";
-import ValidationError from './ValidationError';
-
+import PageRating from '../../components/page_rating/PageRating';
 
 const { Content, Footer } = Layout;
 const { Step } = Steps;
@@ -411,6 +410,8 @@ const AgWqPlan = () => {
 
   return (
     <>
+
+{/*}  
       {loggingIn && (
         <AgWqplanLogin
           onLoginSuccess={(result) => {
@@ -466,9 +467,6 @@ const AgWqPlan = () => {
                 <Title level={4}>Agricultural Water Quality Management Areas</Title>
                 <Text>ODA Agricultural Water Quality Management Areas. Source: <a href="https://www.oregon.gov/oda/programs/NaturalResources/Pages/AWQMA.aspx">ODA AWQMA Mapper</a></Text>
                 <WqMap features_url={ODA_AWQMA_WMS_URL}></WqMap>
-
-
-
               </Col>
               <Col xs={24} md={12}>
                 <Title level={4}>TMDL Areas</Title>
@@ -481,10 +479,13 @@ const AgWqPlan = () => {
           </Card>
         </Content>
       )}
+*/}
+
 
 
       <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
         <Card>
+            <PageRating pageID='/apps/ag_wq_plan' />
             <Title level={3}>Water Quality Practices Planner</Title>
             {current === -1 && (
               <Paragraph>
@@ -504,7 +505,8 @@ const AgWqPlan = () => {
                 availableTMDLs={availableTMDLs}
                 setLoginName={setLoginName}
                 setUserRole={setUserRole}
-                setLoggingIn={setLoggingIn} />
+                setLoggingIn={setLoggingIn}
+                setCurrent={setCurrent} />
             )}
 
             {current >= 0 && (

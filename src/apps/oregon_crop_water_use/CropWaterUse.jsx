@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Row, Col, Select, Card, Table, message, Collapse, Checkbox } from 'antd';
+
+import PageRating from '../../components/page_rating/PageRating';
+
 //import PropTypes from 'prop-types';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
@@ -381,7 +384,8 @@ const CropWaterUse = () => {
                     cardTitle.current = `Crop Water Use for ${feature.properties.HUC8_name} (HUC8: ${feature.properties.HUC8_code})`;
                 }
                 else if (selectedGeoJsonFile === 'OR_Counties.geojson') {
-                    setSelectedFeatureID(feature.properties.COUNTY_NAME);
+                    const cobCode = parseInt(feature.properties.COBCODE.slice(2));   // remote OR prefix and convert remaining string to int
+                    setSelectedFeatureID(cobCode);
                     cardTitle.current = `Crop Water Use for ${feature.properties.COUNTY_NAME} County`;
                 }
 
@@ -430,6 +434,8 @@ const CropWaterUse = () => {
 
     return (
         <>
+            <PageRating pageID='/apps/oregon_crop_water_use'/>
+
             <div>
                 <h3 style={{ marginLeft: '0.4em' }}>Crop Water Use in Oregon</h3>
 

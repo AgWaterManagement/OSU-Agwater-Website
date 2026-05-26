@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Select, Typography, Form } from 'antd';
+import { Select, Typography, Button, Card } from 'antd';
 import PropTypes from 'prop-types';
 import UserTypeGuide from './UserTypeGuide';
 import AgWqplanLogin from './AgWqplanLogin';
@@ -11,7 +11,8 @@ const StartUp = ({
     userType, setUserType,
     selectedTMDLs, setSelectedTMDLs,
     availableTMDLs,
-    setLoginName, setUserRole, setLoggingIn }) => {
+    setLoginName, setUserRole, setLoggingIn,
+    setCurrent }) => {
 
     return (
         <>
@@ -27,15 +28,14 @@ const StartUp = ({
                     style={{ width: '30em', maxWidth: '100%' }}
                     options={[
                         { label: 'Landowner', value: 'Landowner' },
-                        { label: 'SWCD / Technical Assistant', value: 'SWCD / TA' },
-                        { label: 'ODA - Compliance', value: 'ODA - Compliance' },
-                        { label: 'Board / TMDL', value: 'Board / TMDL' },
+                        { label: 'Resource Conservationist', value: 'Resource Conservationist' },
+                        { label: 'ODA Water Quality Specialist', value: 'ODA Water Quality Specialist' },
                     ]} />
-
                 <br />
             </div>
 
-            {userType === 'ODA - Compliance' && (
+            {(userType === 'ODA Water Quality Specialist' || userType === 'Resource Conservationist') && (
+                <Card style={{marginLeft: 'auto', marginRight: 'auto', maxWidth: 480}}>
                 <AgWqplanLogin
                     onLoginSuccess={(result) => {
                         console.log("Login successful:", result);
@@ -53,13 +53,22 @@ const StartUp = ({
                         setUserRole(null);
                         setLoggingIn(false);
                     }}
+                    role={userType}
                     showCancel={false}
                 />
+            </Card>
             )}
 
-
             <br />
+            <div style={{textAlign: 'center', marginBottom: 16}}>
+                <Button type="primary" style={{marginRight: '1em'}} onClick={() => setCurrent(0)}>
+                    Start New Plan
+                </Button>
 
+                <Button type="primary" style={{marginLeft: '1em'}} onClick={() => setCurrent(0)}>
+                    Access Existing Plan
+                </Button>
+            </div>
 
             {/* User type guidance and TMDL filter */}
             <UserTypeGuide

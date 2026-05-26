@@ -16,8 +16,8 @@ const userTypeGuides = {
       'Share your summary with a SWCD office for planning support',
     ],
   },
-  'SWCD / TA': {
-    title: 'SWCD / Technical Assistant View',
+  'Resource Conservationist': {
+    title: 'Resource Conservationist View',
     description:
       'This tool helps you develop site-specific conservation plans with landowners. Use it to document land conditions, identify appropriate practices, and connect landowners with resources and incentive programs.',
     tips: [
@@ -28,8 +28,8 @@ const userTypeGuides = {
       'Use the summary to generate reports for landowners and programs',
     ],
   },
-  'ODA - Compliance': {
-    title: 'ODA Compliance View',
+  'ODA Water Quality Specialist': {
+    title: 'ODA Water Quality Specialist View',
     description:
       'This tool supports water quality compliance tracking and enforcement. Review practices and their compliance implications for agricultural operations.',
     tips: [
@@ -38,18 +38,6 @@ const userTypeGuides = {
       'Track which practices address TMDL requirements',
       'Document compliance actions taken by operators',
       'Use summaries for compliance reporting',
-    ],
-  },
-  'Board / TMDL': {
-    title: 'Board/TMDL Coordinator View',
-    description:
-      'This tool helps coordinate water quality improvement efforts across regions and TMDLs. Filter practices by TMDL status and track implementation progress.',
-    tips: [
-      'Filter recommended practices by TMDL applicability',
-      'Track which practices address your TMDL targets',
-      'Prioritize practices that address multiple water quality concerns',
-      'Coordinate implementation across regions',
-      'Monitor progress toward TMDL objectives',
     ],
   },
 };
@@ -91,7 +79,7 @@ const UserTypeGuide = ({ userType, children, selectedTMDLs, onTMDLChange, availa
         style={{ marginBottom: 16 }}
       />
 
-      {userType === 'Board / TMDL' && (
+      {userType === 'ODA Water Quality Specialist' || userType === 'Resource Conservationist' && (
         <>
           <TMDLFilter
             selectedTMDLs={selectedTMDLs}

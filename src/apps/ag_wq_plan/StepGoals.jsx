@@ -75,6 +75,7 @@ StepGoals.propTypes = {
       }),
     ]),
   ).isRequired,
+  setError: PropTypes.func.isRequired,
 };
 
 export default StepGoals;
