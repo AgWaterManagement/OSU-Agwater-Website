@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents } fr
 import L from 'leaflet';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
+import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 
 import PropTypes from 'prop-types';
 import { secrets } from '../../secrets';
@@ -250,6 +251,7 @@ const Drought = () => {
 	const [activeMapLayer, setActiveMapLayer] = useState('forecast_pct_normal');
 	const [snotelData, setSnotelData] = useState(null);
 	const [snotelCurrentSwe, setSnotelCurrentSwe] = useState({});
+	const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
 
 	const countyCentroids = {
 		"Baker": { latitude: 44.7661, longitude: -117.8334, zoneId: "ORZ001" },
@@ -1661,76 +1663,107 @@ const Drought = () => {
 			<StatusBar level={2} />
 
 				<Row gutter={16}>
-					<Col xs={24} sm={5}>
-						<Card title="U.S. Drought Monitor Legend" size="small" style={{ marginBottom: 0 }}>
-							{droughtCategories.map(category => (
-								<div key={category.level} style={{ marginBottom: '12px' }}>
-									<div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-										<div style={{
-											width: '30px',
-											height: '20px',
-											backgroundColor: category.color,
-											border: '1px solid #ccc',
-											marginRight: '8px'
-										}} />
-										<strong>{category.level} - {category.label}</strong>
-									</div>
-									<div style={{ fontSize: '12px', color: '#eee', paddingLeft: '38px' }}>
-										{category.description}
-									</div>
+					{isLeftPanelCollapsed ? (
+						<Col xs={2} sm={2} md={1} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+							<Button
+								type="text"
+								icon={<DoubleRightOutlined />}
+								onClick={() => setIsLeftPanelCollapsed(false)}
+								aria-label="Expand map and legends"
+								title="Expand map and legends"
+							/>
+						</Col>
+					) : (
+						<>
+							<Col xs={24} sm={5}>
+								<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+									<Button
+										type="default"
+										icon={<DoubleLeftOutlined />}
+										onClick={() => setIsLeftPanelCollapsed(true)}
+										title="Collapse map and legends"
+									>
+										Hide Left Panel
+									</Button>
 								</div>
-							))}
-							<div style={{ marginTop: '16px', fontSize: '11px', color: '#888', borderTop: '1px solid #eee', paddingTop: '8px' }}>
-								Data Source: <a href="https://droughtmonitor.unl.edu/" target="_blank" rel="noopener noreferrer">U.S. Drought Monitor</a>
+								<Card title="U.S. Drought Monitor Legend" size="small" style={{ marginBottom: 0 }}>
+									{droughtCategories.map(category => (
+										<div key={category.level} style={{ marginBottom: '12px' }}>
+											<div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+												<div style={{
+													width: '30px',
+													height: '20px',
+													backgroundColor: category.color,
+													border: '1px solid #ccc',
+													marginRight: '8px'
+												}} />
+												<strong>{category.level} - {category.label}</strong>
+											</div>
+											<div style={{ fontSize: '12px', color: '#eee', paddingLeft: '38px' }}>
+												{category.description}
+											</div>
+										</div>
+									))}
+									<div style={{ marginTop: '16px', fontSize: '11px', color: '#888', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+										Data Source: <a href="https://droughtmonitor.unl.edu/" target="_blank" rel="noopener noreferrer">U.S. Drought Monitor</a>
+									</div>
+								</Card>
+								<SnotelMapLegend />
+							</Col>
+							<Col xs={24} sm={12}>
+								<div style={{ height: '100%', width: '100%', minHeight: '640px' }}>
+									<MapContainer
+										center={[44.0, -120.5]}
+										zoom={6.5}
+										style={{ height: '100%', width: '100%' }}
+										zoomControl={false}
+										minZoom={6.5}
+										maxZoom={6.5}
+									>
+										<TileLayer
+											url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+											attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+										/>
+										<WMSTileLayer
+											url={usdmWMSURL}
+											layers="usdm_current"
+											format="image/png"
+											transparent={true}
+											version="1.3.0"
+											opacity={0.7}
+										/>
+										<arcgis-search
+											placeholder="Search for a location"
+											style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
+										></arcgis-search>
+										{snotelData && (
+											<GeoJSON
+												key={`snotel-${Object.keys(snotelCurrentSwe).length}`}
+												data={snotelData}
+												pointToLayer={snotelPointToLayer}
+												onEachFeature={onEachSnotelFeature}
+											/>
+										)}
+										{countiesData && (
+											<GeoJSON
+												data={countiesData}
+												style={countyStyle}
+												onEachFeature={onEachCounty}
+											/>
+										)}
+									</MapContainer>
+								</div>
+							</Col>
+						</>
+					)}
+					<Col xs={24} sm={isLeftPanelCollapsed ? 22 : 7} md={isLeftPanelCollapsed ? 23 : 7}>
+						{isLeftPanelCollapsed && (
+							<div style={{ marginBottom: '8px' }}>
+								<Button type="default" icon={<DoubleRightOutlined />} onClick={() => setIsLeftPanelCollapsed(false)}>
+									Show Map and Legends
+								</Button>
 							</div>
-						</Card>
-						<SnotelMapLegend />
-					</Col>
-					<Col xs={24} sm={12}>
-						<div style={{ height: '100%', width: '100%' }}>
-							<MapContainer
-								center={[44.0, -120.5]}
-								zoom={6.5}
-								style={{ height: '100%', width: '100%' }}
-								zoomControl={false}
-								minZoom={6.5}
-								maxZoom={6.5}
-							>
-								<TileLayer
-									url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-									attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
-								/>
-								<WMSTileLayer
-									url={usdmWMSURL}
-									layers="usdm_current"
-									format="image/png"
-									transparent={true}
-									version="1.3.0"
-									opacity={0.7}
-								/>
-								<arcgis-search
-									placeholder="Search for a location"
-									style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
-								></arcgis-search>
-								{snotelData && (
-									<GeoJSON
-										key={`snotel-${Object.keys(snotelCurrentSwe).length}`}
-										data={snotelData}
-										pointToLayer={snotelPointToLayer}
-										onEachFeature={onEachSnotelFeature}
-									/>
-								)}
-								{countiesData && (
-									<GeoJSON
-										data={countiesData}
-										style={countyStyle}
-										onEachFeature={onEachCounty}
-									/>
-								)}
-							</MapContainer>
-						</div>
-					</Col>
-					<Col xs={24} sm={7}>
+						)}
 						{selectedCounty ? (
 							<div style={{ fontSize: 'medium', color: 'yellow' }}>
 								Results for <strong>{selectedCounty.properties.NAME}</strong>
