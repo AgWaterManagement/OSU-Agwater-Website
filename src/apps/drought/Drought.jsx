@@ -10,7 +10,7 @@ import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { secrets } from '../../secrets';
 import NWSForecast from '../../components/weather/NWSForecast';
-import SummaryPanel from '../../components/drought/SummaryPanel';
+import SummaryPanel from '../../components/drought/IndexSummaryPanel';
 import OllamaChat from '../../components/ollama_chat/OllamaChat';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 
@@ -721,6 +721,218 @@ const Drought = () => {
 			console.error('Error fetching stream forecast:', error);
 			setStreamForecast(null);
 			message.error('Stream forecast data could not be loaded.');
+		}
+	};
+
+
+	// Returns the great-circle distance in kilometres between two lat/lng points.
+	const haversineKm = (lat1, lng1, lat2, lng2) => {
+		const R = 6371;
+		const toRad = (deg) => (deg * Math.PI) / 180;
+		const dLat = toRad(lat2 - lat1);
+		const dLng = toRad(lng2 - lng1);
+		const a =
+			Math.sin(dLat / 2) ** 2 +
+			Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+		return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	};
+
+	// Like GetStreamForecast but selects the single USGS/SRVO forecast station
+	// that is geographically nearest to the user's clicked point (lat, lng).
+	// countyName is used to pre-filter candidates to the surrounding county so
+	// the station search remains fast; pass null to search state-wide.
+	const GetNearestStreamForecast = async (countyName, lat, lng) => {
+		try {
+			const stationsUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations';
+			const cleanCountyName = countyName ? countyName.replace(/ County$/i, '').trim() : null;
+
+			const stationsParams = new URLSearchParams({
+				stationTriplets: '*:OR:USGS',
+				elements: 'SRVO',
+				activeOnly: 'true',
+				returnForecastPointMetadata: 'true'
+			});
+			if (cleanCountyName) {
+				stationsParams.append('countyNames', cleanCountyName);
+			}
+
+			const stationsResponse = await fetch(`${stationsUrl}?${stationsParams}`, {
+				headers: { 'Accept': 'application/json' }
+			});
+			if (!stationsResponse.ok) {
+				throw new Error(`Failed to fetch stations (${stationsResponse.status})`);
+			}
+
+			const stations = await stationsResponse.json();
+			const forecastStations = (stations || []).filter(s => s.forecastPoint);
+
+			if (forecastStations.length === 0) {
+				setStreamForecast({
+					source: 'USDA AWDB REST API',
+					fetchedAt: new Date().toISOString(),
+					stations: [],
+					noStations: true
+				});
+				return;
+			}
+
+			// Pick the station with the smallest great-circle distance to the clicked point.
+			const nearestStation = forecastStations.reduce((best, station) => {
+				const dist = haversineKm(lat, lng, station.latitude ?? 0, station.longitude ?? 0);
+				return dist < best.dist ? { station, dist } : best;
+			}, { station: forecastStations[0], dist: Infinity }).station;
+
+			// ── Helpers (mirrors GetStreamForecast) ──────────────────────────────────────
+			const periodDays = (fp) => {
+				const toDate = (mmdd) => new Date(`2000-${mmdd}`);
+				if (Array.isArray(fp)) return (toDate(fp[1]) - toDate(fp[0])) / 86400000;
+				const start = fp?.beginDate || fp?.startDate;
+				const end = fp?.endDate;
+				return start && end ? (toDate(end) - toDate(start)) / 86400000 : Infinity;
+			};
+
+			const parseForecastValues = (d) => {
+				if (d.forecastValues && !Array.isArray(d.forecastValues)) {
+					return Object.entries(d.forecastValues)
+						.filter(([, val]) => val !== null && val !== undefined)
+						.map(([prob, val]) => ({ exceedanceProbability: prob, value: val }));
+				}
+				return (d.forecastValues || d.values || []).filter(
+					v => v.exceedanceProbability !== undefined && v.value !== null
+				);
+			};
+
+			const periodLabel = (fp) => {
+				if (Array.isArray(fp)) return `${fp[0]}\u2013${fp[1]}`;
+				return fp?.name || `${fp?.beginDate || fp?.startDate}\u2013${fp?.endDate}`;
+			};
+
+			const normalizeUnit = (raw) => {
+				const u = (raw || 'kac_ft').toLowerCase();
+				if (u === 'kac_ft' || u === 'kaf') return 'KAF';
+				if (u === 'af') return 'acre-ft';
+				if (u === 'cfs') return 'CFS';
+				return u.toUpperCase();
+			};
+
+			// ── Fetch historical and forecast data for the nearest station ───────────────
+			const triplet = nearestStation.stationTriplet;
+
+			const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
+			const dataParams = new URLSearchParams({
+				stationTriplets: triplet,
+				elements: 'SRVO',
+				duration: 'MONTHLY',
+				beginDate: '-18'
+			});
+
+			const now = new Date();
+			const endPublicationDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+
+			const forecastUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/forecasts';
+			const forecastParams = new URLSearchParams({
+				stationTriplets: triplet,
+				elementCodes: 'SRVO',
+				endPublicationDate
+			});
+
+			const [dataResp, forecastResp] = await Promise.all([
+				fetch(`${dataUrl}?${dataParams}`, { headers: { 'Accept': 'application/json' } }),
+				fetch(`${forecastUrl}?${forecastParams}`, { headers: { 'Accept': 'application/json' } }),
+			]);
+
+			// Parse historical data
+			let historicalValues = [];
+			let priorYearValues = [];
+			if (dataResp.ok) {
+				try {
+					const histJson = await dataResp.json();
+					const vals = histJson?.[0]?.data?.[0]?.values;
+					if (vals) {
+						const allParsed = vals
+							.filter(v => v.value !== null && v.value !== undefined)
+							.map(v => ({
+								date: `${String(v.year)}-${String(v.month).padStart(2, '0')}`,
+								value: parseFloat((v.value / 1000).toFixed(3))
+							}));
+						historicalValues = allParsed.slice(-6);
+						priorYearValues = allParsed.slice(-18, -6);
+					}
+				} catch (err) {
+					console.warn('Failed to parse historical data for nearest station:', err);
+				}
+			}
+
+			// Parse forecast data
+			const periods = [];
+			if (forecastResp.ok) {
+				try {
+					const forecastJson = await forecastResp.json();
+					const allEntries = forecastJson?.[0]?.data || [];
+					const parsed = allEntries.map(d => ({
+						days: periodDays(d.forecastPeriod),
+						forecastValues: parseForecastValues(d),
+						unit: normalizeUnit(d.unitCode || d.unit),
+						fp: d.forecastPeriod
+					})).filter(e => e.forecastValues.length > 0);
+
+					if (parsed.length > 0) {
+						const closest = (target) => parsed.reduce((best, e) =>
+							Math.abs(e.days - target) < Math.abs(best.days - target) ? e : best
+						);
+						const threeMonth = closest(90);
+						const sixMonth = closest(180);
+
+						periods.push({
+							label: '3-Month',
+							periodName: periodLabel(threeMonth.fp),
+							forecastValues: threeMonth.forecastValues,
+							unit: threeMonth.unit
+						});
+						if (sixMonth !== threeMonth) {
+							periods.push({
+								label: '6-Month',
+								periodName: periodLabel(sixMonth.fp),
+								forecastValues: sixMonth.forecastValues,
+								unit: sixMonth.unit
+							});
+						}
+					}
+				} catch (err) {
+					console.warn('Failed to parse forecast data for nearest station:', err);
+				}
+			}
+
+			const priorYearAvgSrvo = priorYearValues.length > 0
+				? parseFloat((priorYearValues.reduce((sum, v) => sum + v.value, 0) / priorYearValues.length).toFixed(3))
+				: null;
+
+			const stationResult = {
+				stationName: nearestStation.name,
+				stationId: nearestStation.stationId,
+				stationTriplet: triplet,
+				latitude: nearestStation.latitude,
+				longitude: nearestStation.longitude,
+				distanceKm: parseFloat(haversineKm(lat, lng, nearestStation.latitude ?? 0, nearestStation.longitude ?? 0).toFixed(1)),
+				historicalValues,
+				priorYearValues,
+				priorYearAvgSrvo,
+				periods
+			};
+
+			setStreamForecast({
+				source: 'USDA AWDB REST API',
+				fetchedAt: new Date().toISOString(),
+				stations: periods.length > 0 ? [stationResult] : [],
+				noStations: periods.length === 0
+			});
+
+			console.log('Nearest stream forecast station:', stationResult);
+
+		} catch (error) {
+			console.error('Error fetching nearest stream forecast:', error);
+			setStreamForecast(null);
+			message.error('Nearest stream forecast data could not be loaded.');
 		}
 	};
 

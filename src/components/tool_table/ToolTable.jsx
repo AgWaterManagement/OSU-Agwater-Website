@@ -118,6 +118,19 @@ const toolsData = [
         link: '/apps/agWqPlan',
         status: 'under_development'
       },
+      {
+        title: 'Agrivoltaics Potential in the United States',
+        description: (<><img src={imagePath + 'Agrivoltaics.png'} alt='Agrivoltaics Potential' width={360} />This tool provides information on the potential for agrivoltaic
+         installations across the United States, including data on potential power generation and water savings,
+         for agricultural lands.</>),
+        keywords: ['agrivoltaics', 'solar energy', 'agriculture', 'land suitability'],
+        link: '/apps/agrivoltaics',
+        status: 'under_development'
+      },
+
+
+
+
 
     ];
 

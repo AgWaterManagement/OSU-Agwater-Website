@@ -17,6 +17,10 @@ import Wotus from '../../apps/wotus/Wotus';
 import Drought from '../../apps/drought/Drought';
 import DroughtIndexViewer from '../../apps/drought/DroughtIndexViewer';
 import CropCoeffCalculator from '../../apps/crop_coeff_calculator/CropCoeffCalculator';
+import Agrivoltaics from '../../apps/agrivoltaics/agrivoltaics';
+import OregonAgrivoltaics from '../../apps/oregon_agrivoltaics/OregonAgrivoltaics';
+
+
 //import UserRegistration from '../../apps/crop_management_system/UserRegistration';
 
 import Agrimet from '../../apps/agrimet/Agrimet';
@@ -83,9 +87,10 @@ const AppRoutes = () => (
         <Route path="/apps/cropCoeffCalculator" element={<CropCoeffCalculator />} />
 
         <Route path="/apps/agrimet" element={<Agrimet />} />
+        <Route path="/apps/agrivoltaics" element={<Agrivoltaics />} />
+        <Route path="/apps/oregonAgrivoltaics" element={<OregonAgrivoltaics />} />
 
         <Route path="/funding" element={<FundingSources />} />
-
 
         <Route path="/submitArticle/:id" element={<SubmitArticle />} />
         <Route path="/submitSource" element={<SubmitSourceForm />} />
