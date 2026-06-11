@@ -7,7 +7,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line,
 import { PieChart, Pie, Cell } from 'recharts';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 
-import PropTypes from 'prop-types';
+import PropTypes, { element } from 'prop-types';
 import { secrets } from '../../secrets';
 import NWSForecast from '../../components/weather/NWSForecast';
 import SummaryPanel from '../../components/drought/IndexSummaryPanel';
@@ -242,6 +242,7 @@ const Drought = () => {
 	const [streamForecast, setStreamForecast] = useState(null);
 	const [snowForecast, setSnowForecast] = useState(null);
 	const [reservoirForecast, setReservoirForecast] = useState(null);
+	const [droughtIndiciesStations, setDroughtIndiciesStations] = useState([]);
 	const [modalChart, setModalChart] = useState(null);
 	const [clickedLocation, setClickedLocation] = useState({ lat: null, lng: null });
 	const [hucConditions, setHucConditions] = useState(null);
@@ -1151,6 +1152,82 @@ const Drought = () => {
 		}
 	};
 
+
+	const GetDroughtIndicies = async (lat, lng) => {
+		// This function will fetch the current drought indicies from the AWDB REST API for the station nearest to the provided lat/lng coordinates.
+		// We will look for stations that have metadata indicating they provide drought indicies (e.g. USDM, PDSI, SPI, EDDI) and fetch the most recent data for those stations.
+		// We will also include station metadata such as the station name, location, and which drought indicies it provides in the returned data so that we can display those
+		//	stations on the map and in the SummaryPanel with appropriate labels and icons for the drought indicies they provide.
+		// We will also handle errors gracefully and return informative messages if something goes wrong.
+
+		// First, we will fetch a list of stations that provide drought indicies and are active, using the /services/v1/stations endpoint with appropriate filters.
+		try {
+			// Use the AWDB REST API to locate all of the sensor stations that provide drought indicies data in Oregon, then filter to the ones closest to the provided lat/lng coordinates.
+			// Element codes to include:
+			//	SRVO (streamflow)
+			// 	PREC (precipitation)
+			// 	WTEQ (snow water equivalent, also known as SWE)
+			// 	RESC (reservoir storage)
+			const elementCodes = ['SRVO', 'PREC', 'WTEQ', 'RESC'];
+			const stationsUrl = "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations";
+			const stationsParams = new URLSearchParams({
+				stationTriplets: '*:OR:*',	// Look for all stations in Oregon
+				elements: elementCodes.join(','),
+				duration: 'DAILY',			// Currently, we will only consider stations with daily data, as these are more likely to have up-to-date drought indicies; we can expand to other durations if needed in the future
+				activeOnly: 'true',			// Only consider active stations
+				stationElements: 'true'		// Include element metadata in station results so we can identify which stations provide which drought indicies
+			});
+
+			const stationsResponse = await fetch(`${stationsUrl}?${stationsParams}`, {
+				headers: { 'Accept': 'application/json' }
+			});
+
+			if (!stationsResponse.ok) {
+				throw new Error(`Failed to fetch drought indices stations (${stationsResponse.status})`);
+			}
+
+			const stations = await stationsResponse.json();
+
+			// Filter to stations that are close to the provided lat/lng and have drought indices metadata.
+			// For simplicity, we will consider stations within a certain radius (e.g. 50 km) and that have at least one of the drought indices in their metadata.
+
+			const radiusKm = 50;
+			const stationsWithIndices = (stations || []).filter(station => {
+				const hasElement = station.elements?.some(e => elementCodes.includes(e.elementCode));
+				if (!hasElement) return false;
+				const dist = haversineKm(lat, lng, station.latitude ?? 0, station.longitude ?? 0);
+				return dist <= radiusKm;
+			});
+
+			// Map the filtered stations to include relevant metadata and the drought indices they provide.
+			const stationsData = stationsWithIndices.map(station => ({
+				stationName: station.name,
+				stationId: station.stationId,
+				latitude: station.latitude,
+				longitude: station.longitude,
+				elements: station.elements?.map(e => e.elementCode) || []	// A given station might record one or more of the drought indicies; we will include this information in the metadata for each station so we can display it in the UI and properly query the /data endpoint for the relevant elements and data.
+			}));
+
+			console.log('Drought indices stations near clicked location:', stationsData);
+			setDroughtIndicesStations({
+				source: 'USDA AWDB REST API',
+				fetchedAt: new Date().toISOString(),
+				stations: stationsData,
+				totalStations: stationsData.length
+			});
+
+			// After we have the list of nearby stations that provide drought indicies, we can fetch the most recent data for those stations and update the SummaryPanel accordingly.
+			// This will likely involve another function that takes the station IDs and queries the /data endpoint for the relevant elements and returns the latest values for those elements,
+			// which we can then display in the SummaryPanel.
+
+
+		} catch (error) {
+			console.error("Error fetching drought indices stations:", error);
+			setDroughtIndicesStations(null);
+			message.error("Drought indices data could not be loaded.");
+		}
+	}
+
 	// Transforms huc8_current_conditions.json field names to match SummaryPanel's LATEST_API_KEY_MAP
 	const adaptConditions = (raw) => {
 		const out = {};
@@ -1221,7 +1298,10 @@ const Drought = () => {
 			})
 			.catch(err => console.error('Failed to load SNOTEL data:', err));
 
-		// Load HUC-8 static data for SummaryPanel
+		// Load the current and forecast SRVO data from the USGS station nearest to the user for the SummaryPanel to display.
+		// The data is fetched via API calls to the USDA AWDB REST API in the GetNearestStreamForecast function, which is triggered by a click on the map.
+		// However, we can also pre-fetch data for a default location (e.g. the geographic center of Oregon) so that the SummaryPanel has something to show when the app first loads.
+		
 		Promise.all([
 			fetch('/drought/data/huc8_current_conditions.json').then(r => r.json()),
 			fetch('/drought/data/huc8_current_forecasts.json').then(r => r.json()),
