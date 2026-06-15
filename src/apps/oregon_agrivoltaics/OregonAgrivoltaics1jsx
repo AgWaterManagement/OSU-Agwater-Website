@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState, useCallback } from "react";
 import { Input, Spin, Row, Col, Typography, Statistic, Collapse, Form } from "antd";
 import { SettingOutlined } from '@ant-design/icons';
 
@@ -42,7 +42,7 @@ import Title from "antd/es/typography/Title";
 
 
 
-const AgFieldLayer = ({ loadFeatureData, selectedFieldFeatures, setSelectedFieldFeatures }) => {
+const AgFieldLayer = ({ loadFeatureData, setSelectedFieldFeatures }) => {
 
     const id = "or-ag-boundaries";
     const name = "Oregon Agricultural Boundaries";
@@ -58,8 +58,7 @@ const AgFieldLayer = ({ loadFeatureData, selectedFieldFeatures, setSelectedField
     const layerRef = useRef(null);
 
     const featureTableRef = useRef(null);
-
-    const [highlites, setHighlites] = useState([]);
+    const activeFeatureHighlightsRef = useRef(new Map());
 
 
     // Memoize the renderer so it won't be recreated on every render
@@ -97,6 +96,50 @@ const AgFieldLayer = ({ loadFeatureData, selectedFieldFeatures, setSelectedField
 
         return value == null ? "No data" : String(value);
     };
+
+    const getFeatureSelectionId = (feature) => {
+        return feature?.attributes?.OBJECT_ID ?? feature?.attributes?.OPENET_ID ?? feature?.uid ?? null;
+    };
+
+    const clearActiveFeature = useCallback((feature) => {
+        const selectionId = getFeatureSelectionId(feature);
+        if (selectionId == null) return;
+
+        const existingHighlight = activeFeatureHighlightsRef.current.get(selectionId);
+        if (existingHighlight) {
+            existingHighlight.remove();
+            activeFeatureHighlightsRef.current.delete(selectionId);
+        }
+
+        if (featureTableRef.current?.highlightIds?.remove && feature.attributes?.OBJECT_ID != null) {
+            featureTableRef.current.highlightIds.remove(feature.attributes.OBJECT_ID);
+        }
+
+        setSelectedFieldFeatures((prevFeatures) =>
+            prevFeatures.filter((selectedFeature) => getFeatureSelectionId(selectedFeature) !== selectionId)
+        );
+    }, [setSelectedFieldFeatures]);
+
+    const setActiveFeature = useCallback((feature, layerView) => {
+        const selectionId = getFeatureSelectionId(feature);
+        if (selectionId == null) return;
+
+        setSelectedFieldFeatures((prevFeatures) => {
+            if (prevFeatures.some((selectedFeature) => getFeatureSelectionId(selectedFeature) === selectionId)) {
+                return prevFeatures;
+            }
+            return [...prevFeatures, feature];
+        });
+
+        if (feature.attributes?.OBJECT_ID != null && featureTableRef.current?.highlightIds?.add) {
+            featureTableRef.current.highlightIds.add(feature.attributes.OBJECT_ID);
+        }
+
+        const highlight = layerView.highlight(feature, { name: "selected" });
+        activeFeatureHighlightsRef.current.set(selectionId, highlight);
+
+        loadFeatureData(feature);
+    }, [loadFeatureData, setSelectedFieldFeatures]);
 
     // This function is called when the user completes drawing a rectangle on the map.
     // It queries features that intersect the rectangle and sets the highlightIds
@@ -239,29 +282,22 @@ const AgFieldLayer = ({ loadFeatureData, selectedFieldFeatures, setSelectedField
                 view.hitTest(event).then((response) => {
                     const feature = response.results[0]?.graphic;
                     if (feature) {
-                        loadFeatureData(feature);
-
                         view.whenLayerView().then((layerView) => {
+                            const selectionId = getFeatureSelectionId(feature);
+                            if (selectionId == null) {
+                                console.warn("Unable to get feature selection ID:", feature);
+                                return;
+                            }
 
-                            // add to the selectedFieldFeatures array if it is not already present
-                            if (!selectedFieldFeatures.includes(feature)) {
-                                setSelectedFieldFeatures((prevFeatures) => [...prevFeatures, feature]);
+                            const isActive = activeFeatureHighlightsRef.current.has(selectionId);
 
-                                // highlight the feature in the feature table by adding its objectId to the highlightIds collection of the feature table component
-                                const highlight = layerView.highlight(feature, { name: "selected" }).then((highlight) => {});
-                                setHighlites((prevHighlites) => [...prevHighlites, highlight]);
+                            // Click toggles the feature between active and inactive.
+                            if (!isActive) {
+                                console.warn("Activating feature:", feature);
+                                setActiveFeature(feature, layerView);
                             } else {
-                                // if the feature is already in the selectedFieldFeatures array, remove it from the array and remove the highlight from the feature table
-                                setSelectedFieldFeatures((prevFeatures) => prevFeatures.filter((f) => f !== feature));
-                                layerView.highlight(feature, { name: "selected" }).then((highlight) => {
-                                    highlight.remove();
-                                    setHighlites((prevHighlites) => prevHighlites.filter((h) => h !== highlight));
-                                });
-                                
-                                if (featureTableRef.current) {
-                                    const objectId = feature.attributes.OBJECT_ID;
-                                    featureTableRef.current.highlightIds.remove(objectId);
-                                }
+                                console.warn("Deactivating feature:", feature);
+                                clearActiveFeature(feature);
                             }
                         });
                     }
@@ -324,7 +360,7 @@ const AgFieldLayer = ({ loadFeatureData, selectedFieldFeatures, setSelectedField
                 viewRef.current = null;
             }
         };
-    }, [renderer]);
+    }, [renderer, clearActiveFeature, setActiveFeature]);
 
     // Set up search event listener for address search
     useEffect(() => {
@@ -372,11 +408,11 @@ const AgFieldLayer = ({ loadFeatureData, selectedFieldFeatures, setSelectedField
 
         return () => {
             // Cleanup event listeners
-            const arcgisSearch = document.querySelector('arcgis-search');
-            if (arcgisSearch) {
-                arcgisSearch.removeEventListener('arcgis-search-result', handleSearchResult);
-                arcgisSearch.removeEventListener('arcgisSearchResult', handleSearchResult);
-            }
+            //const arcgisSearch = document.querySelector('arcgis-search');
+            //if (arcgisSearch) {
+            //    arcgisSearch.removeEventListener('arcgis-search-result', handleSearchResult);
+            //    arcgisSearch.removeEventListener('arcgisSearchResult', handleSearchResult);
+            //}
         };
     }, []);
 
@@ -450,7 +486,7 @@ const OregonAgrivoltaics = () => {
     const [valueOfPVElectricity, setValueOfPVElectricity] = useState(0.10);
     const [valueOfConservedWater, setValueOfConservedWater] = useState(200);
 
-    const [selectedFieldFeatures, setSelectedFieldFeatures] = useState([]);  // array of selected field features
+    const [, setSelectedFieldFeatures] = useState([]);  // array of selected field features
 
     const [form] = Form.useForm();
     
@@ -520,6 +556,7 @@ const OregonAgrivoltaics = () => {
 
         return chartData || [];  // 
     };
+
 
 
     const renderTooltipWithoutRange = ({ payload, content, ...rest }) => {
@@ -658,7 +695,7 @@ const OregonAgrivoltaics = () => {
                         Solar Energy Potential
                     </Typography.Title>
 
-                    <AgFieldLayer loadFeatureData={loadFeatureData} selectedFieldFeatures={selectedFieldFeatures} setSelectedFieldFeatures={setSelectedFieldFeatures} />
+                    <AgFieldLayer loadFeatureData={loadFeatureData} setSelectedFieldFeatures={setSelectedFieldFeatures} />
 
                     <div style={{ height: '25em', width: '100%', padding: '1em' }}></div>
                 </Col>
@@ -675,7 +712,7 @@ const OregonAgrivoltaics = () => {
 
                             <div style={{ width: "100%", height: 640, padding: 4 }}>
                                 <div>Field ID: {fieldFeatureData?.OPENET_ID}</div>
-                                <div><span>Field Area: {fieldFeatureData?.Acres?.toFixed(1)} acres</span></div>
+                                <div><span>Area: {fieldFeatureData?.Acres?.toFixed(1)} acres</span></div>
 
                                 <Collapse style={{ marginBottom: 16 }}>
                                     <Collapse.Panel header="Solar Energy Capture" key="1">
@@ -686,11 +723,6 @@ const OregonAgrivoltaics = () => {
                                                         <Statistic title="Total Annual Incident Solar Radiation Energy (MWh)" value={toThousands(annualSolarEnergy.toFixed(0)) + " MWh"} />
                                                         <br />
                                                         <Statistic title="Total Annual PV Energy Produced (MWh)" value={toThousands(annualEnergyProduction.toFixed(0)) + " MWh"} />
-                                                        <span style={{fontSize:'0.9em', fontStyle:'italic', color: 'lightgray'}}>
-                                                        Assumes {fractionOfFieldArea*100} percent of the field area is covered by solar panels.
-                                                        </span>
-                                                        <br />
-                                                        
                                                         <br />
                                                         <Statistic title="Mean Annual Panel Efficiency (%)" value={toThousands((100*annualPanelEfficiency).toFixed(1)) + " %"} />
                                                         <br />
@@ -865,7 +897,7 @@ const OregonAgrivoltaics = () => {
                                                             expandIconPlacement={'start'}
                                                             items={[
                                                                 {
-                                                                  key: '1',
+                                                                  key: '2',
                                                                   label: 'Settings',
                                                                   children: <div>
                                                                     <Row>

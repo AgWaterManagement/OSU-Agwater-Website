@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 
 import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal, Select } from 'antd';
-import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents, CircleMarker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
@@ -224,6 +224,14 @@ StatusBar.propTypes = {
 
 let countyDroughtData = {};
 
+const MapClickHandler = ({ onMapClick }) => {
+	useMapEvents({
+		click: (e) => {
+			onMapClick(e.latlng.lat, e.latlng.lng);
+		}
+	});
+	return null;
+};
 
 const Drought = () => {
 	const usdmWMSURL = "https://ndmcgeodata.unl.edu/cgi-bin/mapserv.exe?map=%2Fms4w%2Fapps%2Fusdm%2Fmap%2Fusdm_current_wms.map";
@@ -243,6 +251,7 @@ const Drought = () => {
 	const [snowForecast, setSnowForecast] = useState(null);
 	const [reservoirForecast, setReservoirForecast] = useState(null);
 	const [droughtIndiciesStations, setDroughtIndiciesStations] = useState([]);
+	const [droughtIndiciesData, setDroughtIndiciesData] = useState(null);
 	const [modalChart, setModalChart] = useState(null);
 	const [clickedLocation, setClickedLocation] = useState({ lat: null, lng: null });
 	const [hucConditions, setHucConditions] = useState(null);
@@ -1153,29 +1162,27 @@ const Drought = () => {
 	};
 
 
-	const GetDroughtIndicies = async (lat, lng) => {
-		// This function will fetch the current drought indicies from the AWDB REST API for the station nearest to the provided lat/lng coordinates.
-		// We will look for stations that have metadata indicating they provide drought indicies (e.g. USDM, PDSI, SPI, EDDI) and fetch the most recent data for those stations.
-		// We will also include station metadata such as the station name, location, and which drought indicies it provides in the returned data so that we can display those
-		//	stations on the map and in the SummaryPanel with appropriate labels and icons for the drought indicies they provide.
+	const GetDroughtIndexStations = async (lat, lng) => {
+		// This function will fetch the current drought indices from the AWDB REST API for the station nearest to the provided lat/lng coordinates.
+		// We will look for stations that have metadata indicating they provide drought indices (e.g. USDM, PDSI, SPI, EDDI) and fetch the most recent data for those stations.
+		// We will also include station metadata such as the station name, location, and which drought indices it provides in the returned data so that we can display those
+		//	stations on the map and in the SummaryPanel with appropriate labels and icons for the drought indices they provide.
 		// We will also handle errors gracefully and return informative messages if something goes wrong.
 
-		// First, we will fetch a list of stations that provide drought indicies and are active, using the /services/v1/stations endpoint with appropriate filters.
+		// First, we will fetch a list of stations that provide drought indices and are active, using the /services/v1/stations endpoint with appropriate filters.
 		try {
-			// Use the AWDB REST API to locate all of the sensor stations that provide drought indicies data in Oregon, then filter to the ones closest to the provided lat/lng coordinates.
-			// Element codes to include:
-			//	SRVO (streamflow)
+			// Use the AWDB REST API to locate all of the sensor stations that provide drought indices data in Oregon, then filter to the ones closest to the provided lat/lng coordinates.
+			// Element codes to include (daily elements only — SRVO is monthly/seasonal and is handled by the streamflow forecast functions):
 			// 	PREC (precipitation)
 			// 	WTEQ (snow water equivalent, also known as SWE)
 			// 	RESC (reservoir storage)
-			const elementCodes = ['SRVO', 'PREC', 'WTEQ', 'RESC'];
+			const elementCodes = ['PREC', 'WTEQ', 'RESC'];
 			const stationsUrl = "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations";
 			const stationsParams = new URLSearchParams({
 				stationTriplets: '*:OR:*',	// Look for all stations in Oregon
 				elements: elementCodes.join(','),
-				duration: 'DAILY',			// Currently, we will only consider stations with daily data, as these are more likely to have up-to-date drought indicies; we can expand to other durations if needed in the future
 				activeOnly: 'true',			// Only consider active stations
-				stationElements: 'true'		// Include element metadata in station results so we can identify which stations provide which drought indicies
+				stationElements: 'true'		// Include element metadata in station results so we can identify which stations provide which drought indices
 			});
 
 			const stationsResponse = await fetch(`${stationsUrl}?${stationsParams}`, {
@@ -1189,11 +1196,10 @@ const Drought = () => {
 			const stations = await stationsResponse.json();
 
 			// Filter to stations that are close to the provided lat/lng and have drought indices metadata.
-			// For simplicity, we will consider stations within a certain radius (e.g. 50 km) and that have at least one of the drought indices in their metadata.
-
+			// The AWDB API returns element metadata under `stationElements` (not `elements`) when stationElements=true.
 			const radiusKm = 50;
 			const stationsWithIndices = (stations || []).filter(station => {
-				const hasElement = station.elements?.some(e => elementCodes.includes(e.elementCode));
+				const hasElement = station.stationElements?.some(e => elementCodes.includes(e.elementCode));
 				if (!hasElement) return false;
 				const dist = haversineKm(lat, lng, station.latitude ?? 0, station.longitude ?? 0);
 				return dist <= radiusKm;
@@ -1203,27 +1209,86 @@ const Drought = () => {
 			const stationsData = stationsWithIndices.map(station => ({
 				stationName: station.name,
 				stationId: station.stationId,
+				stationTriplet: station.stationTriplet,
 				latitude: station.latitude,
 				longitude: station.longitude,
-				elements: station.elements?.map(e => e.elementCode) || []	// A given station might record one or more of the drought indicies; we will include this information in the metadata for each station so we can display it in the UI and properly query the /data endpoint for the relevant elements and data.
+				elements: station.stationElements?.map(e => e.elementCode) || []
 			}));
 
 			console.log('Drought indices stations near clicked location:', stationsData);
-			setDroughtIndicesStations({
+			setDroughtIndiciesStations({
 				source: 'USDA AWDB REST API',
 				fetchedAt: new Date().toISOString(),
 				stations: stationsData,
 				totalStations: stationsData.length
 			});
 
-			// After we have the list of nearby stations that provide drought indicies, we can fetch the most recent data for those stations and update the SummaryPanel accordingly.
-			// This will likely involve another function that takes the station IDs and queries the /data endpoint for the relevant elements and returns the latest values for those elements,
-			// which we can then display in the SummaryPanel.
-
+			// Fetch the most recent precipitation data for all nearby stations
+			const triplets = stationsWithIndices.map(s => s.stationTriplet).filter(Boolean);
+			if (triplets.length > 0) {
+				GetDroughtIndexData(triplets, 'PREC');
+			}
 
 		} catch (error) {
 			console.error("Error fetching drought indices stations:", error);
-			setDroughtIndicesStations(null);
+			setDroughtIndiciesStations(null);
+			message.error("Drought indices data could not be loaded.");
+		}
+	}
+
+	const GetDroughtIndexData = async (tripletList, droughtIndex) => {
+		// This function will take the list of nearby stations, a specified drought index (e.g. USDM, PDSI, SPI, EDDI),
+		// and fetch the most recent data for that drought index from the AWDB REST API for those stations.
+
+		// We will handle errors gracefully and return informative messages if something goes wrong.
+		
+		try {
+			// This function is already given a list of stationIDs to fetch the droughtIndex
+			// data from. Thus, we can batch these stationIDs into a single /data request using
+			// a comma-separated list of station triplets in the stationTriplets parameter,
+			// and specifying the droughtIndex in the elements parameter to filter to only the relevant data.
+			const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
+			const dataParams = new URLSearchParams({
+				stationTriplets: tripletList.join(','),
+				elements: droughtIndex,
+				duration: 'DAILY',
+				returnFlags: 'false',
+				beginDate: -30,	// We will fetch the last 30 days of data for the relevant drought index for each station so that we can display recent trends in the SummaryPanel; we can adjust this duration as needed in the future.
+			});
+
+			const dataResponse = await fetch(`${dataUrl}?${dataParams}`, {
+				headers: { 'Accept': 'application/json' }
+			});
+
+			if (!dataResponse.ok) {
+				throw new Error(`Failed to fetch drought indices data (${dataResponse.status})`);
+			}
+
+			const dataJson = await dataResponse.json();
+			const droughtData = (dataJson || []).map(entry => {
+				const stationTriplet = entry.stationTriplet;
+				const stationId = stationTriplet?.split(':')?.[0];
+				const latestValue = entry?.data?.[0]?.values?.filter(v => v.value !== null && v.value !== undefined).pop();
+				return {
+					stationTriplet,
+					stationId,
+					droughtIndex,
+					value: latestValue ? latestValue.value : null,
+					date: latestValue ? latestValue.date : null
+				};
+			});
+
+			console.log('Drought indices data for nearby stations:', droughtData);
+			setDroughtIndiciesData({
+				source: 'USDA AWDB REST API',
+				fetchedAt: new Date().toISOString(),
+				stations: droughtData,
+				totalStations: droughtData.length
+			});
+
+		} catch (error) {
+			console.error("Error fetching drought indices data:", error);
+			setDroughtIndiciesData(null);
 			message.error("Drought indices data could not be loaded.");
 		}
 	}
@@ -2016,6 +2081,7 @@ const Drought = () => {
 											url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 											attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
 										/>
+										<MapClickHandler onMapClick={(lat, lng) => GetDroughtIndexStations(lat, lng)} />
 										<WMSTileLayer
 											url={usdmWMSURL}
 											layers="usdm_current"
@@ -2043,6 +2109,39 @@ const Drought = () => {
 												onEachFeature={onEachCounty}
 											/>
 										)}
+										{droughtIndiciesStations?.stations?.map(station => {
+											if (station.latitude == null || station.longitude == null) return null;
+											const dataEntry = droughtIndiciesData?.stations?.find(d => d.stationId === station.stationId);
+											const distance = clickedLocation.lat != null
+												? haversineKm(clickedLocation.lat, clickedLocation.lng, station.latitude, station.longitude).toFixed(1)
+												: null;
+											return (
+												<CircleMarker
+													key={station.stationId}
+													center={[station.latitude, station.longitude]}
+													radius={8}
+													pathOptions={{ color: '#00e5ff', fillColor: '#00e5ff', fillOpacity: 0.75, weight: 2 }}
+												>
+													<Popup>
+														<div style={{ minWidth: '180px' }}>
+															<strong>{station.stationName}</strong><br />
+															Station ID: {station.stationId}<br />
+															Available elements: {station.elements?.join(', ')}<br />
+															{dataEntry ? (
+																<>
+																	Index queried: {dataEntry.droughtIndex}<br />
+																	Latest value: {dataEntry.value != null ? `${dataEntry.value} in` : 'N/A'}<br />
+																	{dataEntry.date && <>As of: {dataEntry.date}<br /></>}
+																</>
+															) : (
+																<span style={{ color: '#888' }}>Loading index data...</span>
+															)}
+															{distance != null && <><br />Distance from click: {distance} km</>}
+														</div>
+													</Popup>
+												</CircleMarker>
+											);
+										})}
 									</MapContainer>
 								</div>
 							</Col>
