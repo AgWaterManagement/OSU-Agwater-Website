@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 
-import {Alert,Layout,Steps,Card,Typography,Divider,Space,Button,Spin,Row,Col,} from 'antd';
+import { Menu, Layout, Steps, Card, Typography, Divider, Space, Button, Spin, Tabs } from 'antd';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
@@ -216,6 +216,7 @@ const WqMap = ({ feature_url, center = [-120.5, 44.0], zoom = 5, height = 400 })
 // Loads concern questions and practices from the /agwqplan routes exposed by ag_wqplan.py.
 const AgWqPlan = () => {
   // Current step in the wizard (0-4)
+  const [currentMode, setCurrentMode] = useState('generate_plan');
   const [current, setCurrent] = useState(-1);
 
   //------------------------------------------------------------------------------------
@@ -232,7 +233,7 @@ const AgWqPlan = () => {
   const [loggingIn, setLoggingIn] = useState(false);
   const [showMaps, setShowMaps] = useState(false);
   const [userRole, setUserRole] = useState(null);
-  
+
   // -----------------------------------------------------------------------------------
   // global report data state that gets passed to summary and used for PDF generation
   // useStates() reflect data that is reactive
@@ -240,7 +241,8 @@ const AgWqPlan = () => {
   // -----------------------------------------------------------------------------------
   const [loginName, setLoginName] = useState(null);
   const [userType, setUserType] = useState('Landowner');
-  const commodity = useRef('Pasture/Hay');
+  const [selectedCommodities, setSelectedCommodities] = useState([]);
+  //const commodity = useRef('Pasture/Hay');
   const [siteName, setSiteName] = useState('');
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
@@ -262,6 +264,7 @@ const AgWqPlan = () => {
   const [selectedGoals, setSelectedGoals] = useState([]);
   const [selectedPracticeIds, setSelectedPracticeIds] = useState([]);
   const [selectedTMDLs, setSelectedTMDLs] = useState([]);
+  const [photos, setPhotos] = useState([]);
 
   // ------------------------------------------------------------------------------------
   // Success/Error status of each Step for validation and user feedback
@@ -271,7 +274,7 @@ const AgWqPlan = () => {
   const [stepConditionsStatus, setStepConditionsStatus] = useState('wait');
   const [stepGoalsStatus, setStepGoalsStatus] = useState('wait');
   const [stepPracticesStatus, setStepPracticesStatus] = useState('wait');
-  
+
 
 
   useEffect(() => {
@@ -295,7 +298,7 @@ const AgWqPlan = () => {
       setLoadingData(true);
 
       try {
-        const [sitesData, commoditiesData, concernsData, questionsData, practicesData, goalsData,areaRulesData] = await Promise.all([
+        const [sitesData, commoditiesData, concernsData, questionsData, practicesData, goalsData, areaRulesData] = await Promise.all([
           fetchJson('/agwqplan/sites'),
           fetchJson('/agwqplan/commodities'),
           fetchJson('/agwqplan/concerns'),
@@ -303,7 +306,7 @@ const AgWqPlan = () => {
           fetchJson('/agwqplan/practices'),
           fetchJson('/agwqplan/goals'),
           fetchJson('/agwqplan/areaRules'),
-          
+
         ]);
 
         if (!active) return;
@@ -399,7 +402,7 @@ const AgWqPlan = () => {
     //  return;
     setCurrent((c) => c + 1);
   };
-  
+
   const prev = () => {
     //if (validateInputs())
     //  return;
@@ -411,7 +414,7 @@ const AgWqPlan = () => {
   return (
     <>
 
-{/*}  
+      {/*}  
       {loggingIn && (
         <AgWqplanLogin
           onLoginSuccess={(result) => {
@@ -485,23 +488,28 @@ const AgWqPlan = () => {
 
       <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
         <Card>
-            <PageRating pageID='/apps/ag_wq_plan' />
-            <Title level={3}>Water Quality Practices Planner</Title>
-            {current === -1 && (
-              <Paragraph>
-                This tool connects land conditions and goals to agricultural water quality
-                practices, technical assistance, and reference materials.
-              </Paragraph>
-            )}
-            <Divider />            
+          <PageRating pageID='/apps/ag_wq_plan' />
+          <Title level={3}>Water Quality Practices Planner</Title>
+          {current === -1 && (
+            <Paragraph>
+              This tool connects land conditions and goals to agricultural water quality
+              practices, technical assistance, and reference materials.
+            </Paragraph>
+          )}
+
+          <Menu onClick={({ key }) => setCurrentMode(key)} selectedKeys={[currentMode]} mode="horizontal" items={[
+            { label: 'Generate Plan', key: 'generate_plan' },
+            { label: 'View Plan', key: 'view_plan', },
+            { label: 'Learn More', key: 'learn_more', }]}
+          />
 
           <Spin spinning={loadingData} tip="Loading planner data...">
             {current === -1 && (
-              <StartUp 
-                userType={userType} 
-                setUserType={setUserType} 
-                selectedTMDLs={selectedTMDLs} 
-                setSelectedTMDLs={setSelectedTMDLs} 
+              <StartUp
+                userType={userType}
+                setUserType={setUserType}
+                selectedTMDLs={selectedTMDLs}
+                setSelectedTMDLs={setSelectedTMDLs}
                 availableTMDLs={availableTMDLs}
                 setLoginName={setLoginName}
                 setUserRole={setUserRole}
@@ -509,116 +517,172 @@ const AgWqPlan = () => {
                 setCurrent={setCurrent} />
             )}
 
-            {current >= 0 && (
+            {currentMode === 'generate_plan' && (
               <>
-                <Steps current={current} onChange={setCurrent} style={{ marginBottom: 24 }}>
-                  <Step title="Location" status={stepLocationStatus} />
-                  <Step title="Conditions" status={stepConditionsStatus} />
-                  <Step title="Goals" status={stepGoalsStatus} />
-                  <Step title="Practices" status={stepPracticesStatus} />
-                  <Step title="Plan Summary" />
-                </Steps>
+                {current >= 0 && (
+                  <>
+                    <Divider />
+                    <Steps current={current} onChange={setCurrent} style={{ marginBottom: 24 }}>
+                      <Step title="Location" status={stepLocationStatus} />
+                      <Step title="Conditions" status={stepConditionsStatus} />
+                      <Step title="Goals" status={stepGoalsStatus} />
+                      <Step title="Practices" status={stepPracticesStatus} />
+                      <Step title="Plan Summary" />
+                    </Steps>
+                    <Divider />
+                  </>
+                )}
+
+                {current === 0 && (
+                  <StepWhoWhere
+                    userType={userType}
+                    sitesData={sites}
+                    commoditiesData={commodities}
+                    selectedCommodities={selectedCommodities}
+                    setSelectedCommodities={setSelectedCommodities}
+                    setPhotos={setPhotos}
+                    siteName={siteName} setSiteName={setSiteName}
+                    _latitude={latitude} setLatitude={setLatitude}
+                    _longitude={longitude} setLongitude={setLongitude}
+                    agwqmArea={agwqmArea} setAgwqmArea={setAgwqmArea}
+                    agwqRegion={agwqRegion} setAgwqRegion={setAgwqRegion}
+                    regionalSpecialist={regionalSpecialist} setRegionalSpecialist={setRegionalSpecialist}
+                    regionalSpecialistEmail={regionalSpecialistEmail} setRegionalSpecialistEmail={setRegionalSpecialistEmail}
+                    regionalSpecialistPhone={regionalSpecialistPhone} setRegionalSpecialistPhone={setRegionalSpecialistPhone}
+                    adminRulesLink={adminRulesLink} setAdminRulesLink={setAdminRulesLink}
+                    areaPlanLink={areaPlanLink} setAreaPlanLink={setAreaPlanLink}
+                    setError={setStepLocationStatus}
+                  />
+                )}
+
+                {current === 1 && (
+                  <StepConditions
+                    concernData={concerns}
+                    selectedConcerns={selectedConcerns}
+                    setSelectedConcerns={setSelectedConcerns}
+                    filteredQuestions={filteredQuestions}
+                    selectedQuestions={selectedQuestions}
+                    setSelectedQuestions={setSelectedQuestions}
+                    setError={setStepConditionsStatus}
+                  />
+                )}
+
+                {current === 2 && (
+                  <StepGoals
+                    selectedGoals={selectedGoals}
+                    setSelectedGoals={setSelectedGoals}
+                    goalData={goals}
+                    setError={setStepGoalsStatus}
+                  />
+                )}
+
+                {current === 3 && (
+                  <StepPractices
+                    userType={userType}
+                    areaRules={areaRules}
+                    agwqmArea={agwqmArea}
+                    recommendedPractices={filteredRecommendedPractices}
+                    selectedPracticeIds={selectedPracticeIds}
+                    setSelectedPracticeIds={setSelectedPracticeIds}
+                    setError={setStepPracticesStatus}
+                  />
+                )}
+
+                {current === 4 && (
+                  <StepSummary
+                    userType={userType}
+
+                    latitude={latitude}
+                    longitude={longitude}
+                    agWqMArea={agwqmArea}
+                    region={agwqRegion}
+
+                    regionalSpecialist={regionalSpecialist}
+                    regionalSpecialistEmail={regionalSpecialistEmail}
+                    regionalSpecialistPhone={regionalSpecialistPhone}
+                    adminRulesLink={adminRulesLink}
+                    areaPlanLink={areaPlanLink}
+
+
+                    siteName={siteName}
+
+
+
+
+                    selectedCommodities={selectedCommodities}
+                    selectedConcerns={selectedConcerns}
+                    selectedQuestions={selectedQuestions}
+                    selectedGoals={selectedGoals}
+                    goalData={goals}
+                    selectedPractices={selectedPractices}
+                    concernQuestions={concernQuestions}
+                  />
+                )}
+
                 <Divider />
+
+                <Space>
+                  {current > 0 && (
+                    <Button ghost onClick={prev}>
+                      Back
+                    </Button>
+                  )}
+                  {current < 4 && stepLocationStatus !== 'error' && stepConditionsStatus !== 'error' && stepGoalsStatus !== 'error' && stepPracticesStatus !== 'error' && (
+                    <Button type="primary" onClick={next}>
+                      Next
+                    </Button>
+                  )}
+                  {current < 4 && (stepLocationStatus === 'error' || stepConditionsStatus === 'error' || stepGoalsStatus === 'error' || stepPracticesStatus === 'error') && (
+                    <Button type="primary" disabled>
+                      Next
+                    </Button>
+                  )}
+
+                  <span style={{ marginLeft: 8, fontStyle: 'italic', fontSize: 14, color: 'red' }}>
+                    {stepLocationStatus === 'error' && 'Please complete the Location step before proceeding.'}
+                    {stepConditionsStatus === 'error' && 'Please complete the Conditions step before proceeding.'}
+                    {stepGoalsStatus === 'error' && 'Please complete the Goals step before proceeding.'}
+                    {stepPracticesStatus === 'error' && 'Please complete the Practices step before proceeding.'}
+                  </span>
+                </Space>
               </>
             )}
 
-            {current === 0 && (
-              <StepWhoWhere
-                userType={userType}
-                sitesData={sites}
-                commodity={commodity}
-                commoditiesData={commodities}
-                siteName={siteName} setSiteName={setSiteName}
-                _latitude={latitude} setLatitude={setLatitude}
-                _longitude={longitude} setLongitude={setLongitude}
-                agwqmArea={agwqmArea} setAgwqmArea={setAgwqmArea}
-                agwqRegion={agwqRegion} setAgwqRegion={setAgwqRegion}
-                regionalSpecialist={regionalSpecialist} setRegionalSpecialist={setRegionalSpecialist}
-                regionalSpecialistEmail={regionalSpecialistEmail} setRegionalSpecialistEmail={setRegionalSpecialistEmail}
-                regionalSpecialistPhone={regionalSpecialistPhone} setRegionalSpecialistPhone={setRegionalSpecialistPhone}
-                adminRulesLink={adminRulesLink} setAdminRulesLink={setAdminRulesLink}
-                areaPlanLink={areaPlanLink} setAreaPlanLink={setAreaPlanLink}
-                setError={setStepLocationStatus}
-              />
+            {currentMode === 'view_plan' && (
+              <div> View Plan Content </div>
             )}
 
-            {current === 1 && (
-              <StepConditions
-                concernData={concerns}
-                selectedConcerns={selectedConcerns}
-                setSelectedConcerns={setSelectedConcerns}
-                filteredQuestions={filteredQuestions}
-                selectedQuestions={selectedQuestions}
-                setSelectedQuestions={setSelectedQuestions}
-                setError={setStepConditionsStatus}
-              />
+            {currentMode === 'learn_more' && (
+              <>
+                <Title level={5}>Water Quality Management Resources</Title>
+
+                <Tabs defaultActiveKey="1" items={
+                  [
+                    {
+                      key: 'practices',
+                      label: 'Practices Guides',
+                      children: 'Content of Tab Pane 1',
+                    },
+                    {
+                      key: 'maps',
+                      label: 'Maps',
+                      children: 'Content of Tab Pane 2',
+                    },
+                    {
+                      key: 'external_links',
+                      label: 'External Links',
+                      children: 'Content of Tab Pane 2',
+                    },
+                  ]} />
+              </>
+
             )}
 
-            {current === 2 && (
-              <StepGoals
-                selectedGoals={selectedGoals}
-                setSelectedGoals={setSelectedGoals}
-                goalData={goals}
-                setError={setStepGoalsStatus}
-              />
-            )}
-
-            {current === 3 && (
-              <StepPractices
-                userType={userType}
-                areaRules={areaRules}
-                agwqmArea={agwqmArea}
-                recommendedPractices={filteredRecommendedPractices}
-                selectedPracticeIds={selectedPracticeIds}
-                setSelectedPracticeIds={setSelectedPracticeIds}
-                setError={setStepPracticesStatus}
-              />
-            )}
-
-            {current === 4 && (
-              <StepSummary
-                userType={userType}
-                commodity={commodity}
-                selectedConcerns={selectedConcerns}
-                selectedQuestions={selectedQuestions}
-                selectedGoals={selectedGoals}
-                goalData={goals}
-                selectedPractices={selectedPractices}
-                concernQuestions={concernQuestions}
-              />
-            )}
-
-            <Divider />
-
-            <Space>
-              {current > 0 && (
-                <Button ghost onClick={prev}>
-                  Back
-                </Button>
-              )}
-              {current < 4 && stepLocationStatus !== 'error' &&  stepConditionsStatus !== 'error' && stepGoalsStatus !== 'error' && stepPracticesStatus !== 'error' && (
-                <Button type="primary" onClick={next}>
-                  Next
-                </Button>
-              )}
-              {current < 4 && ( stepLocationStatus === 'error' ||  stepConditionsStatus === 'error' || stepGoalsStatus === 'error' || stepPracticesStatus === 'error' ) && (
-                <Button type="primary" disabled>
-                  Next
-                </Button>
-              )}
-
-              <span style={{ marginLeft: 8, fontStyle: 'italic', fontSize: 14, color: 'red' }}>
-                {stepLocationStatus === 'error' && 'Please complete the Location step before proceeding.'}
-                {stepConditionsStatus === 'error' && 'Please complete the Conditions step before proceeding.'}
-                {stepGoalsStatus === 'error' && 'Please complete the Goals step before proceeding.'}
-                {stepPracticesStatus === 'error' && 'Please complete the Practices step before proceeding.'}
-              </span>
 
 
-            </Space>
-        </Spin>
-      </Card>
-    </Content >
+          </Spin>
+        </Card>
+      </Content >
       <Footer style={{ textAlign: 'center' }}>
         Oregon Ag Water Quality Practices – prototype planner
       </Footer>

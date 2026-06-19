@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Card, Divider, Image, Button } from 'antd';
+import { Card, Divider, Image, Button, Typography } from 'antd';
 import { EnvironmentOutlined, ArrowUpOutlined } from '@ant-design/icons';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+const { Title, Paragraph } = Typography;
 
 import projectData from './agtap_projects.json';
 
@@ -371,14 +373,14 @@ const AgTapProjects = () => {
     return (
         <>
             <div>
-                <h4>
+                <Title level={4}>
                     <EnvironmentOutlined style={{ marginRight: '8px' }} />
                     Oregon Agricultural Water Projects
-                </h4>
-                <p style={{ color: '#666', marginBottom: '24px' }}>
+                </Title>
+                <Paragraph style={{ color: '#666', marginBottom: '24px' }}>
                     Click on any project card or map marker to expand and view detailed information
                     including full description, location, and contact details.
-                </p>
+                </Paragraph>
                 <Divider />
                 <div
                     ref={mapDivRef}

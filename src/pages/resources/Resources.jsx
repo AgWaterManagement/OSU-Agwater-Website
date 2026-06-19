@@ -4,8 +4,10 @@ import AWFactSheets from "../../components/fact_sheets/AWFactSheets";
 import AWArticles from '../../components/articles/AWArticles';
 
 import AWButtonContainer from '../../components/button_container/AWButtonContainer.jsx';
+import { Typography, Divider } from 'antd';
 import { FileDoneOutlined, FileImageOutlined } from '@ant-design/icons';
-<FileDoneOutlined />
+
+const { Title, Paragraph } = Typography;
 
 const Resources = () => {
 
@@ -25,10 +27,9 @@ const Resources = () => {
 
     return (
         <>
-            <div className='content-container'>
-                <div className='topic_head-container'>
-                    <div className='content-container-header'>Resources</div>
-                    <p className='intro-text'> Articles, Factsheets and Other Information about Agricultural Water Management</p>
+            <div style={{padding: '1em'}}>
+                    <Title level={2}>Resources</Title>
+                    <Paragraph className='intro-text'> Articles, Factsheets and Other Information about Agricultural Water Management</Paragraph>
                     <AWButtonContainer
                         items={[
                             { label: 'Articles', key: 'articles', type: 'primary', icon: <FileImageOutlined /> },
@@ -36,8 +37,7 @@ const Resources = () => {
                         ]}
                         onClick={onClickMenu}
                     />
-                    <hr />
-                </div>
+                    <Divider />
 
                 {current == 'articles' && (
                     <AWArticles showFilters={true} showSearch={true} ></AWArticles>

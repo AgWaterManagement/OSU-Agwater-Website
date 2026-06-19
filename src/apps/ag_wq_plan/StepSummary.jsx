@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Divider, Typography, Tag, Space } from 'antd';
+import { Button, Divider, Typography, Tag, Space, Row, Col } from 'antd';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -18,8 +18,19 @@ const { Title, Paragraph, Text } = Typography;
 //   - concernQuestions: Array of fetched concern question objects from /agwqplan/concernQuestions
 const StepSummary = ({
   userType,
+
+  latitude,
+  longitude,
+  agWqMArea,
   region,
-  commodity,
+  regionalSpecialist,
+  regionalSpecialistEmail,
+  regionalSpecialistPhone,
+  adminRulesLink,
+  areaPlanLink,
+  siteName,
+
+  selectedCommodities,
   selectedConcerns,
   selectedQuestions,
   selectedGoals,
@@ -63,19 +74,49 @@ const StepSummary = ({
     <>
       {/* Printable content container */}
       <div ref={printRef}>
-        <Title level={3}>Site‑Specific Water Quality Practices Plan</Title>
+        <Title level={3}>Water Quality Plan for {siteName}</Title>
 
         {/* Summary section: User info and location */}
         <Title level={4}>Summary</Title>
-        <Paragraph>
-          <Text strong>User type:</Text> {userType}
-        </Paragraph>
-        <Paragraph>
-          <Text strong>Region:</Text> {region || 'Not specified'}
-        </Paragraph>
-        <Paragraph>
-          <Text strong>Commodity / operation:</Text> {commodity.current || 'Not specified'}
-        </Paragraph>
+
+        <Row>
+          <Col span={12} style={{ paddingRight: '2em' }}>
+            <Paragraph>
+              <Text strong>User type:</Text> {userType}
+            </Paragraph>
+            <Paragraph>
+              <Text strong>Lat/Long:</Text> {latitude}, {longitude}
+            </Paragraph>
+            <Paragraph>
+              <Text strong>Commodities/Operations: </Text> 
+                 { selectedCommodities.join(', ') || 'Not specified'}
+            </Paragraph>
+            <Paragraph>
+              <Text strong>Admin Rules Link:</Text> <Button type="link">{adminRulesLink || 'Not specified'}</Button>
+            </Paragraph>
+            <Paragraph>
+              <Text strong>Area Plan Link:</Text> <Button type="link">{areaPlanLink || 'Not specified'}</Button>
+            </Paragraph>
+          </Col>
+          
+          <Col span={12} style={{ paddingLeft: '2em' }}>
+            <Paragraph>
+              <Text strong>Ag WQM Area:</Text> {agWqMArea || 'Not specified'}
+            </Paragraph>
+            <Paragraph>
+              <Text strong>Region:</Text> {region || 'Not specified'}
+            </Paragraph>
+            <Paragraph>
+              <Text strong>Regional Specialist:</Text> {regionalSpecialist || 'Not specified'}
+            </Paragraph>
+            <Paragraph>
+              <Text strong>Regional Specialist Email:</Text> {regionalSpecialistEmail || 'Not specified'}
+            </Paragraph>
+            <Paragraph>
+              <Text strong>Regional Specialist Phone:</Text> {regionalSpecialistPhone || 'Not specified'}
+            </Paragraph>
+          </Col>
+        </Row>
 
         <Divider />
 
@@ -85,14 +126,16 @@ const StepSummary = ({
           <Paragraph>No concerns selected.</Paragraph>
         ) : (
           <Space wrap>
-            {selectedConcerns.map((concern) => (
-              <Tag key={concern}>{concern}</Tag>
-            ))}
+            <ul>
+              {selectedConcerns.map((concern) => (
+                <li key={concern}>{concern}</li>
+              ))}
+            </ul>
           </Space>
         )}
 
         <Divider />
-        <Title level={5}>Selected Questions</Title>
+        <Title level={4}>Selected Questions</Title>
         {selectedQuestions.length === 0 ? (
           <Paragraph>No specific conditions selected.</Paragraph>
         ) : (
@@ -134,10 +177,11 @@ const StepSummary = ({
         ) : (
           selectedPractices.map((p) => (
             <div key={p.id} style={{ marginBottom: 16 }}>
+              <Divider />
               <Paragraph>
-                <Text strong>
+                <Title level={5}>
                   {p.title}
-                </Text>
+                </Title>
               </Paragraph>
               <Paragraph>
                 <Text strong>Helps water quality:</Text>{' '}
@@ -152,13 +196,13 @@ const StepSummary = ({
                 <Text strong>Notes:</Text> {p.benefits}
               </Paragraph>
               <Paragraph>
-                <Text strong>References:</Text>{' '}
-                {p.links.map((l, index) => ( <>
-                  <a key={l.url} href={l.url} target="_blank" rel="noreferrer">
-                    {l.label}
-                  </a>
-                   { index < p.links.length - 1 && <span style={{ color: 'yellow' }}> | </span> }
-                  </>
+                <Text strong>References: </Text>
+                {p.links.map((l, index) => (
+                  <div key={'reference_' + index} style={{paddingLeft: '2em', paddingTop: '0.5em'}}>
+                    <a key={l.url} href={l.url} target="_blank" rel="noreferrer">
+                      {l.label}
+                    </a>
+                  </div>
                 ))}
               </Paragraph>
             </div>

@@ -9,7 +9,7 @@ import { Col, Row, Select, Input, InputNumber, Card, Divider, Typography } from 
 import dripLine from '../../../assets/images/calculators//Irrigation-drip-line.png'
 import dripEq from '../../../assets/images/calculators/Drip_Application_Rate.gif'
 
-const { Title } = Typography;
+const { Title, Text, Paragraph, Link } = Typography;
 
 // import '../calculators.css'
 
@@ -139,15 +139,15 @@ const AWCalcDrip = () => {
         <LikeButton />
 
         <Title level={3}>Drip Line Rate</Title>
-        <p>
+        <Paragraph>
           The drip line application rate is specific to your irrigation system and shouldn&apos;t change,
           so take a note of it. This constant rate is multiplied by all future irrigation set times to give
           the net application depths for those sets.  Use this form to calculate the water application rate
-          of <a href="../../../Content/Resources/Irrigation-Glossary.php#dripIrrigation">drip irrigation</a> lines (tape, tubing) given the flow rate from individual
-          <a href="../../../Content/Resources/Irrigation-Glossary.php#emitter"> emitters</a>, a constant spacing of the
-          <a href="../../../Content/Resources/Irrigation-Glossary.php#emitter"> emitters</a> along the drip line, and a constant spacing between the drip lines.
-          <a href="../../../Content/Resources/Irrigation-Unit-Descriptions.php">Learn more about the units used on this page. </a>
-        </p>
+          of <Link href="../../../Content/Resources/Irrigation-Glossary.php#dripIrrigation">drip irrigation</Link> lines (tape, tubing) given the flow rate from individual
+          <Link href="../../../Content/Resources/Irrigation-Glossary.php#emitter"> emitters</Link>, a constant spacing of the
+          <Link href="../../../Content/Resources/Irrigation-Glossary.php#emitter"> emitters</Link> along the drip line, and a constant spacing between the drip lines.
+          <Link href="../../../Content/Resources/Irrigation-Unit-Descriptions.php">Learn more about the units used on this page. </Link>
+        </Paragraph>
 
         <Card label='Drip Line Calculator' className='calculator-card'>
           <Row>

@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useMediaQuery } from 'react-responsive';
 import PropTypes from 'prop-types';
-import { Row, Col, Input, Select, Pagination, Tag, Divider, Spin } from "antd";
+import { Row, Col, Input, Select, Pagination, Tag, Divider, Spin, Typography } from "antd";
 import { secrets } from '../../secrets';
 
 const { Option } = Select;
 const { Search } = Input;
+const { Title, Text, Paragraph } = Typography;
 
 const POSTS_PER_PAGE = 8;
 
 const ARTICLE_API_URL = "https://agwater.org:5556/articles/list"; // Original URL for production
-//const ARTICLE_API_URL = "http://localhost:3000/articles/list";  // Use this for debugging
 
 // LoadImage function: fetches, crops, and displays an image in a 480x360 box, filling the frame and maintaining aspect ratio (object-fit: cover)
 function LoadImage({ url, alt = "", style = {} }) {
@@ -109,7 +109,7 @@ function LoadImage({ url, alt = "", style = {} }) {
     );
 }
 
-const AWArticles = ({ showFilters = false, showSearch = false }) => {
+const AWArticles = ({ showFilters = false, showSearch = false}) => {
     const [articles, setArticles] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
@@ -171,7 +171,7 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
     return (
         <>
             {loading && (
-                <div style={{ textAlign: "center", marginBottom: 16, backgroundColor: 'white' }}>
+                <div style={{ textAlign: "center", marginBottom: 16, }}>
                     <Spin tip="Loading Articles..." size="large" />
                 </div>
             )}
@@ -227,12 +227,11 @@ const AWArticles = ({ showFilters = false, showSearch = false }) => {
                         >
                             <LoadImage url={post.cover_image} alt={post.title} />
 
-                            <p style={{ margin: 0, padding: 0 }} >
-                                <span style={{ fontWeight: 'bold', fontSize: 'large', margin: 0, padding: 0 }}>{post.title}</span>
-                            </p>
-                            <p style={{ margin: 0, padding: 0, paddingRight: '1em' }}>{post.abstract}</p>
+                            <Title level={3} style={{ fontWeight: 'bold', fontSize: 'large', margin: 0, padding: 0 }}>{post.title}</Title>
 
-                            <p style={{ fontSize: "small", margin: 0, padding: 0, paddingTop: '1em' }} > By {post.lead_author} on {post.pub_date} </p>
+                            <Paragraph style={{ margin: 0, padding: 0, paddingRight: '1em' }}>{post.abstract}</Paragraph>
+
+                            <Paragraph style={{ fontSize: "small", margin: 0, padding: 0, paddingTop: '1em' }} > By {post.lead_author} on {post.pub_date} </Paragraph>
 
                             {post.tags && post.tags.map((tag, index) => (
                                 <Tag key={index}>{tag}</Tag>

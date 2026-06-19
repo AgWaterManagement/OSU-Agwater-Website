@@ -16,6 +16,7 @@ import "@arcgis/map-components/components/arcgis-zoom"; // Import ArcGIS Zoom co
 
 // Extract Typography.Paragraph component for use in the form description
 const { Paragraph, Title } = Typography;
+const { TextArea } = Input;
 
 const getSearchResultLatLng = (searchResult) => {
   const location = searchResult?.location;
@@ -54,8 +55,10 @@ const getSearchResultLatLng = (searchResult) => {
 const StepWhoWhere = ({
   userType,
   sitesData,
-  commoditiesData, commodity,
-
+  commoditiesData, 
+  selectedCommodities,
+  setSelectedCommodities,
+  setPhotos,
   siteName, setSiteName,
   _latitude, setLatitude,
   _longitude, setLongitude,
@@ -375,6 +378,15 @@ const StepWhoWhere = ({
       }, [commoditiesData]);
   
 
+
+  function handleDescriptionChange(photoUrl, description) {
+    setPhotos(prevPhotos => 
+      prevPhotos.map(photo => 
+        photo.url === photoUrl ? { ...photo, description } : photo
+      )
+    );
+  }
+
   if (!siteName || _latitude == null || _longitude == null) {
     setError('error');
   }
@@ -513,15 +525,17 @@ const StepWhoWhere = ({
           </Col>
 
           <Col sm={24} md={12}>
-            <Title level={5}>Commodity Type</Title>
-                {/* Form field for selecting commodity or operation type */}
-                {/* Optional field to tailor recommendations to specific crop/livestock types */}
+            <Title level={5}>Farm Type</Title>
+            <span>Select all that apply from the list below</span>
+            <br/>
                 <Select
-                    value={commodity.current || undefined}
-                    onChange={(v) => commodity.current = v}
-                    allowClear
-                    style={{ width: '30em', maxWidth: '100%' }}
-                    options={commodityOptions}
+                  mode="multiple"
+                  allowClear
+
+                  value={selectedCommodities || undefined}
+                  onChange={(v) => setSelectedCommodities(v)}
+                  style={{ width: '30em', maxWidth: '100%' }}
+                  options={commodityOptions}
                 />
 
             <Title level={5}>Site Photos</Title>
@@ -541,6 +555,12 @@ const StepWhoWhere = ({
                         style={{ width: '100%', height: 360, objectFit: 'cover', borderRadius: 8, display: 'block' }}
                       />
                       <div style={{ fontSize: '0.8rem', marginTop: 8, wordBreak: 'break-word', textAlign: 'center' }}>{photo.name}</div>
+
+                      <div style={{ fontSize: '0.8rem', marginTop: 16}}>
+                        <label htmlFor={`description-${photo.url}`}>Description of Photo:</label>
+                        <TextArea rows={4} placeholder="Add a description for this photo" value={photo.description} onChange={(e) => handleDescriptionChange(photo.url, e.target.value)} />
+                      </div>
+
                       <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
                         <Popconfirm title="Delete this photo?" onConfirm={() => handleDeletePhoto(photo.url)} okText="Delete" cancelText="Cancel">
                           <Button type="text" danger icon={<DeleteOutlined />} />

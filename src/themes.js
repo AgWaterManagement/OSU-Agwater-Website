@@ -1,4 +1,4 @@
-const theme = {
+export const darkTheme = {
     token: {
         colorText: 'white',
         colorTextHeading: 'yellow'
@@ -11,13 +11,13 @@ const theme = {
             colorInfoBg: '#232323'
         },
         Button: {
-            colorLink: 'yellow',
+            colorLink: '#80b0fc',
             colorLinkActive: '#0958d9',
             colorLinkHover: 'brown',
             colorBgContainerDisabled: '#555',
             colorTextDisabled: '#777',
         },
-        Card: { 
+        Card: {
             headerBg: 'darkslategray',
             actionsBg: 'darkslategray',
             colorBgContainer: 'black',
@@ -34,7 +34,7 @@ const theme = {
             colorIcon: 'black',
             cellHoverBg: 'lightgray',
             colorTextDisabled: '#666666',
-            colorTextHeading: 'black',     
+            colorTextHeading: 'black',
         },
         Divider: {
             colorSplit: '#CCC',
@@ -62,6 +62,13 @@ const theme = {
             contentBg: 'darkslategray',
             colorBgElevated: 'darkslategray',
         },
+        Menu: {
+            itemBg: 'rgba(36, 36, 36, 0.8)',
+            horizontalItemSelectedColor: '#72adf5',
+
+        },
+        Popover: { colorTextHeading: 'darkslategray', colorText: 'black', colorBgElevated: '#82b3f7ff' },
+
         Radio: {
             buttonColor: 'grey',
             //buttonBg: '#262626',
@@ -76,14 +83,12 @@ const theme = {
 
         Rate: { starBg: 'rgba(245,242,242,0.2)', starColor: 'gold' },
 
-        Popover: { colorTextHeading: 'darkslategray', colorText: 'black', colorBgElevated: '#82b3f7ff' },
-
-        Select : {
+        Select: {
             colorText: 'black',
         },
 
         Slider: { railBg: '#6884f6ec', railHoverBg: '#7871f6ff', trackBg: '#ae300dff', handleBg: '#fff', handleBorderColor: '#4096ff' },
-        
+
         Statistic: {
             colorTextDescription: 'white',
         },
@@ -93,7 +98,7 @@ const theme = {
             colorTextSecondary: 'lightgray',
             colorFillTertiary: 'lightgray',
         },
-        Table : {
+        Table: {
             headerBg: 'darkslategray',
             headerColor: 'white',
             colorText: 'white',
@@ -107,22 +112,56 @@ const theme = {
             itemHoverColor: '#4096ff',
             itemSelectedColor: '#4096ff'
         },
-        Tag : {
+        Tag: {
             defaultColor: '#e89a3c',
             defaultBg: '#2b1d11',
             colorBorder: '#593815',
         },
-
         TreeSelect: {
             colorText: 'black',
-
-        },    
-
+        },
         Typography: {
+            colorTextHeading: 'yellow',
             colorText: 'white',
         },
-   
+
     }
 }
 
-export default theme;
+
+export const lightTheme = {
+    token: {
+        colorPrimary: 'blue',
+        colorText: 'black',
+        colorTextHeading: '0x111111',
+    },
+    components: {
+
+        Button: {
+            colorLink: 'blue',
+            colorLinkActive: '#0958d9',
+            colorLinkHover: 'brown',
+            colorBgContainerDisabled: '#555',
+            colorTextDisabled: '#777',
+        },
+        Card: {
+            headerBg: 'lightgray',
+            actionsBg: 'darkslategray',
+            colorBgContainer: '#E6E6E6',
+            colorText: 'black',
+        },
+        Steps: {
+            colorText: 'darkblue',
+            colorTextSecondary: 'black',
+            colorFillTertiary: 'black',
+        },
+        Tag: {
+            defaultColor: '#e89a3c',
+            defaultBg: '#2b1d11',
+            colorBorder: '#593815',
+        },
+        Typography: {
+        }
+    }
+}
+

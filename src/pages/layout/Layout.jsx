@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 //import { Input } from 'antd';
 import { Link } from 'react-router-dom';
 import { useMediaQuery } from 'react-responsive';
@@ -11,12 +11,40 @@ import osuLogo2 from '../../assets/images/OSU_horizontal_2C_W_over_B.png'
 import agTapLogo from '../../assets/images/AgTAPLogo2.png'
 
 
-import { MenuUnfoldOutlined, MenuFoldOutlined, SearchOutlined } from '@ant-design/icons';
-import { ConfigProvider, Row, Col } from 'antd';
-import theme from '../../theme.js'; // Assuming you have a theme file for Ant Design
+import { SearchOutlined, SettingOutlined } from '@ant-design/icons';
+import { ConfigProvider, Row, Col, Dropdown } from 'antd';
+import {darkTheme, lightTheme} from '../../themes.js'; // Assuming you have a theme file for Ant Design
+
+
+// Helper functions for cookies
+function setCookie(name, value, days = 365) {
+    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+}
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
 
 const AppLayout = () => {
     const [sideBarCollapsed, setSideBarCollapsed] = useState(true);
+    const [isDarkMode, setIsDarkMode] = useState(true);
+
+    const onThemeMenuClick = ({ key }) => {
+        setIsDarkMode(key === 'dark');
+        setCookie('agwater_theme', key === 'dark' ? 'dark' : 'light');
+    };
+
+    const themeMenu = {
+        items: [
+            { key: 'dark', label: 'Dark mode' },
+            { key: 'light', label: 'Light mode' },
+        ],
+        selectable: true,
+        selectedKeys: [isDarkMode ? 'dark' : 'light'],
+        onClick: onThemeMenuClick,
+    };
+
 
     function openSidebar() {  // menu is closed, open it
         setSideBarCollapsed(false);
@@ -44,12 +72,24 @@ const AppLayout = () => {
         <Link className='nav-item' to="/about">About</Link>
         {/* <Link className='nav-item' to="/login">Login</Link> */}
         <Link className='nav-item' to="/search"><SearchOutlined /></Link>
+        <Dropdown menu={themeMenu} trigger={['click']} placement="bottomRight">
+            <span className='nav-item' style={{ marginRight: '1em', cursor: 'pointer' }}>
+                <SettingOutlined />
+            </span>
+        </Dropdown>
     </>
     )
 
+    
+    
+      useEffect(() => {
+        getCookie('agwater_theme') === 'dark' ? setIsDarkMode(true) : setIsDarkMode(false);        
+      }, []);
+    
+
     return (
         <>
-            <div className="wrapper">
+            <div style={{backgroundColor: isDarkMode ? '#000000' : '#f0f0f0'}}>
 
                 {/* Set up page top banner/top navigation menu */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'left', backgroundColor: 'rgb(215,63,9)', 'paddingLeft': '3px' }}>
@@ -95,8 +135,8 @@ const AppLayout = () => {
                     </nav>
                 </div>)}
 
-                <ConfigProvider theme={theme}>
-                    <AppRoutes />
+                <ConfigProvider theme={isDarkMode ? darkTheme : lightTheme}>
+                    <AppRoutes theme={isDarkMode ? darkTheme : lightTheme} />
                 </ConfigProvider>
 
                 {!sideBarCollapsed && (

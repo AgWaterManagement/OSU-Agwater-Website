@@ -1,5 +1,9 @@
-import { Collapse, Divider } from 'antd';
+import { Collapse, Divider, Typography } from 'antd';
 //import { Link } from 'react-router-dom';
+
+
+const { Title, Text, Paragraph } = Typography;
+
 
 import AWCalcDrip from '../../components/calculators/calc_drip/AWCalcDrip'
 import AWCalcCropCoeff from '../../components/calculators/calc_crop_coeff/AWCalcCropCoeff'
@@ -18,22 +22,22 @@ const items = [
   {
     key: '3',
     label: 'Sprinkler Application Rate',
-    children: <p>Coming Soon!</p>,
+    children: <Paragraph>Coming Soon!</Paragraph>,
   },
 ];
 
 
 const Calculators = () => (
-  <div className='content-container'>
+  <div style={{ padding: '1em'}}>
 
-    <div className='topic_head-container'>
+    <div>
 
-      <div className='content-container-header'>Calculators</div>
+      <Title level={2}>Calculators</Title>
 
-      <p className='intro-text'>Below are a collection of <strong>calculators</strong> for determining flow rates and other
-        aspects of irrigation planning and water resource analyses.</p>
+      <Paragraph>Below are a collection of <strong>calculators</strong> for determining flow rates and other
+        aspects of irrigation planning and water resource analyses.</Paragraph>
 
-      <div className='section-header'>Irrigation Calculators</div>
+      <Title level={4}>Irrigation Calculators</Title>
       <Divider />
 
     </div>

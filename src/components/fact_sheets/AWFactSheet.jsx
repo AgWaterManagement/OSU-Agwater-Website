@@ -1,11 +1,15 @@
 import PropTypes from 'prop-types';
 
+import { Button } from 'antd'
+
 const AWFactSheet = ({link, title, author}) => {
   const assetURL = 'https://agwater.org/' + link;
   return (
     <>
     <div className="full-width" style={{paddingBottom:'0.7em'}}>
-      <a href={assetURL} target="_blank">{ title }</a> - {author}
+    <Button type="link" href={assetURL} target="_blank" style={{paddingBottom:'0.7em'}}>
+      { title }
+    </Button>
     </div>
     </>
 );

@@ -3,10 +3,11 @@ import { Divider, Button, Checkbox, Steps, Input, } from 'antd';
 import agTapConfig from './agtap.json'; 
 
 import { InboxOutlined } from '@ant-design/icons';
-import { message, Upload } from 'antd';
+import { Typography, message, Upload } from 'antd';
 const { Dragger } = Upload;
 const { TextArea } = Input;
 
+const { Title, Paragraph } = Typography;
 
 //const onChangeSubtopic = (checkedValues) => {
 //    console.log('checked = ', checkedValues);
@@ -24,14 +25,14 @@ const ATGetAssistance = () => {
             //html.push(<hr />);
             //html.push(<span style={{ fontWeight: 'bold', paddingLeft:0, paddingBottom:20 }}>{topic.label}</span>);
             //html.push(<br />);
-            html.push(<Divider orientation="left" orientationMargin="0" style={{ paddingTop:'0.5em' }} >{topic.label}</Divider>)
+            html.push(<Divider key={"divider_" + i} orientation="left" orientationMargin="0" style={{ paddingTop:'0.5em' }} >{topic.label}</Divider>)
 
             // make Checkgroups of subtopics
             let j = 0;
             for (let subtopic of topic.subtopics) {
                 const id = 'cb_' + i + '_' + j;
                 let style = {};
-                html.push(<Checkbox id={id} topic={currentTopic} style={style}>{subtopic.label}</Checkbox>);
+                html.push(<Checkbox key={id} id={id} topic={currentTopic} style={style}>{subtopic.label}</Checkbox>);
                 j++;
             }
             i++;
@@ -140,7 +141,6 @@ const ATGetAssistance = () => {
                 type="navigation"
                 size='small'
                 onChange={changeStep}
-                className="site-navigation-steps"
                 current={currentStep}
                 items={[
                     { title: 'Select topic(s)' },
@@ -149,18 +149,18 @@ const ATGetAssistance = () => {
                 ]}
             />
             <div style={{ display: currentStep == 0 ? 'block' : 'none' }}>
-                <h4>Select the topics you need assistance with from the areas listed below</h4>
+                <Title level={4}>Select the topics you need assistance with from the areas listed below</Title>
 
                 {GetTopicList()}
         
-                <hr/>
+                <Divider/>
                 <Button id='btn0' type="primary" size='large' onClick={onChangeStepFromBtn} >
                     Next
                 </Button>
             </div>
 
             <div style={{ display: currentStep == 1 ? 'block' : 'none' }}>
-                <h4>Tell us below what you need help with.</h4>
+                <Title level={4}>Tell us below what you need help with.</Title>
 
                 <TextArea id='iBody' rows={4} placeholder="Add any additional information you would like to provide here..."
                     maxLength={6} />
@@ -179,14 +179,14 @@ const ATGetAssistance = () => {
                     </p>
                 </Dragger> */}
 
-                <hr />
+                <Divider />
                 <Button id='btn1' type="primary" size='large' onClick={onChangeStepFromBtn} >
                     Next
                 </Button>
             </div>
 
             <div style={{ display: currentStep == 2 ? 'block' : 'none' }}>
-                <h4>Please provide us contact information</h4>
+                <Title level={4}>Please provide us contact information</Title>
                 <span>We will use this information to get back to you. This information will NOT be retained or shared with anyone, ever.</span>
                 <br/>
                 <br />
@@ -207,7 +207,7 @@ const ATGetAssistance = () => {
                     <div style={{ width: '20em', display: 'inline-block' }}><Input id='iPhone' placeholder="Phone" /></div>
                 </div>
 
-                <hr />
+                <Divider />
                 <Button id='btn2' type="primary" size='large' onClick='SendRequest' >
                     Send Request
                 </Button>

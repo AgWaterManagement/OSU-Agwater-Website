@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 import { secrets } from "../../secrets";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text, Paragraph, Link } = Typography;
 
 function normalizeBaseUrl(baseUrl) {
   if (!baseUrl) return "";

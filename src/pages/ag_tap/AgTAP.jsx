@@ -1,23 +1,18 @@
 import { useState } from 'react';
 
-//import { Card } from 'antd';
-//import { AndroidOutlined, AppleOutlined } from '@ant-design/icons';
-
-//import { SearchOutlined, TeamOutlined, QuestionCircleOutlined, DashboardOutlined } from '@ant-design/icons';
+import { Typography } from 'antd';
 import { SearchOutlined, QuestionCircleOutlined, PicRightOutlined } from '@ant-design/icons';
 import AgTapProjects from '../project_map/AgTapProjects.jsx';
 
-//import DashboardImage from '../../assets/images/dashboard.png'
-//import Dashboards from '../../apps/dashboards/Dashboards'
 
 import './AgTAP.css';
-//import { Link } from 'react-router-dom';
-//import AWTeam from '../../components/team/AWTeam.jsx';
+
 import AWButtonContainer from '../../components/button_container/AWButtonContainer.jsx';
 import AWGetAssistance from './ATGetAssistance.jsx';
 
 import Chat from '../../pages/chat/Chat.jsx';
-//import OllamaChat from './OllamaChat.jsx';
+
+const { Title, Paragraph } = Typography;
 
 const AgTAP = () => {
 
@@ -36,30 +31,25 @@ const AgTAP = () => {
     }
 
     return (
-        <div className='content-container'>
+        <div style={{ margin: '1.5em' }}>
 
-            <div className='topic_head-container'>
-
-                <div className='content-container-header'>
-                    OSU&apos;s Agricultural Water Technical Assistance Program
-                </div>
-                <AWButtonContainer
-                    items={[
-                        { label: 'Find Information', key: 'search', type:'primary', icon: <SearchOutlined /> },
-                        { label: 'Request Assistance', key: 'assist', type: 'default', icon: <QuestionCircleOutlined /> },
-                        { label: 'Project Map', key: 'projectMap', type: 'default', icon: <PicRightOutlined /> }
-                    ]}
-                    onClick={onClickMenu}
-                />
-                <hr/>
-            </div>
+            <Title level={3}>OSU&apos;s Agricultural Water Technical Assistance Program</Title>
+            <AWButtonContainer
+                items={[
+                    { label: 'Find Information', key: 'search', type: 'primary', icon: <SearchOutlined /> },
+                    { label: 'Request Assistance', key: 'assist', type: 'default', icon: <QuestionCircleOutlined /> },
+                    { label: 'Project Map', key: 'projectMap', type: 'default', icon: <PicRightOutlined /> }
+                ]}
+                onClick={onClickMenu}
+            />
+            <hr />
 
             <div className="flex-item" style={{ display: current == 'search' ? 'block' : 'none' }}>
                 <Chat />
             </div>
 
             <div className="flex-item" style={{ display: current == 'assist' ? 'block' : 'none' }}>
-                     <AWGetAssistance />
+                <AWGetAssistance />
             </div>
 
             <div className="flex-item" style={{ display: current == 'projectMap' ? 'block' : 'none' }}>

@@ -306,20 +306,20 @@ const WotusStats = ({ domain, streamQuery, wetlandQuery, currentState, currentSt
             <Row gutter={[8, 8]} style={{ marginBottom: '2em' }}>
                 <Col xs={24} md={10}>
 
-                    <Title level={4} style={{ color: 'yellow', marginTop: 0 }}>{title}</Title>
+                    <Title level={4} style={{  marginTop: 0 }}>{title}</Title>
 
                     <Statistic
                         style={{ marginBottom: '1em' }}
-                        title={<Text style={{ color: 'white' }}>{totalAreaTitle}</Text>}
+                        title={<Text>{totalAreaTitle}</Text>}
                         value={formatter.format(totalResult) + (domain == 'streams' ? ' miles' : ' acres')} />
 
                     <Statistic
                         style={{ marginBottom: '1em' }}
-                        title={<Text style={{ color: 'white' }}>{protectedAreaTitle}</Text>}
+                        title={<Text>{protectedAreaTitle}</Text>}
                         value={formatter.format(queryResult) + (domain == 'streams' ? ' miles' : ' acres')} />
                     <Statistic
                         style={{ marginBottom: '1em' }}
-                        title={<Text style={{ color: 'white' }}>{protectedFractionTitle}</Text>}
+                        title={<Text>{protectedFractionTitle}</Text>}
                         value={`${fraction.current}%`} />
                 </Col>
                 <Col xs={24} md={14} style={{}}>

@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { Row, Col, Typography, Button } from "antd";
 import PropTypes from "prop-types";
 
+const { Title, Text, Paragraph } = Typography;
+
 import "@arcgis/map-components/components/arcgis-map";
 import "@arcgis/map-components/components/arcgis-zoom";
 import "@arcgis/map-components/components/arcgis-legend";
@@ -274,37 +276,37 @@ export default function Agrivoltaics() {
         <>
             <Row style={{ padding: 16 }}>
                 <Col span={24}>
-                    <Typography.Title level={2} style={{ color: "white" }}>
+                    <Title level={2}>
                         Agrivoltaics Suitability Mapping
-                    </Typography.Title>
-                    <span>
+                    </Title>
+                    <Text>
                         This map shows the suitability of land in US Agricultural Areas for agrivoltaic siting,
                         which combines agriculture with solar energy production. 
                         These maps can help identify areas where agrivoltaics may be most beneficial.  The maps
                         show two key factors: the energy production potential from solar panels (left) 
                         and the water savings potential (right), represented on an 800m resolution grid.
-                    </span>
+                    </Text>
                 </Col>
             </Row>
 
             <Row style={{ padding: 16 }}>
                 <Col span={12}>
-                    <Typography.Paragraph style={{ color: "white", fontSize: 16, marginLeft: 4 }}>
+                    <Title level={4}>
                         Energy Production Potential
-                    </Typography.Paragraph>
-                    <span>The energy production potential map shows the amount of electricity that could be
+                    </Title>
+                    <Text>The energy production potential map shows the amount of electricity that could be
                          generated from solar panels installed on agricultural lands.  This determined by 
-                         examining solar irradiance at each location, coupled with an estimated solar panel efficiency.</span>
+                         examining solar irradiance at each location, coupled with an estimated solar panel efficiency.</Text>
                 </Col>
 
                 <Col span={12}>
-                    <Typography.Paragraph style={{ color: "white", fontSize: 16, marginLeft: 4 }}>
+                    <Title level={4}>
                         Water Savings Potential
-                    </Typography.Paragraph>
-                    <span>The water savings potential map shows the estimated reduction in reference evapotranspiration (ET0) 
+                    </Title>
+                    <Text>The water savings potential map shows the estimated reduction in reference evapotranspiration (ET0) 
                         that could be achieved by installing solar panels.  This is based on a model that estimates how much 
                         shading from solar panels would reduce crop water use, which can help identify areas where 
-                        agrivoltaics may provide the greatest water conservation benefits.</span>
+                        agrivoltaics may provide the greatest water conservation benefits.</Text>
 
                 </Col>
             </Row>
@@ -378,9 +380,9 @@ export default function Agrivoltaics() {
 {/*
             <Row style={{ padding: 16 }}>
                 <Col span={24}>
-                    <Typography.Paragraph style={{ color: "white", fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: "white", fontSize: 16, marginLeft: 4 }}>
                         Weighted Average Composite
-                    </Typography.Paragraph>
+                    </Paragraph>
 
                     <WeightedAverageRasterLayer
                         zoomRef={zoomWeightedAverage}
@@ -527,9 +529,9 @@ export default function Agrivoltaics() {
         <>
             <Row style={{ padding: 16 }}>
                 <Col span={24}>
-                    <Typography.Title level={2} style={{ color: 'white' }}>
+                    <Title level={2} style={{ color: 'white' }}>
                         Agrivoltaics Suitability Mapping
-                    </Typography.Title>
+                    </Title>
                     <p>
                         This map shows the suitability of land in US Agricultural Areas for agrivoltaic siting,
                         which combines agriculture with solar energy production. The underlying raster layer represents
@@ -542,9 +544,9 @@ export default function Agrivoltaics() {
 
             <Row style={{ padding: 16 }}>
                 <Col span={12}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Energy Production Potential
-                    </Typography.Paragraph>
+                    </Paragraph>
                     <RasterLayer
                         url={ENERGY_PRODUCTION_RASTER_URL}
                         id="energy-production-raster"
@@ -575,9 +577,9 @@ export default function Agrivoltaics() {
                     </Button>
                 </Col>
                 <Col span={12}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Water Savings Potential
-                    </Typography.Paragraph>
+                    </Paragraph>
 
                     <RasterLayer
                         url={DELTA_ETO_RASTER_URL}
@@ -613,9 +615,9 @@ export default function Agrivoltaics() {
 
             <Row style={{ padding: 16 }}>
                 <Col span={24}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Weighted Average Composite
-                    </Typography.Paragraph>
+                    </Paragraph>
 
                     <WeightedAverageRasterLayer
                         zoomRef={zoomWeightedAverage}
@@ -775,9 +777,9 @@ export default function Agrivoltaics() {
         <>
             <Row style={{ padding: 16 }}>
                 <Col span={24}>
-                    <Typography.Title level={2} style={{ color: 'white' }}>
+                    <Title level={2} style={{ color: 'white' }}>
                         Agrivoltaics Suitability Mapping
-                    </Typography.Title>
+                    </Title>
                     <p>This map shows the suitability of land in US Agricultural Areas for agrivoltaic siting,
                          which combines agriculture with solar energy production. The underlying raster layer represents 
                          the annual reduction in daily reference evapotranspiration (ET0) across the region,
@@ -790,9 +792,9 @@ export default function Agrivoltaics() {
 
             <Row style={{ padding: 16 }}>
                 <Col span={12}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Energy Production Potential
-                    </Typography.Paragraph>
+                    </Paragraph>
                     <RasterLayer
                         url={ENERGY_PRODUCTION_RASTER_URL}
                         id="energy-production-raster"
@@ -812,9 +814,9 @@ export default function Agrivoltaics() {
 
             <Row style={{ padding: 16 }}>
                 <Col span={24}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Weighted Average Composite
-                    </Typography.Paragraph>
+                    </Paragraph>
 
                     <WeightedAverageRasterLayer
                         title="Weighted Average Composite"
@@ -851,9 +853,9 @@ export default function Agrivoltaics() {
                     </Button>
                 </Col>
                 <Col span={12}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Water Savings Potential
-                    </Typography.Paragraph>
+                    </Paragraph>
 
                     <RasterLayer
                         url={DELTA_ETO_RASTER_URL}
@@ -1197,9 +1199,9 @@ export default function Agrivoltaics() {
         <>
             <Row style={{ padding: 16 }}>
                 <Col span={24}>
-                    <Typography.Title level={2} style={{ color: 'white' }}>
+                    <Title level={2} style={{ color: 'white' }}>
                         Agrivoltaics Suitability Mapping
-                    </Typography.Title>
+                    </Title>
                     <p>
                         This map shows the suitability of land in US Agricultural Areas for agrivoltaic siting,
                         which combines agriculture with solar energy production. The underlying raster layer represents
@@ -1212,9 +1214,9 @@ export default function Agrivoltaics() {
 
             <Row style={{ padding: 16 }}>
                 <Col span={12}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Energy Production Potential
-                    </Typography.Paragraph>
+                    </Paragraph>
                     <RasterLayer
                         url={ENERGY_PRODUCTION_RASTER_URL}
                         id="energy-production-raster"
@@ -1245,9 +1247,9 @@ export default function Agrivoltaics() {
                     </Button>
                 </Col>
                 <Col span={12}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Water Savings Potential
-                    </Typography.Paragraph>
+                    </Paragraph>
 
                     <RasterLayer
                         url={DELTA_ETO_RASTER_URL}
@@ -1283,9 +1285,9 @@ export default function Agrivoltaics() {
 
             <Row style={{ padding: 16 }}>
                 <Col span={24}>
-                    <Typography.Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
+                    <Paragraph style={{ color: 'white', fontSize: 16, marginLeft: 4 }}>
                         Weighted Average Composite
-                    </Typography.Paragraph>
+                    </Paragraph>
 
                     <WeightedAverageRasterLayer
                         zoomRef={zoomWeightedAverage}

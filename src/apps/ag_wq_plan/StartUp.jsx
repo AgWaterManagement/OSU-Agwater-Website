@@ -16,9 +16,9 @@ const StartUp = ({
 
     return (
         <>
-            <div style={{ marginBottom: 16, textAlign: 'center' }}>
+            <div style={{ marginBottom: 16, marginTop: 16, textAlign: 'center' }}>
                 <Text style={{ fontSize: '1.2em' }}>
-                    Please select your user and operation type to get started:
+                    Please select your user and operation type to get started making a water quality plan:
                 </Text>
                 <br />
                 <br />

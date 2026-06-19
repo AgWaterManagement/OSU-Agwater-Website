@@ -1,21 +1,24 @@
 import ToolTable from '../../components/tool_table/ToolTable';
 
 import { useState, useRef} from 'react';
-import { Input, Checkbox } from 'antd';
+import { Input, Checkbox, Typography } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+
+const { Title, Paragraph } = Typography;
+
 const Tools = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(false);
 
   return (
-    <div className='content-container' >
+    <div>
 
-      <div className='content-container-header'>Apps and Tools for Agricultural Water Management</div>
+      <Title style={{ marginLeft: '0.25em' }} level={4}>Apps and Tools for Agricultural Water Management</Title>
 
-      <p className='intro-text'>
+      <Paragraph style={{ marginLeft: '1em' }}>
         Below are apps and tools to inform and assist with understanding and managing water resources
         in Oregon, the region, and the US, with a particular focus on tools for agricultural water management.
-      </p>
+      </Paragraph>
 
       <Input
         placeholder="Search tools by title, description, or keywords"
@@ -23,10 +26,10 @@ const Tools = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         allowClear
-        style={{ maxWidth: 480, marginBottom: 8, marginTop: 8 }}
+        style={{ maxWidth: 480, marginBottom: 8, marginTop: 8, marginLeft: '1em' }}
       />
       
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, marginLeft: '1em' }}>
         <Checkbox
           checked={showUnderDevelopment}
           onChange={(e) => setShowUnderDevelopment(e.target.checked)}

@@ -1,4 +1,3 @@
-import './Tools.css'
 import { Children, isValidElement, useMemo, useState } from 'react';
 import { Row, Col, Card, Button, Tag, Space, Input, Empty, Checkbox } from 'antd';
 import { ToolOutlined, ExperimentOutlined, CheckOutlined } from '@ant-design/icons';
@@ -159,8 +158,7 @@ const ToolTable = ({showUnderDevelopment = false, searchTerm = '', maxTools = -1
   }, [searchTerm, showUnderDevelopment]);
 
   return (
-    <div className='content-container' >
-
+    <div style={{ padding: '0.5em' }}>
       <Row gutter={[16, 16]}>
         {filteredTools.map((tool, index) => (
           maxTools < 0 || index < maxTools ? (

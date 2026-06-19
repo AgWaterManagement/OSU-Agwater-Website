@@ -220,15 +220,12 @@ const OllamaChat = () => {
     }
 
     return (
-        <div className="container">
-            <header className="header">
-            </header>
-
-            <main className="main">
+        <div>
+            <main>
                 <br />
 
                 <div className="chat-prompt">
-                    <div className="input-container">
+                    <div style={{display: 'flex', alignItems: 'center', width: '100%'}}>
                         <span style={{ color: 'black', marginRight: '0.8em', fontSize: '0.9em' }}>Prompt: </span>
                         <TextArea
                             ref={promptCtrl}
