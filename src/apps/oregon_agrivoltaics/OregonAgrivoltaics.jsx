@@ -513,8 +513,8 @@ const OregonAgrivoltaics = () => {
             return {
                 month: months[index],
                 mean: data.mean,
-                eff: data.eff,
-                ci: data.ci ? [data.ci.lower, data.ci.upper] : null,
+                //eff: data.eff,
+                ci: [data.ci_lower, data.ci_upper],
             };
         });
 
