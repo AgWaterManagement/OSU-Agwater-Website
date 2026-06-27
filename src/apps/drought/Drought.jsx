@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 
-import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal, Select } from 'antd';
+import { Divider, Row, Col, Tabs, Button, Card, message, Typography, Collapse, Modal } from 'antd';
 import { MapContainer, TileLayer, WMSTileLayer, GeoJSON, Pane, useMapEvents, CircleMarker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, BarChart, Bar, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
@@ -254,11 +254,6 @@ const Drought = () => {
 	const [droughtIndiciesData, setDroughtIndiciesData] = useState(null);
 	const [modalChart, setModalChart] = useState(null);
 	const [clickedLocation, setClickedLocation] = useState({ lat: null, lng: null });
-	const [hucConditions, setHucConditions] = useState(null);
-	const [hucForecasts, setHucForecasts] = useState(null);
-	const [hucNames, setHucNames] = useState({});
-	const [currentHuc, setCurrentHuc] = useState(null);
-	const [activeMapLayer, setActiveMapLayer] = useState('forecast_pct_normal');
 	const [snotelData, setSnotelData] = useState(null);
 	const [snotelCurrentSwe, setSnotelCurrentSwe] = useState({});
 	const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
@@ -1171,6 +1166,7 @@ const Drought = () => {
 
 		// First, we will fetch a list of stations that provide drought indices and are active, using the /services/v1/stations endpoint with appropriate filters.
 		try {
+			setClickedLocation({ lat, lng });
 			// Use the AWDB REST API to locate all of the sensor stations that provide drought indices data in Oregon, then filter to the ones closest to the provided lat/lng coordinates.
 			// Element codes to include (daily elements only — SRVO is monthly/seasonal and is handled by the streamflow forecast functions):
 			// 	PREC (precipitation)
@@ -1195,15 +1191,20 @@ const Drought = () => {
 
 			const stations = await stationsResponse.json();
 
-			// Filter to stations that are close to the provided lat/lng and have drought indices metadata.
-			// The AWDB API returns element metadata under `stationElements` (not `elements`) when stationElements=true.
-			const radiusKm = 50;
-			const stationsWithIndices = (stations || []).filter(station => {
-				const hasElement = station.stationElements?.some(e => elementCodes.includes(e.elementCode));
-				if (!hasElement) return false;
-				const dist = haversineKm(lat, lng, station.latitude ?? 0, station.longitude ?? 0);
-				return dist <= radiusKm;
-			});
+			// Keep stations that provide at least one requested element and have a valid location,
+			// then rank by distance from the clicked map point and keep the nearest set.
+			const nearestCount = 12;
+			const stationsWithIndices = (stations || [])
+				.filter(station => {
+					if (station.latitude == null || station.longitude == null) return false;
+					return station.stationElements?.some(e => elementCodes.includes(e.elementCode));
+				})
+				.map(station => ({
+					...station,
+					distanceKm: haversineKm(lat, lng, station.latitude, station.longitude)
+				}))
+				.sort((a, b) => a.distanceKm - b.distanceKm)
+				.slice(0, nearestCount);
 
 			// Map the filtered stations to include relevant metadata and the drought indices they provide.
 			const stationsData = stationsWithIndices.map(station => ({
@@ -1212,7 +1213,10 @@ const Drought = () => {
 				stationTriplet: station.stationTriplet,
 				latitude: station.latitude,
 				longitude: station.longitude,
-				elements: station.stationElements?.map(e => e.elementCode) || []
+				distanceKm: parseFloat(station.distanceKm.toFixed(1)),
+				elements: [...new Set((station.stationElements || [])
+					.map(e => e.elementCode)
+					.filter(code => elementCodes.includes(code)))]
 			}));
 
 			console.log('Drought indices stations near clicked location:', stationsData);
@@ -1226,7 +1230,7 @@ const Drought = () => {
 			// Fetch the most recent precipitation data for all nearby stations
 			const triplets = stationsWithIndices.map(s => s.stationTriplet).filter(Boolean);
 			if (triplets.length > 0) {
-				GetDroughtIndexData(triplets, 'PREC');
+				GetDroughtIndexData(triplets);
 			}
 
 		} catch (error) {
@@ -1236,7 +1240,7 @@ const Drought = () => {
 		}
 	}
 
-	const GetDroughtIndexData = async (tripletList, droughtIndex) => {
+	const GetDroughtIndexData = async (tripletList) => {
 		// This function will take the list of nearby stations, a specified drought index (e.g. USDM, PDSI, SPI, EDDI),
 		// and fetch the most recent data for that drought index from the AWDB REST API for those stations.
 
@@ -1247,10 +1251,16 @@ const Drought = () => {
 			// data from. Thus, we can batch these stationIDs into a single /data request using
 			// a comma-separated list of station triplets in the stationTriplets parameter,
 			// and specifying the droughtIndex in the elements parameter to filter to only the relevant data.
+			
+			// Element codes to include (daily elements only — SRVO is monthly/seasonal and is handled by the streamflow forecast functions):
+			// 	PREC (precipitation)
+			// 	WTEQ (snow water equivalent, also known as SWE)
+			// 	RESC (reservoir storage)
+			const elementCodes = ['PREC', 'WTEQ', 'RESC'];
 			const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
 			const dataParams = new URLSearchParams({
 				stationTriplets: tripletList.join(','),
-				elements: droughtIndex,
+				elements: elementCodes.join(','),
 				duration: 'DAILY',
 				returnFlags: 'false',
 				beginDate: -30,	// We will fetch the last 30 days of data for the relevant drought index for each station so that we can display recent trends in the SummaryPanel; we can adjust this duration as needed in the future.
@@ -1265,18 +1275,42 @@ const Drought = () => {
 			}
 
 			const dataJson = await dataResponse.json();
-			const droughtData = (dataJson || []).map(entry => {
+			const byStation = {};
+
+			(dataJson || []).forEach(entry => {
 				const stationTriplet = entry.stationTriplet;
 				const stationId = stationTriplet?.split(':')?.[0];
-				const latestValue = entry?.data?.[0]?.values?.filter(v => v.value !== null && v.value !== undefined).pop();
-				return {
-					stationTriplet,
-					stationId,
-					droughtIndex,
-					value: latestValue ? latestValue.value : null,
-					date: latestValue ? latestValue.date : null
-				};
+				if (!stationTriplet || !stationId) return;
+
+				if (!byStation[stationTriplet]) {
+					byStation[stationTriplet] = {
+						stationTriplet,
+						stationId,
+						latestMeasurements: {}
+					};
+				}
+
+				(entry?.data || []).forEach(series => {
+					const elementCode =
+						series?.stationElement?.elementCode ||
+						series?.elementCode ||
+						series?.stationElement?.elementCd ||
+						series?.elementCd;
+					if (!elementCode || !elementCodes.includes(elementCode)) return;
+
+					const latest = (series?.values || [])
+						.filter(v => v.value !== null && v.value !== undefined)
+						.pop();
+
+					byStation[stationTriplet].latestMeasurements[elementCode] = {
+						value: latest ? latest.value : null,
+						date: latest ? latest.date : null,
+						unit: series?.unitCode || series?.unit || null
+					};
+				});
 			});
+
+			const droughtData = Object.values(byStation);
 
 			console.log('Drought indices data for nearby stations:', droughtData);
 			setDroughtIndiciesData({
@@ -1292,33 +1326,6 @@ const Drought = () => {
 			message.error("Drought indices data could not be loaded.");
 		}
 	}
-
-	// Transforms huc8_current_conditions.json field names to match SummaryPanel's LATEST_API_KEY_MAP
-	const adaptConditions = (raw) => {
-		const out = {};
-		for (const [huc, v] of Object.entries(raw)) {
-			out[huc] = {
-				usdm: v.usdm,
-				pdsi: v.pdsi,
-				spi: v.spi,
-				eddi: v.eddi,
-				cmi_raw: v.cmi,
-				vci_raw: v.vci,
-				vhi_raw: v.vhi,
-				ssmi_raw: v.ssmi,
-				streamflow_pctile: v.streamflow,
-				swe_pct_normal: v.swe,
-				spi_1yr: v.spi1yr,
-			};
-		}
-		return out;
-	};
-
-	const getActiveLayer = (mapLayer) => {
-		if (['usdm', 'pdsi', 'spi', 'eddi'].includes(mapLayer)) return 'met';
-		if (['cmi_raw', 'vci_raw', 'vhi_raw', 'ssmi_raw'].includes(mapLayer)) return 'ag';
-		return 'hydro';
-	};
 
 	useEffect(() => {
 		PopulateCountyData();
@@ -1362,22 +1369,6 @@ const Drought = () => {
 				}).catch(err => console.error('Failed to fetch current SNOTEL SWE:', err));
 			})
 			.catch(err => console.error('Failed to load SNOTEL data:', err));
-
-		// Load the current and forecast SRVO data from the USGS station nearest to the user for the SummaryPanel to display.
-		// The data is fetched via API calls to the USDA AWDB REST API in the GetNearestStreamForecast function, which is triggered by a click on the map.
-		// However, we can also pre-fetch data for a default location (e.g. the geographic center of Oregon) so that the SummaryPanel has something to show when the app first loads.
-		
-		Promise.all([
-			fetch('/drought/data/huc8_current_conditions.json').then(r => r.json()),
-			fetch('/drought/data/huc8_current_forecasts.json').then(r => r.json()),
-			fetch('/drought/data/huc8_names.json').then(r => r.json()),
-		]).then(([conditions, forecasts, names]) => {
-			setHucConditions(adaptConditions(conditions));
-			setHucForecasts(forecasts);
-			setHucNames(names);
-		}).catch(err => {
-			console.error('Error loading HUC-8 data:', err);
-		});
 	}, []);
 
 
@@ -2111,10 +2102,8 @@ const Drought = () => {
 										)}
 										{droughtIndiciesStations?.stations?.map(station => {
 											if (station.latitude == null || station.longitude == null) return null;
-											const dataEntry = droughtIndiciesData?.stations?.find(d => d.stationId === station.stationId);
-											const distance = clickedLocation.lat != null
-												? haversineKm(clickedLocation.lat, clickedLocation.lng, station.latitude, station.longitude).toFixed(1)
-												: null;
+											const dataEntry = droughtIndiciesData?.stations?.find(d => d.stationTriplet === station.stationTriplet || d.stationId === station.stationId);
+											const measurementCodes = station.elements || [];
 											return (
 												<CircleMarker
 													key={station.stationId}
@@ -2126,17 +2115,23 @@ const Drought = () => {
 														<div style={{ minWidth: '180px' }}>
 															<strong>{station.stationName}</strong><br />
 															Station ID: {station.stationId}<br />
-															Available elements: {station.elements?.join(', ')}<br />
-															{dataEntry ? (
-																<>
-																	Index queried: {dataEntry.droughtIndex}<br />
-																	Latest value: {dataEntry.value != null ? `${dataEntry.value} in` : 'N/A'}<br />
-																	{dataEntry.date && <>As of: {dataEntry.date}<br /></>}
-																</>
-															) : (
-																<span style={{ color: '#888' }}>Loading index data...</span>
-															)}
-															{distance != null && <><br />Distance from click: {distance} km</>}
+															Measurements: {measurementCodes.length > 0 ? measurementCodes.join(', ') : 'N/A'}<br />
+															Distance from click: {station.distanceKm ?? 'N/A'} km
+															<div style={{ marginTop: '6px' }}>
+																<strong>Latest values</strong>
+																{measurementCodes.map((code) => {
+																	const m = dataEntry?.latestMeasurements?.[code];
+																	const valueText = m?.value != null ? `${m.value}${m?.unit ? ` ${m.unit}` : ''}` : 'N/A';
+																	return (
+																		<div key={`${station.stationId}-${code}`}>
+																			{code}: {valueText}{m?.date ? ` (${m.date})` : ''}
+																		</div>
+																	);
+																})}
+																{measurementCodes.length === 0 && (
+																	<div style={{ color: '#888' }}>No measurement metadata available.</div>
+																)}
+															</div>
 														</div>
 													</Popup>
 												</CircleMarker>
@@ -2252,35 +2247,12 @@ const Drought = () => {
 				</Row>
 
 				<Divider style={{ borderColor: '#555', margin: '24px 0 12px 0' }}>
-					Watershed Basin Conditions (HUC-8)
+					Nearest Station Conditions
 				</Divider>
-				<Row style={{ marginBottom: '12px' }}>
-					<Col>
-						<Select
-							style={{ width: 320 }}
-							placeholder="Select a watershed basin..."
-							value={currentHuc}
-							onChange={setCurrentHuc}
-							showSearch
-							allowClear
-							filterOption={(input, option) =>
-								option.label.toLowerCase().includes(input.toLowerCase())
-							}
-							options={Object.entries(hucNames)
-								.sort(([, a], [, b]) => a.localeCompare(b))
-								.map(([huc, name]) => ({ value: huc, label: `${name} (${huc})` }))}
-						/>
-					</Col>
-				</Row>
 				<SummaryPanel
-					currentHuc={currentHuc}
-					hucName={currentHuc ? hucNames[currentHuc] : null}
-					currentConditions={hucConditions}
-					forecastData={hucForecasts}
-					unifiedData={null}
-					activeLayer={getActiveLayer(activeMapLayer)}
-					activeMapLayer={activeMapLayer}
-					setActiveMapLayer={setActiveMapLayer}
+					clickedLocation={clickedLocation}
+					stationData={droughtIndiciesStations}
+					measurementData={droughtIndiciesData}
 				/>
 				</>
 			)}

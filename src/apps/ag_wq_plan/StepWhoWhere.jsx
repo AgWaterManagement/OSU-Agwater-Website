@@ -2,20 +2,22 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-import { Button, Checkbox, Col, Form, Input, Modal, Popconfirm, Row, Select, Space, Typography } from 'antd';
+import { Card, Button, Checkbox, Col, Form, Input, Modal, Popconfirm, Row, Select, Space, Typography, message } from 'antd';
 import ValidationError from './ValidationError';
-import {DeleteOutlined} from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
 
 import Map from '@arcgis/core/Map';
-import MapView from '@arcgis/core/views/MapView'; 
+import MapView from '@arcgis/core/views/MapView';
 import Graphic from '@arcgis/core/Graphic';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
+import "@arcgis/map-components/components/arcgis-basemap-toggle";
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 import "@arcgis/map-components/components/arcgis-zoom"; // Import ArcGIS Zoom component
 
+
 // Extract Typography.Paragraph component for use in the form description
-const { Paragraph, Title } = Typography;
+const { Paragraph, Title, Text } = Typography;
 const { TextArea } = Input;
 
 const getSearchResultLatLng = (searchResult) => {
@@ -55,11 +57,13 @@ const getSearchResultLatLng = (searchResult) => {
 const StepWhoWhere = ({
   userType,
   sitesData,
-  commoditiesData, 
+  commoditiesData,
   selectedCommodities,
   setSelectedCommodities,
   setPhotos,
   siteName, setSiteName,
+  siteDescription, setSiteDescription,
+  siteLocator, setSiteLocator,
   _latitude, setLatitude,
   _longitude, setLongitude,
   agwqmArea, setAgwqmArea,
@@ -71,14 +75,15 @@ const StepWhoWhere = ({
   areaPlanLink, setAreaPlanLink,
   setError
 }) => {
-  const [mousePosition, setMousePosition] = useState('');
-  const [markerPosition, setMarkerPosition] = useState(null);
   const [photoPickerOpen, setPhotoPickerOpen] = useState(false);
   const [sitePhotoPreviews, setSitePhotoPreviews] = useState([]);
   const [pendingPhoto, setPendingPhoto] = useState(null);
   const [useExistingSite, setUseExistingSite] = useState(false);
   const [selectedExistingSite, setSelectedExistingSite] = useState(null);
-  
+
+  const isSiteDirty = useRef(false);
+
+  const arcgisBasemapToggleRef = useRef(null);
   const arcgisSearchRef = useRef(null);
   const arcgisZoomRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -137,6 +142,79 @@ const StepWhoWhere = ({
     });
   };
 
+
+  // Handle saving practice
+  const handleSaveSite = async () => {
+    try {
+      const payload = [
+        {
+
+          //id:  // integer NOT NULL DEFAULT nextval('sites_id_seq'::regclass),
+          latitude: _latitude,  // real,
+          longitude: _longitude,  // real,
+          name: siteName,  // text COLLATE pg_catalog."default",
+          description: siteDescription,   // text COLLATE pg_catalog."default",
+          awqma: agwqmArea,   // text COLLATE pg_catalog."default",
+          tmdl_area: agwqRegion,   // text COLLATE pg_catalog."default",
+          locator: siteLocator,    //text COLLATE pg_catalog."default",
+        },
+      ];
+
+      const response = await fetch(`https://agwater.org:5556/agwqplan/sites`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        message.success('Site saved successfully');
+        isSiteDirty.current = false;
+      } else {
+        message.error(`Failed to save site: ${data.error}`);
+      }
+    } catch (error) {
+      message.error(`Error saving site: ${error.message}`);
+    }
+  };
+
+
+  function queryLayer(layer, latitude, longitude) {
+    // Query the AWQMA GeoJSON layer for attributes at the clicked point
+    if (layer && typeof layer.queryFeatures === 'function') {
+      console.log('Querying layer for clicked location...');
+
+      layer.queryFeatures({
+        geometry: { latitude: latitude, longitude: longitude },
+        spatialRelationship: 'intersects',
+        outFields: '*', // ['MA_Index'], //, 'AgWQ_Reporting_Area','Administrative_rules','Area_plan','Phone','Email'],
+        returnGeometry: false,
+      }).then((result) => {
+        console.log('AWQMA query result:', result);
+        const features = result?.features || [];
+        if (features.length > 0) {
+          const attrs = features[0].attributes || {};
+          setLatitude(latitude);
+          setLongitude(longitude);
+          setAgwqRegion(attrs.AgWQ_Reporting_Area);
+          setAgwqmArea(attrs.MA_Index);
+          setRegionalSpecialist(attrs.Water_quality_specialist);
+          setRegionalSpecialistEmail(attrs.Email);
+          setRegionalSpecialistPhone(attrs.Phone);
+          setAdminRulesLink(attrs.Administrative_rules ? attrs.Administrative_rules : null);
+          setAreaPlanLink(attrs.Area_plan ? attrs.Area_plan : null);
+          setError('process');
+        } else {
+          console.log('No feature found at clicked location');
+        }
+      }).catch((err) => {
+        console.error('Error querying AWQMA layer:', err);
+      });
+    }
+  }
+
+
+  // if sitePhotoPreview, pendingPhoto changes
   useEffect(() => {
     return () => {
       sitePhotoPreviews.forEach((preview) => {
@@ -156,11 +234,15 @@ const StepWhoWhere = ({
     };
   }, [sitePhotoPreviews, pendingPhoto]);
 
-
+  // startup
+  //  1. stop event propagation
+  //  2. add handler for search results
+  //    - set site location info
+  //  3. Manage map event propagation
   useEffect(() => {
-    const searchElement = arcgisSearchRef.current;
-    const view = mapViewRef.current;
-    if (!searchElement || !view) {
+    //const searchElement = arcgisSearchRef.current;
+    //const view = mapViewRef.current;
+    if (!arcgisSearchRef.current || !mapViewRef.current) {
       return undefined;
     }
 
@@ -173,8 +255,8 @@ const StepWhoWhere = ({
       if (result && result.length > 0) {
         const latLng = getSearchResultLatLng(result[0]);
         if (latLng) {
-          setMarkerPosition(latLng);
-          setError('process');
+          //setMarkerPosition(latLng);
+          //setError('process');
           const [latitude, longitude] = latLng;
           const point = {
             type: 'point',
@@ -194,17 +276,20 @@ const StepWhoWhere = ({
               },
             },
           }));
-          view.goTo({ center: [longitude, latitude], zoom: 11 });
+          mapViewRef.current.goTo({ center: [longitude, latitude], zoom: 11 });
         }
       }
     };
 
+    // manage event propagation
     const eventsToStop = ['click']; //, 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'dblclick', 'touchstart', 'touchend'];
+    const searchElement = arcgisSearchRef.current;
     eventsToStop.forEach((eventName) => {
       searchElement.addEventListener(eventName, stopPropagation, true);
     });
     searchElement.addEventListener('arcgis-search-result', handleSearchResult);
 
+    // return cleanup function to remove installed event listeners
     return () => {
       eventsToStop.forEach((eventName) => {
         searchElement.removeEventListener(eventName, stopPropagation, true);
@@ -246,6 +331,7 @@ const StepWhoWhere = ({
     });
     map.add(awqmaLayer);
 
+    // create a MapView to view hte map
     const view = new MapView({
       container: mapContainerRef.current,
       map,
@@ -260,13 +346,15 @@ const StepWhoWhere = ({
     });
     mapViewRef.current = view;
 
-    const updateMousePosition = (event) => {
-      const mapPoint = view.toMap({ x: event.x, y: event.y });
-      if (mapPoint) {
-        setMousePosition(`${mapPoint.latitude.toFixed(5)}, ${mapPoint.longitude.toFixed(5)}`);
-      }
-    };
+    // mousePosition handler
+    //const updateMousePosition = (event) => {
+    //  const mapPoint = view.toMap({ x: event.x, y: event.y });
+    //  if (mapPoint) {
+    //    setMousePosition(`${mapPoint.latitude.toFixed(5)}, ${mapPoint.longitude.toFixed(5)}`);
+    //  }
+    //};
 
+    // click handler
     const handleClick = (event) => {
       if (!event.mapPoint) {
         return;
@@ -274,44 +362,11 @@ const StepWhoWhere = ({
 
       const { latitude, longitude } = event.mapPoint;
       // Log click coordinates
-
       console.log('map click lat,long:', latitude, longitude);
-
-      // Query the AWQMA GeoJSON layer for attributes at the clicked point
-      if (awqmaLayer && typeof awqmaLayer.queryFeatures === 'function') {
-        console.log('Querying AWQMA layer for clicked location...');
-        awqmaLayer.queryFeatures({
-          geometry: event.mapPoint,
-          spatialRelationship: 'intersects',
-          outFields: '*', // ['MA_Index'], //, 'AgWQ_Reporting_Area','Administrative_rules','Area_plan','Phone','Email'],
-          returnGeometry: false,
-        }).then((result) => {
-          console.log('AWQMA query result:', result);
-          const features = result?.features || [];
-          if (features.length > 0) {
-            const attrs = features[0].attributes || {};
-            setLatitude(latitude);
-            setLongitude(longitude);
-            setAgwqRegion(attrs.AgWQ_Reporting_Area);
-            setAgwqmArea(attrs.MA_Index);
-            setRegionalSpecialist(attrs.Water_quality_specialist);
-            setRegionalSpecialistEmail(attrs.Email);
-            setRegionalSpecialistPhone(attrs.Phone);
-            setAdminRulesLink(attrs.Administrative_rules ? attrs.Administrative_rules : null);
-            setAreaPlanLink(attrs.Area_plan ? attrs.Area_plan : null);
-            setError('process');
-
-            //console.log('AWQMA feature attributes:', { MA_Index: attrs.MA_Index, Region: attrs.Region, all: attrs });
-          } else {
-            console.log('No AWQMA feature found at clicked location');
-          }
-        }).catch((err) => {
-          console.error('Error querying AWQMA layer:', err);
-        });
-      }
+      queryLayer(awqmaLayer, latitude, longitude);   // query spatail data and update UIlocation states
 
       console.log('Setting marker at clicked location');
-      setMarkerPosition([latitude, longitude]);
+      //setMarkerPosition([latitude, longitude]);
       setError('process');
       markerLayer.removeAll();
       markerLayer.add(new Graphic({
@@ -332,15 +387,19 @@ const StepWhoWhere = ({
       await view.when();
       const searchElement = arcgisSearchRef.current;
       const zoomElement = arcgisZoomRef.current;
+      const basemapToggleElement = arcgisBasemapToggleRef.current;
       if (searchElement) {
         searchElement.view = view;
       }
       if (zoomElement) {
         zoomElement.view = view;
       }
+      if (basemapToggleElement) {
+        basemapToggleElement.view = view;
+      }
     };
 
-    view.on('pointer-move', updateMousePosition);
+    //view.on('pointer-move', updateMousePosition);
     view.on('click', handleClick);
     handleViewReady();
 
@@ -351,37 +410,63 @@ const StepWhoWhere = ({
     };
   }, []);
 
-  
-      const commodityOptions = useMemo(() => {
-          if (!Array.isArray(commoditiesData) || commoditiesData.length === 0) {
-              return [];
-          }
-  
-          return commoditiesData.map((item) => {
-              if (typeof item === 'string') {
-                  return { label: item, value: item };
-              }
-  
-              if (!item || typeof item !== 'object') {
-                  return null;
-              }
-  
-              const value = item.value ?? item.id ?? item.code ?? item.name ?? item.label;
-              const label = item.label ?? item.name ?? item.displayName ?? value;
-  
-              if (value == null || label == null) {
-                  return null;
-              }
-  
-              return { label: String(label), value: String(value) };
-          }).filter(Boolean);
-      }, [commoditiesData]);
-  
+
+  const siteOptions = useMemo(() => {
+    if (!Array.isArray(sitesData) || sitesData.length === 0) {
+      return [];
+    }
+
+    return sitesData.map((item) => {
+      if (typeof item === 'string') {
+        return { label: item, value: item };
+      }
+
+      if (!item || typeof item !== 'object') {
+        return null;
+      }
+
+      const value = item.value ?? item.id ?? item.code ?? item.name ?? item.label;
+      const label = item.label ?? item.name ?? item.displayName ?? value;
+
+      if (value == null || label == null) {
+        return null;
+      }
+      console.log({ label: String(label), value: String(value) });
+      return { label: String(label), value: String(value) };
+    }).filter(Boolean);
+  }, [sitesData]);
+
+
+  const commodityOptions = useMemo(() => {
+    if (!Array.isArray(commoditiesData) || commoditiesData.length === 0) {
+      return [];
+    }
+
+    return commoditiesData.map((item) => {
+      if (typeof item === 'string') {
+        return { label: item, value: item };
+      }
+
+      if (!item || typeof item !== 'object') {
+        return null;
+      }
+
+      const value = item.value ?? item.id ?? item.code ?? item.name ?? item.label;
+      const label = item.label ?? item.name ?? item.displayName ?? value;
+
+      if (value == null || label == null) {
+        return null;
+      }
+
+      return { label: String(label), value: String(value) };
+    }).filter(Boolean);
+  }, [commoditiesData]);
+
 
 
   function handleDescriptionChange(photoUrl, description) {
-    setPhotos(prevPhotos => 
-      prevPhotos.map(photo => 
+    setPhotos(prevPhotos =>
+      prevPhotos.map(photo =>
         photo.url === photoUrl ? { ...photo, description } : photo
       )
     );
@@ -392,6 +477,7 @@ const StepWhoWhere = ({
   }
 
   const _setSiteName = (value) => {
+    isSiteDirty.current = true;
     setSiteName(value);
     if (value) {
       setError('process');
@@ -400,6 +486,43 @@ const StepWhoWhere = ({
 
   if (siteName && _latitude != null && _longitude != null) {
     setError('finish');
+  }
+
+  function _setSiteLocator(value) {
+    isSiteDirty.current = true;
+    setSiteLocator(value);
+  }
+
+  function _setSiteDescription(value) {
+    isSiteDirty.current = true;
+    setSiteDescription(value);
+  }
+
+  console.log("Existing sites: ", useExistingSite);
+
+  function _setSelectedSite(value) {
+    // get this site in the sitesData
+    const site = sitesData.find((s) => s.id === parseInt(value));
+
+    // update the site name, location, description, etc
+    //setLatitude(site?.latitude || null);
+    //setLongitude(site?.longitude || null);
+    setSiteName(site?.name || null);
+    setSiteLocator(site?.locator || null);
+    setSiteDescription(site?.description || null);
+
+    queryLayer(agwqmArea, site?.latitude, site?.longitude);
+
+    // zoom to location
+    if (site?.latitude != null && site?.longitude != null) {
+      mapViewRef.current.goTo({
+        target: [site.longitude, site.latitude],
+        zoom: 15,
+      });
+    }
+
+    setSelectedExistingSite(value);
+
   }
 
   return (
@@ -418,125 +541,161 @@ const StepWhoWhere = ({
               <Checkbox checked={useExistingSite} onChange={(e) => setUseExistingSite(e.target.checked)}>
                 Use Existing Site?
               </Checkbox>
-            </div>
-            <br />
 
-            {useExistingSite ? (
-              <>
+              {useExistingSite && (
                 <Select
                   value={selectedExistingSite}
-                  onChange={(v) => setSelectedExistingSite(v)}
+                  onChange={(v) => _setSelectedSite(v)}
                   placeholder="Select an existing site"
                   style={{ width: '30em', maxWidth: '100%' }}
                   disabled={!useExistingSite}
-                  options={[sitesData.map((site) => {
-                    const value = site.id;
-                    const label = site.name || `Site ${site.id}`;
-                    return { label, value };
-                  })]}
+                  options={siteOptions}
                 />
-              </>
-            ) : (
-              <>
-                {!siteName && <ValidationError message="" />}
+              )}
 
-                <span>Site Name: </span>
-                <Input
-                  value={siteName}
-                  onChange={(e) => _setSiteName(e.target.value)}
-                  placeholder="Enter a name for this site"
-                  style={{ width: '30em', maxWidth: '100%' }}
-                />
+            </div>
+            <br />
+            <Card>
+              {!siteName && <ValidationError message="" />}
 
-                <br />
-                <br />
+              <Row>
+                <Col style={{ width: '12em' }}>
+                  <Text>Site Name: </Text>
+                </Col>
+                <Col>
+                  <Input
+                    value={siteName}
+                    onChange={(e) => _setSiteName(e.target.value)}
+                    placeholder="Enter a name for this site"
+                    style={{ width: '30em', maxWidth: '100%' }}
+                  />
+                </Col>
+              </Row>
+              <br />
+              <Row>
+                <Col style={{ width: '12em' }}>
+                  <Text>Site Locator/Address: </Text>
+                </Col>
+                <Col>
+                  <Input
+                    value={siteLocator}
+                    onChange={(e) => _setSiteLocator(e.target.value)}
+                    placeholder="Enter the location or address of the site"
+                    style={{ width: '30em', maxWidth: '100%' }}
+                  />
+                </Col>
+              </Row>
 
-                <Paragraph>
-                  After specifying the site name and selecting the site location on the map below, you can save the site for future reference.
-                </Paragraph>
+              <br />
+              <Row>
+                <Col style={{ width: '12em' }}>
+                  <Text>Site Description: </Text>
+                </Col>
+                <Col>
+                  <TextArea
+                    value={siteDescription}
+                    onChange={(e) => _setSiteDescription(e.target.value)}
+                    placeholder="Enter a description for this site"
+                    style={{ width: '30em', maxWidth: '100%' }}
+                  />
+                </Col>
+              </Row>
 
-                {siteName.trim() === '' && _latitude && _longitude ? (
-                  <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} disabled>
-                    Save Site
-                  </Button>
-                ) : (
-                  <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} onClick={() => {
-                    console.log('Saving site with details:', {
-                      name: siteName,
-                      latitude: _latitude,
-                      longitude: _longitude,
-                      agwqmArea,
-                      regionalSpecialist,
-                      regionalSpecialistEmail,
-                      regionalSpecialistPhone,
-                      adminRulesLink,
-                      areaPlanLink,
-                    });
-                  }}>
-                    Save Site
-                  </Button>
-                )}
+              <br />
 
-                {!_latitude && !_longitude && (<><br/><ValidationError message="Below, specify the location of the site." /></>)}
+              <Paragraph>
+                After specifying the site name and selecting the site location on the map below, you can save the site for future reference.
+              </Paragraph>
 
-                <div style={{ fontSize: '0.9rem', fontStyle: 'italic', marginBottom: 8 }}>
-                  Click on the map to set the location of your operation, or search for an address or place using the search box in the top right corner of the map.
-                </div>
-                <div style={{ width: '100%', maxWidth: '800px', height: 500, marginBottom: 12, position: 'relative' }}>
-                  <div ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />
-                  <arcgis-zoom
-                    ref={arcgisZoomRef}
-                    style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
-                  ></arcgis-zoom>
-                  <arcgis-search
-                    ref={arcgisSearchRef}
-                    placeholder="Search for a location"
-                    countries="US"
-                    style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
-                  ></arcgis-search>
-                </div>
+              {(siteName.trim() === '' && _latitude && _longitude) || isSiteDirty.current==false ? (
+                <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} disabled>
+                  Save Site
+                </Button>
+              ) : (
+                <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} onClick={() => {
+                  console.log('Saving site with details:', {
+                    name: siteName,
+                    latitude: _latitude,
+                    longitude: _longitude,
+                    agwqmArea,
+                    regionalSpecialist,
+                    regionalSpecialistEmail,
+                    regionalSpecialistPhone,
+                    adminRulesLink,
+                    areaPlanLink,
+                  });
+                  handleSaveSite();
+                }}>
+                  Save Site
+                </Button>
+              )}
 
-                {_latitude && _longitude && (
-                  <>
-                    <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Site Details</span>
-                    <Paragraph>
-                      <span style={{ fontStyle: 'italic' }}>Lat/Long: </span>({_latitude ? _latitude.toFixed(5) : ''}, {_longitude ? _longitude.toFixed(5) : ''})
-                      <br />
-                      <span style={{ fontStyle: 'italic' }}>Ag Water Quality Management Area: </span>{agwqmArea ? agwqmArea : ''}
-                      <br />
-                      {/*}
+              {!_latitude && !_longitude && (<><br /><ValidationError message="Below, specify the location of the site." /></>)}
+
+              <div style={{ fontSize: '0.9rem', fontStyle: 'italic', marginBottom: 8 }}>
+                Click on the map to set the location of your operation, or search for an address or place using the search box in the top right corner of the map.
+              </div>
+              <div style={{ width: '100%', maxWidth: '800px', height: 500, marginBottom: 12, position: 'relative' }}>
+                <div ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />
+                <arcgis-zoom
+                  ref={arcgisZoomRef}
+                  style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
+                ></arcgis-zoom>
+                <arcgis-search
+                  ref={arcgisSearchRef}
+                  placeholder="Search for a location"
+                  countries="US"
+                  style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000 }}
+                ></arcgis-search>
+                {/*
+                <arcgis-basemap-toggle 
+                  slot="bottom-right" 
+                  view="Map"
+                ></arcgis-basemap-toggle>
+                  */}
+
+
+              </div>
+
+              {_latitude && _longitude && (
+                <>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Site Details</span>
+                  <Paragraph>
+                    <span style={{ fontStyle: 'italic' }}>Lat/Long: </span>({_latitude ? _latitude.toFixed(5) : ''}, {_longitude ? _longitude.toFixed(5) : ''})
+                    <br />
+                    <span style={{ fontStyle: 'italic' }}>Ag Water Quality Management Area: </span>{agwqmArea ? agwqmArea : ''}
+                    <br />
+                    {/*}
                       <span style={{ fontStyle: 'italic' }}>Region: </span>{agwqRegion ? agwqRegion : ''}
                       <br /> */}
-                      <span style={{ fontStyle: 'italic' }}>Regional Specialist: </span>{regionalSpecialist ? regionalSpecialist : ''}
-                      <br />
-                      <span style={{ fontStyle: 'italic' }}>Email: </span>{regionalSpecialistEmail ? regionalSpecialistEmail : ''}
-                      <br />
-                      <span style={{ fontStyle: 'italic' }}>Phone: </span>{regionalSpecialistPhone ? regionalSpecialistPhone : ''}
-                      <br />
-                      <span style={{ fontStyle: 'italic' }}>Admin Rules: </span>{adminRulesLink ? <a href={adminRulesLink} target="_blank" rel="noreferrer">Link</a> : ''}
-                      <br />
-                      <span style={{ fontStyle: 'italic' }}>Area Plan: </span>{areaPlanLink ? <a href={areaPlanLink} target="_blank" rel="noreferrer">Link</a> : ''}
-                    </Paragraph>
-                  </>
-                )}
-              </>
-            )}
+                    <span style={{ fontStyle: 'italic' }}>Regional Specialist: </span>{regionalSpecialist ? regionalSpecialist : ''}
+                    <br />
+                    <span style={{ fontStyle: 'italic' }}>Email: </span>{regionalSpecialistEmail ? regionalSpecialistEmail : ''}
+                    <br />
+                    <span style={{ fontStyle: 'italic' }}>Phone: </span>{regionalSpecialistPhone ? regionalSpecialistPhone : ''}
+                    <br />
+                    <span style={{ fontStyle: 'italic' }}>Admin Rules: </span>{adminRulesLink ? <a href={adminRulesLink} target="_blank" rel="noreferrer">Link</a> : ''}
+                    <br />
+                    <span style={{ fontStyle: 'italic' }}>Area Plan: </span>{areaPlanLink ? <a href={areaPlanLink} target="_blank" rel="noreferrer">Link</a> : ''}
+                  </Paragraph>
+                </>
+              )}
+            </Card>
 
           </Col>
 
           <Col sm={24} md={12}>
             <Title level={5}>Farm Type</Title>
             <span>Select all that apply from the list below</span>
-            <br/>
-                <Select
-                  mode="multiple"
-                  allowClear
-
-                  value={selectedCommodities || undefined}
-                  onChange={(v) => setSelectedCommodities(v)}
-                  style={{ width: '30em', maxWidth: '100%' }}
-                  options={commodityOptions}
-                />
+            <br />
+            <Select
+              mode="multiple"
+              allowClear
+              value={selectedCommodities || undefined}
+              onChange={(v) => setSelectedCommodities(v)}
+              style={{ width: '30em', maxWidth: '100%' }}
+              options={commodityOptions}
+            />
 
             <Title level={5}>Site Photos</Title>
 
@@ -556,7 +715,7 @@ const StepWhoWhere = ({
                       />
                       <div style={{ fontSize: '0.8rem', marginTop: 8, wordBreak: 'break-word', textAlign: 'center' }}>{photo.name}</div>
 
-                      <div style={{ fontSize: '0.8rem', marginTop: 16}}>
+                      <div style={{ fontSize: '0.8rem', marginTop: 16 }}>
                         <label htmlFor={`description-${photo.url}`}>Description of Photo:</label>
                         <TextArea rows={4} placeholder="Add a description for this photo" value={photo.description} onChange={(e) => handleDescriptionChange(photo.url, e.target.value)} />
                       </div>

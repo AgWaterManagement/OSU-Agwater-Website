@@ -244,6 +244,8 @@ const AgWqPlan = () => {
   const [selectedCommodities, setSelectedCommodities] = useState([]);
   //const commodity = useRef('Pasture/Hay');
   const [siteName, setSiteName] = useState('');
+  const [siteDescription, setSiteDescription] = useState('');
+  const [siteLocator, setSiteLocator] = useState('');
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [agwqmArea, setAgwqmArea] = useState(null);   // MA_Index from ODA AWQMA dataset
@@ -542,6 +544,8 @@ const AgWqPlan = () => {
                     setSelectedCommodities={setSelectedCommodities}
                     setPhotos={setPhotos}
                     siteName={siteName} setSiteName={setSiteName}
+                    siteDescription={siteDescription} setSiteDescription={setSiteDescription}
+                    siteLocator={siteLocator} setSiteLocator={setSiteLocator}
                     _latitude={latitude} setLatitude={setLatitude}
                     _longitude={longitude} setLongitude={setLongitude}
                     agwqmArea={agwqmArea} setAgwqmArea={setAgwqmArea}

@@ -22,7 +22,7 @@ const getChatResponse = async (_prompt, selectedModel) => {
 			},
 			body: JSON.stringify({
 				query: _prompt,
-				additional_data: {},
+				//additional_data: {},
 				//model: selectedModel,
 				stream: false,
 				use_RAG: true,
