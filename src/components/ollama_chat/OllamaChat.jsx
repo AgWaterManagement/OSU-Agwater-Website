@@ -19,9 +19,9 @@ const CHAT_API_URL = "https://agwater.org:5556/llm/chat";
 const MODELS_API_URL = "https://agwater.org:5556/llm/models";
 const RATING_API_URL = "https://agwater.org:5556/llm/rating";
 
-const OllamaChat = () => {
+const OllamaChat = (showPrompt = true, showHistory = true, showModels = true, chatPrompt = "") => {
     //const input = useRef("");
-    const [prompt, setPrompt] = useState(""); // to keep track of the current input
+    const [prompt, setPrompt] = useState(chatPrompt); // to keep track of the current input
     const promptCtrl = useRef(null);
     const currentQuestion = useRef(""); // to keep track of the current input
     const currentAnswer = useRef("")
@@ -34,7 +34,9 @@ const OllamaChat = () => {
     const references = useRef(""); // to keep track of the references
 
     useEffect(() => {
-        fetchModels();
+        if (showModels) {
+            fetchModels();
+        }
     }, []);
 
     const fetchModels = async () => {
@@ -182,10 +184,10 @@ const OllamaChat = () => {
             console.error('Error sending message:', err);
         }
 
-        promptCtrl.current?.focus();
+        if (showPrompt) {
+            promptCtrl.current?.focus();
+        }
     }
-
-
 
     const rateAnswer = async (qaPair, rating) => {
         // Here you can handle the rating logic, e.g., send it to a server or update the UI
@@ -219,34 +221,42 @@ const OllamaChat = () => {
         }
     }
 
+    if ( chatPrompt && chatPrompt.length > 0 ) {
+        setPrompt(chatPrompt);
+        sendQuery();
+        }
+
     return (
         <div>
             <main>
                 <br />
-
-                <div className="chat-prompt">
-                    <div style={{display: 'flex', alignItems: 'center', width: '100%'}}>
-                        <span style={{ color: 'black', marginRight: '0.8em', fontSize: '0.9em' }}>Prompt: </span>
-                        <TextArea
-                            ref={promptCtrl}
-                            className="textarea"
-                            placeholder="Type your question or prompt..."
-                            value={prompt}
-                            onChange={(e) => { setPrompt(e.target.value); }}
-                            autoSize={{ minRows: 1, maxRows: 6 }}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    sendQuery();
-                                }
-                            }}
-                        />
-                        <Button type="primary" onClick={sendQuery}>
-                            Submit
-                        </Button>
-                    </div>
-                </div>
-                <br />
+                {
+                    showPrompt && (
+                        <div className="chat-prompt">
+                            <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                <span style={{ color: 'black', marginRight: '0.8em', fontSize: '0.9em' }}>Prompt: </span>
+                                <TextArea
+                                    ref={promptCtrl}
+                                    className="textarea"
+                                    placeholder="Type your question or prompt..."
+                                    value={prompt}
+                                    onChange={(e) => { setPrompt(e.target.value); }}
+                                    autoSize={{ minRows: 1, maxRows: 6 }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            sendQuery();
+                                        }
+                                    }}
+                                />
+                                <Button type="primary" onClick={sendQuery}>
+                                    Submit
+                                </Button>
+                            </div>
+                            <br />
+                        </div>
+                    )
+                }
                 {
                     isStreaming && (
                         <div className="message-container">
@@ -255,7 +265,7 @@ const OllamaChat = () => {
                             </div>
                             <br />
                             <div className="ai-message">
-                                
+
                                 <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
                                     {currentMarkdown || "Waiting for response..."}
                                 </Markdown>
@@ -264,7 +274,7 @@ const OllamaChat = () => {
                     )
                 }
                 {
-                    history.length > 0 && [...history].reverse().map((qaPair, index) => (
+                    showHistory && history.length > 0 && [...history].reverse().map((qaPair, index) => (
                         <div key={index} className="message-container">
                             <div className="user-message">
                                 {qaPair.question}
@@ -274,31 +284,38 @@ const OllamaChat = () => {
                                 <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
                                     {qaPair.answer || "No response available"}
                                 </Markdown>
+                                
                                 <hr />
                                 <div style={{ padding: '0.5em' }}>Rate this answer: <Rate onChange={(value) => { rateAnswer(qaPair, value); }} /></div>
                             </div>
                         </div>
-                    ))}
+                    ))
+                }
             </main>
+
             {error && <div style={{ color: 'red' }}>Error: {error}</div>}
             <br />
-            <div>
-                <label htmlFor="model-select">Models: </label>
-                <Select
-                    id="model-select"
-                    allowClear
-                    placeholder="(Optional) Select a model ..."
-                    value={selectedModel}
-                    onChange={(value) => setSelectedModel(value)}
-                    style={{ width: 300 }}
-                >
-                    {availableModels.map((model) => (
-                        <Option key={model} value={model}>
-                            {model}
-                        </Option>
-                    ))}
-                </Select>
-            </div>
+
+            {showModels && (
+                <div>
+                    <label htmlFor="model-select">Models: </label>
+                    <Select
+                        id="model-select"
+                        allowClear
+                        placeholder="(Optional) Select a model ..."
+                        value={selectedModel}
+                        onChange={(value) => setSelectedModel(value)}
+                        style={{ width: 300 }}
+                    >
+                        {availableModels.map((model) => (
+                            <Option key={model} value={model}>
+                                {model}
+                            </Option>
+                        ))}
+                    </Select>
+                </div>
+            )
+            }
         </div>
     );
 };

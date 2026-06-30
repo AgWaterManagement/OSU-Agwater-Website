@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 
 import { Menu, Layout, Steps, Card, Typography, Divider, Space, Button, Spin, Tabs } from 'antd';
-import Map from '@arcgis/core/Map';
-import MapView from '@arcgis/core/views/MapView';
-import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
-import Graphic from '@arcgis/core/Graphic';
-import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
+//import Map from '@arcgis/core/Map';
+//import MapView from '@arcgis/core/views/MapView';
+//import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
+//import Graphic from '@arcgis/core/Graphic';
+//import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
+
+import Maps from './Maps';
 
 import StartUp from './StartUp';
 import StepWhoWhere from './StepWhoWhere';
@@ -14,7 +16,8 @@ import StepGoals from './StepGoals';
 import StepPractices from './StepPractices';
 import StepSummary from './StepSummary';
 
-import AgWqplanLogin from "./AgWqplanLogin";
+//import AgWqplanLogin from "./AgWqplanLogin";
+import PracticesGuide from './PracticesGuide';
 import PageRating from '../../components/page_rating/PageRating';
 
 const { Content, Footer } = Layout;
@@ -22,194 +25,11 @@ const { Step } = Steps;
 const { Title, Text, Paragraph } = Typography;
 const API_BASE = 'https://agwater.org:5556';
 
-const TMDL_GEOJSON_URL = 'https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services/TMDLs_DEQ_by_parameter_Feb2026/FeatureServer/4/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson';
-const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=MA_Index>0&outFields=*&returnGeometry=true&f=geojson'
 /*
   "Create a 'living' repository of suggested agricultural/environmental practices
    to maintain and improve the quality of water for all waters of the State."
   "Ability for landowner to identify/search for Ag Practices related to their land."
 */
-
-const WqMap = ({ feature_url, center = [-120.5, 44.0], zoom = 5, height = 400 }) => {
-  const mapContainer = useRef(null);
-  const mapView = useRef(null);
-
-  useEffect(() => {
-    if (!mapContainer.current) return;
-
-    const initializeMap = async () => {
-      try {
-        // Create map with basemap
-        const map = new Map({
-          basemap: 'osm-3d',
-        });
-
-        // Create MapView
-        mapView.current = new MapView({
-          container: mapContainer.current,
-          map: map,
-          center: center,
-          zoom: zoom,
-        });
-
-        // If feature_url is provided, load and display the feature
-        if (feature_url) {
-          try {
-            // Check if it's a FeatureServer URL
-            if (feature_url.includes('FeatureServer')) {
-              // Add the feature layer directly from the URL
-              const featureLayer = new FeatureLayer({
-                url: feature_url
-              });
-
-              map.add(featureLayer);
-
-              // Zoom to the extent of the feature layer
-              await mapView.current.when(async () => {
-                if (featureLayer.loaded) {
-                  mapView.current.extent = featureLayer.fullExtent;
-                }
-              });
-            } else if (feature_url.includes('query')) {
-              // Handle GeoJSON or query endpoints
-              const response = await fetch(feature_url);
-              if (!response.ok) {
-                throw new Error(`Failed to fetch feature: ${response.status}`);
-              }
-
-              const geojson = await response.json();
-
-              // Create a graphics layer to display the features
-              const graphicsLayer = new GraphicsLayer();
-              map.add(graphicsLayer);
-
-              // Process GeoJSON features
-              const features = geojson.features || [];
-              features.forEach((feature) => {
-                const geometry = feature.geometry;
-                const properties = feature.properties;
-
-                let graphicGeometry = null;
-
-                if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
-                  const rings = geometry.coordinates;
-                  graphicGeometry = {
-                    type: 'polygon',
-                    rings: rings[0] ? [rings[0]] : [],
-                    spatialReference: { wkid: 4326 }
-                  };
-                } else if (geometry.type === 'Point') {
-                  graphicGeometry = {
-                    type: 'point',
-                    longitude: geometry.coordinates[0],
-                    latitude: geometry.coordinates[1],
-                    spatialReference: { wkid: 4326 }
-                  };
-                } else if (geometry.type === 'LineString') {
-                  graphicGeometry = {
-                    type: 'polyline',
-                    paths: [geometry.coordinates],
-                    spatialReference: { wkid: 4326 }
-                  };
-                }
-
-                if (graphicGeometry) {
-                  let symbol, label;
-
-                  if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
-                    symbol = {
-                      type: 'simple-fill',
-                      color: [51, 102, 153, 0.3],
-                      outline: {
-                        color: [51, 102, 153],
-                        width: 2
-                      }
-                    };
-                    label = properties?.name || 'Feature Area';
-                  } else if (geometry.type === 'Point') {
-                    symbol = {
-                      type: 'simple-marker',
-                      size: 10,
-                      color: [51, 102, 153],
-                      outline: {
-                        color: [255, 255, 255],
-                        width: 2
-                      }
-                    };
-                    label = properties?.name || 'Feature Point';
-                  } else if (geometry.type === 'LineString') {
-                    symbol = {
-                      type: 'simple-line',
-                      color: [51, 102, 153],
-                      width: 3
-                    };
-                    label = properties?.name || 'Feature Line';
-                  }
-
-                  const graphic = new Graphic({
-                    geometry: graphicGeometry,
-                    symbol: symbol,
-                    attributes: properties,
-                    popupTemplate: {
-                      title: label,
-                      content: properties ? Object.entries(properties)
-                        .map(([key, value]) => `<div><strong>${key}:</strong> ${value}</div>`)
-                        .join('') : 'Feature'
-                    }
-                  });
-
-                  graphicsLayer.add(graphic);
-                }
-              });
-
-              // Zoom to graphics extent
-              if (graphicsLayer.graphics.length > 0) {
-                await mapView.current.when(() => {
-                  const extent = graphicsLayer.graphics.reduce((acc, graphic) => {
-                    if (graphic.geometry && graphic.geometry.extent) {
-                      return acc ? acc.union(graphic.geometry.extent) : graphic.geometry.extent;
-                    }
-                    return acc;
-                  }, null);
-
-                  if (extent) {
-                    mapView.current.extent = extent.expand(1.2);
-                  }
-                });
-              }
-            }
-          } catch (error) {
-            console.error('Error loading feature from URL:', error);
-          }
-        }
-      } catch (err) {
-        console.error('Error initializing map:', err);
-      }
-    };
-
-    initializeMap();
-
-    return () => {
-      // Cleanup if needed
-      if (mapView.current) {
-        mapView.current.destroy();
-      }
-    };
-  }, [feature_url, center, zoom]);
-
-  return (
-    <div
-      ref={mapContainer}
-      style={{
-        width: '100%',
-        height: `${height}px`,
-        borderRadius: 8,
-        overflow: 'hidden'
-      }}
-    />
-  );
-};
-
 
 
 // Main AgWqPlan component for the Water Quality Practices Planner.
@@ -240,10 +60,12 @@ const AgWqPlan = () => {
   // useRef() for data that doesn't need to trigger re-renders
   // -----------------------------------------------------------------------------------
   const [loginName, setLoginName] = useState(null);
-  const [userType, setUserType] = useState('Landowner');
+  const userType = useRef('Landowner');
+  const userID = useRef(null);
   const [selectedCommodities, setSelectedCommodities] = useState([]);
   //const commodity = useRef('Pasture/Hay');
   const [siteName, setSiteName] = useState('');
+  const siteID = useRef(null);
   const [siteDescription, setSiteDescription] = useState('');
   const [siteLocator, setSiteLocator] = useState('');
   const [latitude, setLatitude] = useState(null);
@@ -277,10 +99,53 @@ const AgWqPlan = () => {
   const [stepGoalsStatus, setStepGoalsStatus] = useState('wait');
   const [stepPracticesStatus, setStepPracticesStatus] = useState('wait');
 
+  // Cookie helpers
+  function setCookie(name, value, days = 365) {
+    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+  }
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+  }
+
+  const _setUserType = (type) => {
+    console.log("Setting userType to:", type);
+    userType.current = type;
+  }
+
+  const _setUserID = (id) => {
+    console.log("Setting userID to:", id);
+    userID.current = id;
+    setCookie('agwqplan_userID', id);
+  }
+
+  const _setSiteID = (id) => {
+    console.log("Setting siteID to:", id);
+    siteID.current = id;
+    setCookie('agwqplan_siteID', id);
+  }
+
+  const _setLoginName = (name) => {
+    console.log("Setting loginName to:", name);
+    setLoginName(name);
+    setCookie('agwqplan_loginName', name);
+  }
+
+  const _setUserRole = (role) => {
+    console.log("Setting userRole to:", role);
+    setUserRole(role);
+    setCookie('agwqplan_userRole', role);
+  }
 
 
   useEffect(() => {
     let active = true;
+
+    getCookie('agwqplan_userID') && _setUserID(getCookie('agwqplan_userID'));
+    getCookie('agwqplan_userRole') && setUserRole(getCookie('agwqplan_userRole'));
+    getCookie('agwqplan_loginName') && setLoginName(getCookie('agwqplan_loginName'));
+    getCookie('agwqplan_siteID') && _setSiteID(getCookie('agwqplan_siteID'));
 
     const fetchJson = async (fileName) => {
       const response = await fetch(`${API_BASE}${fileName}`);
@@ -378,14 +243,14 @@ const AgWqPlan = () => {
   }, [selectedQuestions, concernQuestions, practices]);
 
   const filteredRecommendedPractices = useMemo(() => {
-    if (userType === 'Board/TMDL' && selectedTMDLs.length > 0) {
+    if (userType.current === 'Board/TMDL' && selectedTMDLs.length > 0) {
       return recommendedPractices.filter((p) =>
         p.tmdls && p.tmdls.some((t) => selectedTMDLs.includes(t)),
       );
     }
 
     return recommendedPractices;
-  }, [recommendedPractices, userType, selectedTMDLs]);
+  }, [recommendedPractices, selectedTMDLs]);
 
   // Get full practice objects for selected practice IDs
   const selectedPractices = useMemo(
@@ -412,82 +277,8 @@ const AgWqPlan = () => {
     setCurrent((c) => c - 1);
   };
 
-
   return (
     <>
-
-      {/*}  
-      {loggingIn && (
-        <AgWqplanLogin
-          onLoginSuccess={(result) => {
-            console.log("Login successful:", result);
-            setLoginName(result.user.username);
-            setUserRole(result.user.role);
-            setLoggingIn(false);
-          }}
-          onLoginFailure={(error) => {
-            console.error("Login failed:", error);
-            setLoggingIn(false);
-          }}
-          onLogout={() => {
-            console.log("Logged out");
-            setLoginName(null);
-            setUserRole(null);
-            setLoggingIn(false);
-          }}
-        />
-      )}
-      {!loginName && !loggingIn && (
-        <div style={{ padding: 4, textAlign: 'right' }} >
-          <Button type="text" onClick={() => setLoggingIn(true)}>
-            Sign In
-          </Button>
-          <Button type="text" onClick={() => showMapContent(true)}>
-            Maps
-          </Button>
-        </div>
-      )}
-      {loginName && (
-        <div style={{ padding: 4, textAlign: 'right', color: 'white', fontSize: 'small' }} >
-          Signed in as <b>{loginName}</b>
-          <Button ghost onClick={() => {
-            setLoggingIn(false);
-            setLoginName(null);
-            setUserRole(null);
-          }} style={{ marginLeft: 8 }}>
-            Sign Out
-          </Button>
-          <Button type="text" onClick={() => showMapContent(true)}>
-            Maps
-          </Button>
-        </div>
-      )}
-
-      {showMaps && (
-        <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
-          <Card>
-            <Title level={3}>Maps</Title>
-            <Row>
-              <Col xs={24} md={12}>
-                <Title level={4}>Agricultural Water Quality Management Areas</Title>
-                <Text>ODA Agricultural Water Quality Management Areas. Source: <a href="https://www.oregon.gov/oda/programs/NaturalResources/Pages/AWQMA.aspx">ODA AWQMA Mapper</a></Text>
-                <WqMap features_url={ODA_AWQMA_WMS_URL}></WqMap>
-              </Col>
-              <Col xs={24} md={12}>
-                <Title level={4}>TMDL Areas</Title>
-                <Text>Oregon DEQ TMDL areas by parameter. Source: <a href="https://www.oregon.gov/deq/wq/Pages/TMDLs.aspx">DEQ TMDL Mapper</a></Text>
-                <WqMap feature_url={TMDL_GEOJSON_URL}></WqMap>
-              </Col>
-            </Row>
-
-            <Button type="primary" onClick={() => showMapContent(false)}>Close</Button>
-          </Card>
-        </Content>
-      )}
-*/}
-
-
-
       <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
         <Card>
           <PageRating pageID='/apps/ag_wq_plan' />
@@ -506,21 +297,22 @@ const AgWqPlan = () => {
           />
 
           <Spin spinning={loadingData} tip="Loading planner data...">
-            {current === -1 && (
-              <StartUp
-                userType={userType}
-                setUserType={setUserType}
-                selectedTMDLs={selectedTMDLs}
-                setSelectedTMDLs={setSelectedTMDLs}
-                availableTMDLs={availableTMDLs}
-                setLoginName={setLoginName}
-                setUserRole={setUserRole}
-                setLoggingIn={setLoggingIn}
-                setCurrent={setCurrent} />
-            )}
 
             {currentMode === 'generate_plan' && (
               <>
+                {current === -1 && (
+                  <StartUp
+                    userType={userType.current}
+                    setUserType={_setUserType}
+                    selectedTMDLs={selectedTMDLs}
+                    setSelectedTMDLs={setSelectedTMDLs}
+                    availableTMDLs={availableTMDLs}
+                    setLoginName={_setLoginName}
+                    setUserRole={_setUserRole}
+                    setUserID={_setUserID}
+                    setLoggingIn={setLoggingIn}
+                    setCurrent={setCurrent} />
+                )}
                 {current >= 0 && (
                   <>
                     <Divider />
@@ -537,13 +329,15 @@ const AgWqPlan = () => {
 
                 {current === 0 && (
                   <StepWhoWhere
-                    userType={userType}
+                    userType={userType.current}
+                    userID={userID.current}
                     sitesData={sites}
                     commoditiesData={commodities}
                     selectedCommodities={selectedCommodities}
                     setSelectedCommodities={setSelectedCommodities}
                     setPhotos={setPhotos}
                     siteName={siteName} setSiteName={setSiteName}
+                    siteID={siteID.current} setSiteID={_setSiteID }
                     siteDescription={siteDescription} setSiteDescription={setSiteDescription}
                     siteLocator={siteLocator} setSiteLocator={setSiteLocator}
                     _latitude={latitude} setLatitude={setLatitude}
@@ -582,7 +376,7 @@ const AgWqPlan = () => {
 
                 {current === 3 && (
                   <StepPractices
-                    userType={userType}
+                    userType={userType.current}
                     areaRules={areaRules}
                     agwqmArea={agwqmArea}
                     recommendedPractices={filteredRecommendedPractices}
@@ -594,25 +388,17 @@ const AgWqPlan = () => {
 
                 {current === 4 && (
                   <StepSummary
-                    userType={userType}
-
+                    userType={userType.current}
                     latitude={latitude}
                     longitude={longitude}
                     agWqMArea={agwqmArea}
                     region={agwqRegion}
-
                     regionalSpecialist={regionalSpecialist}
                     regionalSpecialistEmail={regionalSpecialistEmail}
                     regionalSpecialistPhone={regionalSpecialistPhone}
                     adminRulesLink={adminRulesLink}
                     areaPlanLink={areaPlanLink}
-
-
                     siteName={siteName}
-
-
-
-
                     selectedCommodities={selectedCommodities}
                     selectedConcerns={selectedConcerns}
                     selectedQuestions={selectedQuestions}
@@ -658,24 +444,23 @@ const AgWqPlan = () => {
 
             {currentMode === 'learn_more' && (
               <>
-                <Title level={5}>Water Quality Management Resources</Title>
-
+                <Divider />
                 <Tabs defaultActiveKey="1" items={
                   [
                     {
                       key: 'practices',
-                      label: 'Practices Guides',
-                      children: 'Content of Tab Pane 1',
+                      label: 'Practices Guide',
+                      children: <PracticesGuide practicesData={practices} />,
                     },
                     {
                       key: 'maps',
                       label: 'Maps',
-                      children: 'Content of Tab Pane 2',
+                      children: <Maps />,
                     },
                     {
                       key: 'external_links',
                       label: 'External Links',
-                      children: 'Content of Tab Pane 2',
+                      children: '<span>external links to come...</span>',
                     },
                   ]} />
               </>

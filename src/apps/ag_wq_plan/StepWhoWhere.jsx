@@ -4,16 +4,19 @@ import PropTypes from 'prop-types';
 
 import { Card, Button, Checkbox, Col, Form, Input, Modal, Popconfirm, Row, Select, Space, Typography, message } from 'antd';
 import ValidationError from './ValidationError';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import Graphic from '@arcgis/core/Graphic';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
+
 import "@arcgis/map-components/components/arcgis-basemap-toggle";
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 import "@arcgis/map-components/components/arcgis-zoom"; // Import ArcGIS Zoom component
+
+import { secrets } from '../../secrets';
 
 
 // Extract Typography.Paragraph component for use in the form description
@@ -56,12 +59,14 @@ const getSearchResultLatLng = (searchResult) => {
 //   - setCommodity: Function to update commodity
 const StepWhoWhere = ({
   userType,
+  userID,
   sitesData,
   commoditiesData,
   selectedCommodities,
   setSelectedCommodities,
   setPhotos,
   siteName, setSiteName,
+  siteID, setSiteID,
   siteDescription, setSiteDescription,
   siteLocator, setSiteLocator,
   _latitude, setLatitude,
@@ -78,10 +83,10 @@ const StepWhoWhere = ({
   const [photoPickerOpen, setPhotoPickerOpen] = useState(false);
   const [sitePhotoPreviews, setSitePhotoPreviews] = useState([]);
   const [pendingPhoto, setPendingPhoto] = useState(null);
-  const [useExistingSite, setUseExistingSite] = useState(false);
-  const [selectedExistingSite, setSelectedExistingSite] = useState(null);
+  const [selectedExistingSite, setSelectedExistingSite] = useState('new-site');
 
   const isSiteDirty = useRef(false);
+
 
   const arcgisBasemapToggleRef = useRef(null);
   const arcgisSearchRef = useRef(null);
@@ -91,6 +96,7 @@ const StepWhoWhere = ({
   const markerLayerRef = useRef(null);
   const uploadInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+  const awqmaLayer = useRef(null);
 
   const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=MA_Index>0&outFields=*&returnGeometry=true&f=geojson'
 
@@ -102,15 +108,17 @@ const StepWhoWhere = ({
     }
 
     const previewUrl = URL.createObjectURL(file);
-    setPendingPhoto({ name: file.name, url: previewUrl, file });
+    setPendingPhoto({ name: file.name, url: previewUrl, description: '', file });
     event.target.value = '';
   };
 
+  // handle confirmation of adding a pending photo by adding to the 
+  // list of site photo previews (currentPreviews)
   const confirmAddPendingPhoto = () => {
     if (!pendingPhoto) return;
     setSitePhotoPreviews((currentPreviews) => [
       ...currentPreviews,
-      { name: pendingPhoto.name, url: pendingPhoto.url },
+      { name: pendingPhoto.name, url: pendingPhoto.url, description: pendingPhoto.description },
     ]);
     setPendingPhoto(null);
     setPhotoPickerOpen(false);
@@ -134,6 +142,7 @@ const StepWhoWhere = ({
       if (removed) {
         try {
           URL.revokeObjectURL(removed.url);
+          // ?? REMOVE FROM DATABASE ??
         } catch {
           // ignore
         }
@@ -143,7 +152,44 @@ const StepWhoWhere = ({
   };
 
 
-  // Handle saving practice
+  const handleSavePhoto = async (url) => {
+    // sitePhotoPreviews is the array of photo previews for this site
+    const saved = sitePhotoPreviews.find((p) => p.url === url);
+    if (saved) {
+      try {
+        //URL.revokeObjectURL(removed.url);
+        const payload = [
+          {
+            //id:  // integer NOT NULL DEFAULT nextval('sites_id_seq'::regclass),
+            site_id: siteID,
+            file_path: pendingPhoto.file,
+            description: pendingPhoto.description,
+          },
+        ];
+
+        const response = await fetch(`https://agwater.org:5556/agwqplan/site/images`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': secrets.agwater_api_key
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          message.success('Site Photo saved successfully');
+          //isSiteDirty.current = false;
+        } else {
+          message.error(`Failed to save site photo: ${data.error}`);
+        }
+      } catch (error) {
+        message.error(`Error saving site photo: ${error.message}`);
+      }
+    }
+  }
+
+  // Handle saving site
   const handleSaveSite = async () => {
     try {
       const payload = [
@@ -157,6 +203,7 @@ const StepWhoWhere = ({
           awqma: agwqmArea,   // text COLLATE pg_catalog."default",
           tmdl_area: agwqRegion,   // text COLLATE pg_catalog."default",
           locator: siteLocator,    //text COLLATE pg_catalog."default",
+          owner_id: null,  // integer,
         },
       ];
 
@@ -313,7 +360,7 @@ const StepWhoWhere = ({
     markerLayerRef.current = markerLayer;
     map.add(markerLayer);
 
-    const awqmaLayer = new GeoJSONLayer({
+    awqmaLayer.current = new GeoJSONLayer({
       url: ODA_AWQMA_WMS_URL,
       title: 'ODA AWQMA',
       renderer: {
@@ -329,7 +376,7 @@ const StepWhoWhere = ({
         }
       }
     });
-    map.add(awqmaLayer);
+    map.add(awqmaLayer.current);
 
     // create a MapView to view hte map
     const view = new MapView({
@@ -363,7 +410,7 @@ const StepWhoWhere = ({
       const { latitude, longitude } = event.mapPoint;
       // Log click coordinates
       console.log('map click lat,long:', latitude, longitude);
-      queryLayer(awqmaLayer, latitude, longitude);   // query spatail data and update UIlocation states
+      queryLayer(awqmaLayer.current, latitude, longitude);   // query spatail data and update UIlocation states
 
       console.log('Setting marker at clicked location');
       //setMarkerPosition([latitude, longitude]);
@@ -413,10 +460,10 @@ const StepWhoWhere = ({
 
   const siteOptions = useMemo(() => {
     if (!Array.isArray(sitesData) || sitesData.length === 0) {
-      return [];
+      return [{ label: 'New Site', value: 'new-site' }];
     }
 
-    return sitesData.map((item) => {
+    const sites = sitesData.map((item) => {
       if (typeof item === 'string') {
         return { label: item, value: item };
       }
@@ -434,6 +481,8 @@ const StepWhoWhere = ({
       console.log({ label: String(label), value: String(value) });
       return { label: String(label), value: String(value) };
     }).filter(Boolean);
+
+    return [{ label: 'New Site', value: 'new-site' }, ...sites];
   }, [sitesData]);
 
 
@@ -465,11 +514,11 @@ const StepWhoWhere = ({
 
 
   function handleDescriptionChange(photoUrl, description) {
-    setPhotos(prevPhotos =>
-      prevPhotos.map(photo =>
-        photo.url === photoUrl ? { ...photo, description } : photo
-      )
-    );
+    //setPhotos(prevPhotos =>
+    //  prevPhotos.map(photo =>
+    //    photo.url === photoUrl ? { ...photo, description } : photo
+    //  )
+    //);
   }
 
   if (!siteName || _latitude == null || _longitude == null) {
@@ -498,20 +547,20 @@ const StepWhoWhere = ({
     setSiteDescription(value);
   }
 
-  console.log("Existing sites: ", useExistingSite);
 
   function _setSelectedSite(value) {
     // get this site in the sitesData
     const site = sitesData.find((s) => s.id === parseInt(value));
 
     // update the site name, location, description, etc
-    //setLatitude(site?.latitude || null);
-    //setLongitude(site?.longitude || null);
+    setLatitude(site?.latitude || null);
+    setLongitude(site?.longitude || null);
     setSiteName(site?.name || null);
+    setSiteID(site?.id || null);
     setSiteLocator(site?.locator || null);
     setSiteDescription(site?.description || null);
 
-    queryLayer(agwqmArea, site?.latitude, site?.longitude);
+    queryLayer(awqmaLayer.current, site?.latitude, site?.longitude);
 
     // zoom to location
     if (site?.latitude != null && site?.longitude != null) {
@@ -521,8 +570,32 @@ const StepWhoWhere = ({
       });
     }
 
-    setSelectedExistingSite(value);
+    // place a marker on the map
+    markerLayerRef.current?.removeAll();
+    if (site?.latitude != null && site?.longitude != null) {
+      markerLayerRef.current?.add({
+        geometry: {
+          type: 'point',
+          x: site.longitude,
+          y: site.latitude,
+          //coordinates: [site.longitude, site.latitude]
+        },
+        symbol: {
+          type: 'simple-marker',
+          color: '#d7191c',
+          size: 12,
+          outline: {
+            color: '#ffffff',
+            width: 1,
+          },
+        },
+      });
 
+      //mapViewRef.current.goTo({ center: [longitude, latitude], zoom: 11 });
+      }
+
+
+    setSelectedExistingSite(value);
   }
 
   return (
@@ -536,25 +609,17 @@ const StepWhoWhere = ({
           <Col sm={24} md={12}>
 
             <Title level={5}>Site location </Title>
-            <br />
             <div>
-              <Checkbox checked={useExistingSite} onChange={(e) => setUseExistingSite(e.target.checked)}>
-                Use Existing Site?
-              </Checkbox>
-
-              {useExistingSite && (
+              {userID  && (
                 <Select
                   value={selectedExistingSite}
                   onChange={(v) => _setSelectedSite(v)}
-                  placeholder="Select an existing site"
                   style={{ width: '30em', maxWidth: '100%' }}
-                  disabled={!useExistingSite}
                   options={siteOptions}
                 />
               )}
 
             </div>
-            <br />
             <Card>
               {!siteName && <ValidationError message="" />}
 
@@ -604,31 +669,15 @@ const StepWhoWhere = ({
               <br />
 
               <Paragraph>
-                After specifying the site name and selecting the site location on the map below, you can save the site for future reference.
+                After specifying the site name and selecting the site location on the map below, you can save
+                 the site for future reference. <span style={{ fontStyle: 'italic' }}>Note: You must be logged in to save a site.</span>
               </Paragraph>
 
-              {(siteName.trim() === '' && _latitude && _longitude) || isSiteDirty.current==false ? (
-                <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} disabled>
+              <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} 
+                      onClick={() => { handleSaveSite(); }}
+                      disabled={(!userID || siteName.trim() === '' || !_latitude || !_longitude || isSiteDirty.current === false)}>
                   Save Site
                 </Button>
-              ) : (
-                <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }} onClick={() => {
-                  console.log('Saving site with details:', {
-                    name: siteName,
-                    latitude: _latitude,
-                    longitude: _longitude,
-                    agwqmArea,
-                    regionalSpecialist,
-                    regionalSpecialistEmail,
-                    regionalSpecialistPhone,
-                    adminRulesLink,
-                    areaPlanLink,
-                  });
-                  handleSaveSite();
-                }}>
-                  Save Site
-                </Button>
-              )}
 
               {!_latitude && !_longitude && (<><br /><ValidationError message="Below, specify the location of the site." /></>)}
 
@@ -716,13 +765,24 @@ const StepWhoWhere = ({
                       <div style={{ fontSize: '0.8rem', marginTop: 8, wordBreak: 'break-word', textAlign: 'center' }}>{photo.name}</div>
 
                       <div style={{ fontSize: '0.8rem', marginTop: 16 }}>
-                        <label htmlFor={`description-${photo.url}`}>Description of Photo:</label>
-                        <TextArea rows={4} placeholder="Add a description for this photo" value={photo.description} onChange={(e) => handleDescriptionChange(photo.url, e.target.value)} />
+                        <label htmlFor={`description-${photo.url}`}>Photo Description:</label>
+                        <TextArea rows={4} 
+                                  placeholder="Add a description for this photo" 
+                                  value={photo.description} 
+                                  onChange={(e) => handleDescriptionChange(photo.url, e.target.value)}
+                        />
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
                         <Popconfirm title="Delete this photo?" onConfirm={() => handleDeletePhoto(photo.url)} okText="Delete" cancelText="Cancel">
-                          <Button type="text" danger icon={<DeleteOutlined />} />
+                          <Button type="text" size="x-large" danger icon={<DeleteOutlined />} >
+                            Delete
+                          </Button>
+                        </Popconfirm>
+                        <Popconfirm title="Save this photo/description?" onConfirm={() => handleSavePhoto(photo.url)} okText="Save" cancelText="Cancel">
+                          <Button type="text" size="x-large" icon={<SaveOutlined />} >
+                            Save
+                          </Button>
                         </Popconfirm>
                       </div>
                     </div>
@@ -745,7 +805,7 @@ const StepWhoWhere = ({
                   <div style={{ fontSize: '0.9rem' }}>{pendingPhoto.name}</div>
                   <div style={{ display: 'flex', gap: 12 }}>
                     <Button type="primary" onClick={confirmAddPendingPhoto}>Add photo</Button>
-                    <Button onClick={cancelPendingPhoto}>Cancel</Button>
+                    <Button type="default" onClick={cancelPendingPhoto}>Cancel</Button>
                   </div>
                 </div>
               ) : (

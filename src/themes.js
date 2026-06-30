@@ -16,6 +16,8 @@ export const darkTheme = {
             colorLinkHover: 'brown',
             colorBgContainerDisabled: '#555',
             colorTextDisabled: '#777',
+            defaultColor: '#222',
+            defaultHoverColor: '#333'
         },
         Card: {
             headerBg: 'darkslategray',

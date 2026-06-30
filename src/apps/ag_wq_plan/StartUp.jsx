@@ -11,7 +11,7 @@ const StartUp = ({
     userType, setUserType,
     selectedTMDLs, setSelectedTMDLs,
     availableTMDLs,
-    setLoginName, setUserRole, setLoggingIn,
+    setLoginName, setUserRole, setUserID, setLoggingIn,
     setCurrent }) => {
 
     return (
@@ -41,6 +41,7 @@ const StartUp = ({
                         console.log("Login successful:", result);
                         setLoginName(result.user.username);
                         setUserRole(result.user.role);
+                        setUserID(result.user.id);
                         setLoggingIn(false);
                     }}
                     onLoginFailure={(error) => {

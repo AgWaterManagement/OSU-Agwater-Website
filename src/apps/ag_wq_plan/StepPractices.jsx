@@ -1,116 +1,14 @@
+import {useState, useRef} from 'react';
+
 import PropTypes from 'prop-types';
-import { Alert, Button, Card, Collapse, Tag, Typography, Checkbox, Carousel } from 'antd';
+import { Alert, Button, Card, Collapse, Tag, Typography, Checkbox, Carousel, Modal } from 'antd';
 import ComplianceInfo from './ComplianceInfo';
-import { secrets } from '../../secrets';
 import ValidationError from './ValidationError';
 
+import ChatResponse from '../../components/chat_response/ChatReponse';
+
+
 const { Title, Paragraph, Text } = Typography;
-
-
-const getChatResponse = async (_prompt, selectedModel) => {
-	let response;
-	try {
-		const CHAT_API_URL = "https://agwater.org:5556/llm/chat";
-
-		// console.log("input: ", _prompt);
-		response = await fetch(CHAT_API_URL, {
-			method: 'POST',
-			headers: {
-				'X-API-Key': secrets.agwater_api_key,
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				query: _prompt,
-				//additional_data: {},
-				//model: selectedModel,
-				stream: false,
-				use_RAG: true,
-				//chat_history: history
-			})
-		});
-		if (!response.ok) {
-			console.error('HTTP error response:', response);
-			return null;
-		}
-	} catch (fetchError) {
-		console.error('Network error:', fetchError);
-		return null;
-	}
-
-	// --- Stream reading phase ---
-	// Manually decode UTF-8 bytes and parse newline-delimited JSON so we control
-	// exactly when each chunk is flushed to the DOM.
-	const reader = response.body.getReader();
-	const decoder = new TextDecoder();
-	let buffer = '';
-	let currentAnswer = '';
-	try {
-		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-
-			buffer += decoder.decode(value, { stream: true });
-
-			// Drain every complete JSON line from the buffer.
-			let newlineIndex;
-			while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-				const line = buffer.slice(0, newlineIndex).trim();
-				buffer = buffer.slice(newlineIndex + 1);
-				if (!line) continue;
-
-				let json;
-				try {
-					json = JSON.parse(line);
-				} catch (parseError) {
-					console.warn('Failed to parse JSON line:', line, parseError);
-					continue;
-				}
-
-				// console.log('LLM Streamed Data Received', json);
-
-				if (json.content_type && json.content_type[0] === 'l') {
-					// LLM response chunk — append and flush to DOM immediately.
-					currentAnswer += json['llm_response'];
-					//flushSync(() => setCurrentMarkdown(currentAnswer.current));
-				} else if (json.content_type) {
-					// Final message — collect referenced document links.
-					//const refs = json['referenced_documents'] || [];
-					//const titles = json['referenced_titles'] || [];
-					//if (refs.length > 0) {
-					//	let contentStr = '\n\n#### References:\n';
-					//	refs.forEach((ref, index) => {
-					//		const title = titles.length > 0 ? titles[index] : null;
-					//		contentStr += title
-					//			? `${index + 1}. [${title}](<https://agwater.org:5556/llm/source?filename=${ref}>)\n`
-					//			: `${index + 1}. ${ref}\n`;
-					//	});
-					//	references.current = contentStr;
-					//}
-				}
-			}
-		}
-	} catch (streamError) {
-		console.error('Error reading response stream:', streamError);
-	} finally {
-		reader.releaseLock();
-	}
-
-	// Append references to the final answer, then move everything into history.
-	//currentAnswer.current += references.current;
-	//const _currentAnswer = currentAnswer.current;
-//
-	//setIsStreaming(false);
-	//currentQuestion.current = '';
-	//currentAnswer.current = '';
-	//references.current = '';
-//
-	//// Append a question mark if the prompt looks like a question.
-	//if (!_prompt.endsWith('?') && (_prompt[0] === 'w' || _prompt[0] === 'W' || _prompt[0] === 'h' || _prompt[0] === 'H'))
-	//	_prompt = `${_prompt}?`;
-	//setHistory([...history, { question: _prompt, answer: _currentAnswer }]);
-	return currentAnswer;
-}
 
 
 // Step 4: Select and review recommended agricultural water quality practices
@@ -128,6 +26,10 @@ const StepPractices = ({
 	setSelectedPracticeIds,
 	setError
 }) => {
+
+	const [showSummary, setShowSummary] = useState(false);
+	const prompt = useRef('');
+
 
 	// Toggle a practice's selection state
 	const togglePractice = (id) => {
@@ -151,17 +53,17 @@ const StepPractices = ({
 	};
 
 	async function generatePlainLanguageSummary(matchingRules) {
-		let prompt = 'Generate a plain language summary of the following agricultural water quality rules: ';
+		let _prompt = 'Generate a plain language summary of the following agricultural water quality rules: ';
 
 		for (const rule of matchingRules) {
-			prompt += rule.CATEGORY;
-			prompt += ': ';
-			prompt += rule['Oregon Administrative Rules (OAR)'];
-			prompt += '\n';
+			_prompt += rule.CATEGORY;
+			_prompt += ': ';
+			_prompt += rule['Oregon Administrative Rules (OAR)'];
+			_prompt += '\n';
 		}
-		
-		response = await getChatResponse(prompt);
-		console.log(response);
+
+		prompt.current = _prompt;
+		setShowSummary(true);
 	};
 
 	const applicableAreaRules = () => {
@@ -176,8 +78,12 @@ const StepPractices = ({
 				<Paragraph>
 					{"Area-specific rules or TMDL requirements may apply in this management area (" + agwqmArea
 						+ "). Please review the information for each practice carefully."}
-					<Button type="primary" style={{ marginLeft: '4em' }} onClick={generatePlainLanguageSummary(matchingRules)} >Plain Language Summary</Button>
+					<Button type="primary" style={{ marginLeft: '4em' }} onClick={() => generatePlainLanguageSummary(matchingRules)} >Plain Language Summary</Button>
 				</Paragraph>
+				<br />
+				{showSummary && (
+					<ChatResponse prompt={prompt.current} />
+				)}
 				<Collapse items={matchingRules.map((rule, index) => ({
 					key: "rule_" + index,
 					label: rule.CATEGORY,

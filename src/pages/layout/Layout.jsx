@@ -175,6 +175,11 @@ const AppLayout = () => {
                                 <br />
                                 For questions or feedback, please <a href='/contact'>contact us</a>.
                             </p>
+                            <p style={{ textAlign: 'center', marginTop: '3em', fontSize: '0.9em' }}>
+                                Privacy Statement: 
+                                <br />
+                                See <a href='https://oregonstate.edu/official-web-disclaimer'>OSU&apos;s Privacy Statement</a> for more information.
+                            </p>
                         </Col>
                     </Row>
                 </footer>
