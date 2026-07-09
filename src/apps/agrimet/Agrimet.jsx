@@ -336,6 +336,7 @@ const Agrimet = () => {
 
     const stationCascaderOptions = selectStationOptions(stationData.features); //, selectedState);
 
+    /*
     // <Select> Crop Options
     const selectCropOptions = [];
     // iterate through stationCropData array and create options
@@ -350,7 +351,7 @@ const Agrimet = () => {
             index += 1;
         }
     }
-
+    */
     /*
         const updateState = (state) => {
             // find the first station in the selected state and set it as the selected station
