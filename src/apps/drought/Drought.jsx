@@ -1178,7 +1178,7 @@ const Drought = () => {
 				stationTriplets: '*:OR:*',	// Look for all stations in Oregon
 				elements: elementCodes.join(','),
 				activeOnly: 'true',			// Only consider active stations
-				stationElements: 'true'		// Include element metadata in station results so we can identify which stations provide which drought indices
+				returnStationElements: 'true'		// Include element metadata in station results so we can identify which stations provide which drought indices
 			});
 
 			const stationsResponse = await fetch(`${stationsUrl}?${stationsParams}`, {
@@ -2168,7 +2168,7 @@ const Drought = () => {
 									<NWSForecast
 										lat={clickedLocation.lat}
 										lng={clickedLocation.lng}
-										locationName={selectedCounty ? `${selectedCounty.properties.NAME} County` : null}
+										locationName={selectedCounty ? `${selectedCounty.properties.NAME}` : null}
 									/>
 								),
 							}, {
