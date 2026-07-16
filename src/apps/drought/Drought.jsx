@@ -2213,7 +2213,16 @@ const Drought = () => {
 									</div>
 								),
 							}, {
-								key: '4', label: 'At-Risk Crops', children: (
+								key: '4', label: 'Agricultural Drought Indicies', children: (
+									<SummaryPanel
+										clickedLocation={clickedLocation}
+										stationData={droughtIndiciesStations}
+										measurementData={droughtIndiciesData}
+									/>
+								),
+
+							}, {
+								key: '5', label: 'At-Risk Crops', children: (
 									<div>
 										<ul>
 											<li style={{ color: 'white' }}>Wheat: Drought stress can reduce tillering and grain filling, leading to lower yields.</li>
@@ -2222,7 +2231,7 @@ const Drought = () => {
 								),
 
 							}, {
-								key: '5', label: 'Economic Damage', children: (
+								key: '6', label: 'Economic Damage', children: (
 
 									<div>
 										<ul>
@@ -2246,14 +2255,6 @@ const Drought = () => {
 					</Col>
 				</Row>
 
-				<Divider style={{ borderColor: '#555', margin: '24px 0 12px 0' }}>
-					Nearest Station Conditions
-				</Divider>
-				<SummaryPanel
-					clickedLocation={clickedLocation}
-					stationData={droughtIndiciesStations}
-					measurementData={droughtIndiciesData}
-				/>
 				</>
 			)}
 
