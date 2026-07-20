@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 
 const MEASUREMENT_LABELS = {
-    PREC: 'Precipitation',
+    PREC: 'Precipitation Accumulation',
     WTEQ: 'Snow Water Equivalent',
     RESC: 'Reservoir Storage'
 };

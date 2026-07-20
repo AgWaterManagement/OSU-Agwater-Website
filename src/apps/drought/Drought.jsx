@@ -11,10 +11,11 @@ import PropTypes, { element } from 'prop-types';
 import { secrets } from '../../secrets';
 import NWSForecast from '../../components/weather/NWSForecast';
 import SummaryPanel from '../../components/drought/IndexSummaryPanel';
+import StatewideDroughtStatus from '../../components/drought/StatewideDroughtStatus';
 import OllamaChat from '../../components/ollama_chat/OllamaChat';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 
-const { Title} = Typography;
+const { Title, Text, Paragraph} = Typography;	// Text replaces <span>, Paragraph replaces <p>, and Title replaces <h>
 
 //import './IrrigWaterUse.css';
 
@@ -1262,6 +1263,7 @@ const Drought = () => {
 				stationTriplets: tripletList.join(','),
 				elements: elementCodes.join(','),
 				duration: 'DAILY',
+				periodRef: 'START',	// We want the most recently available data for each station for each day, so we request the data gathered at the START of the day.
 				returnFlags: 'false',
 				beginDate: -30,	// We will fetch the last 30 days of data for the relevant drought index for each station so that we can display recent trends in the SummaryPanel; we can adjust this duration as needed in the future.
 			});
@@ -1957,31 +1959,31 @@ const Drought = () => {
 	return (
 		<>
 			<div style={{ margin: 0, padding: '1em' }}>
-				<h2>Drought in Oregon</h2>
-				<p>
+				<Title level={2}>Drought in Oregon</Title>
+				<Paragraph>
 					Drought may significantly impact Oregon's diverse agricultural sector, affecting everything from irrigation water
 					availability to crop yields and livestock management. The tools available below provide information and guidance
 					on drought status and possible management strategies to cope with drought.
-				</p>
+				</Paragraph>
 				{showMoreInfo && (
 					<>
-						<p>
+						<Paragraph>
 							During drought periods, farmers may face reduced water allocations
 							from reservoirs and rivers, forcing difficult decisions about which crops to plant and irrigate.
 							The state's major agricultural regions experience varying drought impacts depending
 							on their water sources and irrigation infrastructure. Drought conditions also stress rangelands and pastures,
 							reducing forage availability for livestock and increasing feed costs. Additionally, prolonged drought can degrade
 							soil quality, increase wildfire risk near agricultural lands, and disrupt the timing of planting and harvesting
-							seasons.
-						</p>
-						<p>
+							
+						</Paragraph>
+						<Paragraph>
 							To mitigate drought impacts, Oregon farmers may adopt water-saving irrigation techniques, diversify crops,
 							and implement soil moisture monitoring. State and federal agencies also provide drought assistance programs to support
 							farmers during dry periods. However, the increasing frequency and severity of droughts due to climate change pose ongoing challenges for Oregon's agricultural sustainability.
-						</p>
+						</Paragraph>
 					</>
 				)}
-				<Button type="link" onClick={() => setShowMoreInfo(!showMoreInfo)} style={{ color: 'lightblue', padding: 0 }}>
+				<Button type="link" onClick={() => setShowMoreInfo(!showMoreInfo)}>
 					{showMoreInfo ? 'Show Less' : 'Show More...'}
 				</Button>
 			</div>
@@ -2007,8 +2009,7 @@ const Drought = () => {
 			<Divider />
 
 			{currentTab === 'map' && ( <>
-			<span>Current Statewide Drought Status: Abnormally Dry</span>
-			<StatusBar level={2} />
+			<StatewideDroughtStatus />
 
 				<Row gutter={16}>
 					{isLeftPanelCollapsed ? (
