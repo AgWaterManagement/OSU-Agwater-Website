@@ -53,7 +53,7 @@ const SnotelMapLegend = () => {
 					<svg width="14" height="14" style={{ marginRight: '8px', flexShrink: 0 }}>
 						<circle cx="7" cy="7" r="6" fill={color} stroke="#555" strokeWidth="1" />
 					</svg>
-					<span>{label}</span>
+					<Text>{label}</Text>
 				</div>
 			))}
 			<div style={{ marginTop: '8px', borderTop: '1px solid #444', paddingTop: '6px' }}>
@@ -63,7 +63,7 @@ const SnotelMapLegend = () => {
 						<svg width="28" height="28" style={{ marginRight: '8px', flexShrink: 0 }}>
 							<circle cx="14" cy="14" r={r} fill="#1e88e5" stroke="#555" strokeWidth="1" />
 						</svg>
-						<span style={{ fontSize: '12px' }}>{label} avg annual SWE</span>
+						<Text style={{ fontSize: '12px' }}>{label} avg annual SWE</Text>
 					</div>
 				))}
 			</div>
@@ -1259,7 +1259,7 @@ const Drought = () => {
 			// 	RESC (reservoir storage)
 			const elementCodes = ['PREC', 'WTEQ', 'RESC'];
 			const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
-			const dataParams = new URLSearchParams({
+			const currentDataParams = new URLSearchParams({
 				stationTriplets: tripletList.join(','),
 				elements: elementCodes.join(','),
 				duration: 'DAILY',
@@ -1268,18 +1268,40 @@ const Drought = () => {
 				beginDate: -30,	// We will fetch the last 30 days of data for the relevant drought index for each station so that we can display recent trends in the SummaryPanel; we can adjust this duration as needed in the future.
 			});
 
-			const dataResponse = await fetch(`${dataUrl}?${dataParams}`, {
-				headers: { 'Accept': 'application/json' }
+			const monthlyAvgParams = new URLSearchParams({
+				stationTriplets: tripletList.join(','),
+				elements: elementCodes.join(','),
+				duration: 'Daily',
+				centralTendencyType: 'AVERAGE',
+				periodRef: 'START',
+				returnFlags: 'false',
+				beginDate: -366,
 			});
 
-			if (!dataResponse.ok) {
-				throw new Error(`Failed to fetch drought indices data (${dataResponse.status})`);
+			const [currentDataResponse, monthlyAvgResponse] = await Promise.all([
+				fetch(`${dataUrl}?${currentDataParams}`, {
+					headers: { 'Accept': 'application/json' }
+				}),
+				fetch(`${dataUrl}?${monthlyAvgParams}`, {
+					headers: { 'Accept': 'application/json' }
+				})
+			]);
+
+			if (!currentDataResponse.ok) {
+				throw new Error(`Failed to fetch drought indices current data (${currentDataResponse.status})`);
 			}
 
-			const dataJson = await dataResponse.json();
+			if (!monthlyAvgResponse.ok) {
+				throw new Error(`Failed to fetch drought indices monthly averages (${monthlyAvgResponse.status})`);
+			}
+
+			const [currentDataJson, monthlyAvgJson] = await Promise.all([
+				currentDataResponse.json(),
+				monthlyAvgResponse.json()
+			]);
 			const byStation = {};
 
-			(dataJson || []).forEach(entry => {
+			(currentDataJson || []).forEach(entry => {
 				const stationTriplet = entry.stationTriplet;
 				const stationId = stationTriplet?.split(':')?.[0];
 				if (!stationTriplet || !stationId) return;
@@ -1288,7 +1310,8 @@ const Drought = () => {
 					byStation[stationTriplet] = {
 						stationTriplet,
 						stationId,
-						latestMeasurements: {}
+						latestMeasurements: {},
+						monthlyAverages: {}
 					};
 				}
 
@@ -1299,6 +1322,12 @@ const Drought = () => {
 						series?.stationElement?.elementCd ||
 						series?.elementCd;
 					if (!elementCode || !elementCodes.includes(elementCode)) return;
+					const storedUnitCode =
+						series?.stationElement?.storedUnitCode ||
+						series?.storedUnitCode ||
+						series?.unitCode ||
+						series?.unit ||
+						null;
 
 					const latest = (series?.values || [])
 						.filter(v => v.value !== null && v.value !== undefined)
@@ -1307,7 +1336,51 @@ const Drought = () => {
 					byStation[stationTriplet].latestMeasurements[elementCode] = {
 						value: latest ? latest.value : null,
 						date: latest ? latest.date : null,
-						unit: series?.unitCode || series?.unit || null
+						unit: series?.unitCode || series?.unit || null,
+						storedUnitCode
+					};
+				});
+			});
+
+			(monthlyAvgJson || []).forEach(entry => {
+				const stationTriplet = entry.stationTriplet;
+				const stationId = stationTriplet?.split(':')?.[0];
+				if (!stationTriplet || !stationId) return;
+
+				if (!byStation[stationTriplet]) {
+					byStation[stationTriplet] = {
+						stationTriplet,
+						stationId,
+						latestMeasurements: {},
+						monthlyAverages: {}
+					};
+				}
+
+				(entry?.data || []).forEach(series => {
+					const elementCode =
+						series?.stationElement?.elementCode ||
+						series?.elementCode ||
+						series?.stationElement?.elementCd ||
+						series?.elementCd;
+					if (!elementCode || !elementCodes.includes(elementCode)) return;
+					const storedUnitCode =
+						series?.stationElement?.storedUnitCode ||
+						series?.storedUnitCode ||
+						series?.unitCode ||
+						series?.unit ||
+						null;
+
+					const monthlySeries = (series?.values || [])
+						.filter(v => v.value !== null && v.value !== undefined)
+						.map(v => ({
+							date: v.date,
+							value: v.value
+						}));
+
+					byStation[stationTriplet].monthlyAverages[elementCode] = {
+						values: monthlySeries,
+						unit: series?.unitCode || series?.unit || null,
+						storedUnitCode
 					};
 				});
 			});
@@ -1991,18 +2064,18 @@ const Drought = () => {
 
 			<Tabs defaultActiveKey='map' items={[
 				{
-					key: 'map', label: 'Drought Status Map', children: (<span>
+					key: 'map', label: 'Drought Status Map', children: (<Text>
 						The map shown below provides an overview of current drought conditions in Oregon. Clicking/Tapping on a county will display detailed drought information for that area.
-					</span>),
+					</Text>),
 				},
 				{
-					key: 'cwu', label: 'Crop Water Use', children: (<span>
-						Determine crop water use for different crops in Oregon.</span>),
+					key: 'cwu', label: 'Crop Water Use', children: (<Text>
+						Determine crop water use for different crops in Oregon.</Text>),
 				},
 				{
-					key: 'guides', label: 'Guides', children: (<span>
+					key: 'guides', label: 'Guides', children: (<Text>
 						Access a series fo guides for managing drought.
-					</span>),
+					</Text>),
 				}]}
 				onChange={onChangeTab}
 			/>
@@ -2122,10 +2195,11 @@ const Drought = () => {
 																<strong>Latest values</strong>
 																{measurementCodes.map((code) => {
 																	const m = dataEntry?.latestMeasurements?.[code];
-																	const valueText = m?.value != null ? `${m.value}${m?.unit ? ` ${m.unit}` : ''}` : 'N/A';
+																	const unitCode = m?.storedUnitCode || m?.unit || null;
+																	const valueText = m?.value != null ? `${m.value}${unitCode ? ` ${unitCode}` : ''}` : 'N/A';
 																	return (
 																		<div key={`${station.stationId}-${code}`}>
-																			{code}: {valueText}{m?.date ? ` (${m.date})` : ''}
+																			{code}{unitCode ? ` [${unitCode}]` : ''}: {valueText}{m?.date ? ` (${m.date})` : ''}
 																		</div>
 																	);
 																})}
@@ -2260,12 +2334,12 @@ const Drought = () => {
 			)}
 
 			{currentTab === 'cwu' && (
-				<><span>Crop water use information coming soon...</span></>
+				<><Text>Crop water use information coming soon...</Text></>
 			)}
 
 
 			{currentTab === 'guides' && (
-				<><span>Guides for managing drought coming soon...</span></>
+				<><Text>Guides for managing drought coming soon...</Text></>
 			)}
 
 
@@ -2281,7 +2355,7 @@ const Drought = () => {
 			<Divider />
 
 			<div className="row">
-				<h5>More Information</h5>
+				<Title level={5}>More Information</Title>
 				(1) USDA ERS - Irrigation & Water Use. https: //www.ers.usda.gov/topics/farm-practices-management/irrigation-water-use/.
 			</div>
 			<Modal
@@ -2291,11 +2365,11 @@ const Drought = () => {
 				width="90vw"
 				styles={{ body: { backgroundColor: '#1a1a1a', padding: '16px' } }}
 				title={
-					<span style={{ color: 'white' }}>
+					<Text style={{ color: 'white' }}>
 						{modalChart === 'snow' ? 'Snow Pack (SNOTEL) — Past Year SWE'
 							: modalChart === 'reservoir' ? 'Reservoir Storage — Past Year'
 							: 'Streamflow Volume Outlook (SRVO)'}
-					</span>
+					</Text>
 				}
 			>
 				<div style={{ backgroundColor: '#1a1a1a' }}>

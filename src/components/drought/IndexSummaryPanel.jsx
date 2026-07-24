@@ -1,4 +1,14 @@
 ﻿import React from 'react';
+import {
+    ResponsiveContainer,
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ReferenceLine
+} from 'recharts';
 
 const MEASUREMENT_LABELS = {
     PREC: 'Precipitation Accumulation',
@@ -15,7 +25,25 @@ const formatAsOfDate = (dateValue) => {
 
 const renderValue = (measurement) => {
     if (!measurement || measurement.value == null) return 'N/A';
-    return `${measurement.value}${measurement.unit ? ` ${measurement.unit}` : ''}`;
+    const unitCode = measurement?.storedUnitCode || measurement?.unit || null;
+    return `${measurement.value}${unitCode ? ` ${unitCode}` : ''}`;
+};
+
+const getStoredUnitCode = (measurement, monthlySeries) => {
+    return measurement?.storedUnitCode || measurement?.unit || monthlySeries?.storedUnitCode || monthlySeries?.unit || null;
+};
+
+const formatMonthLabel = (dateValue) => {
+    if (!dateValue) return dateValue;
+    const d = new Date(dateValue);
+    if (Number.isNaN(d.getTime())) return dateValue;
+    return d.toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
+};
+
+const toNumeric = (value) => {
+    if (value == null) return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
 };
 
 export default function SummaryPanel({ clickedLocation, stationData, measurementData }) {
@@ -48,7 +76,13 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
     }
 
     const measurementsByTriplet = new Map(
-        (measurementData?.stations || []).map((s) => [s.stationTriplet, s.latestMeasurements || {}])
+        (measurementData?.stations || []).map((s) => [
+            s.stationTriplet,
+            {
+                latestMeasurements: s.latestMeasurements || {},
+                monthlyAverages: s.monthlyAverages || {}
+            }
+        ])
     );
 
     const preferredOrder = ['PREC', 'WTEQ', 'RESC'];
@@ -84,6 +118,14 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                     const stationsWithCategory = stations.filter((station) =>
                         (station.elements || []).includes(code)
                     );
+                    const categoryUnitCode = stationsWithCategory
+                        .map((station) => measurementsByTriplet.get(station.stationTriplet) || {})
+                        .map((entry) => {
+                            const latest = entry?.latestMeasurements?.[code];
+                            const monthly = entry?.monthlyAverages?.[code];
+                            return getStoredUnitCode(latest, monthly);
+                        })
+                        .find(Boolean);
 
                     return (
                         <details
@@ -108,6 +150,11 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                 <div style={{ color: '#FFF', fontWeight: 'bold' }}>
                                     {MEASUREMENT_LABELS[code] || code} ({code})
                                 </div>
+                                {categoryUnitCode && (
+                                    <div style={{ color: '#93A7BC', fontSize: '0.78rem' }}>
+                                        Unit code: {categoryUnitCode}
+                                    </div>
+                                )}
                                 <div style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>
                                     {stationsWithCategory.length} station{stationsWithCategory.length === 1 ? '' : 's'}
                                 </div>
@@ -122,10 +169,22 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                 }}
                             >
                                 {stationsWithCategory.map((station) => {
-                                    const latestMeasurements =
+                                    const stationMeasurements =
                                         measurementsByTriplet.get(station.stationTriplet) || {};
+                                    const latestMeasurements = stationMeasurements.latestMeasurements || {};
+                                    const monthlyAverages = stationMeasurements.monthlyAverages || {};
                                     const measurement = latestMeasurements[code];
                                     const asOf = formatAsOfDate(measurement?.date);
+                                    const monthlyValues = monthlyAverages[code]?.values || [];
+                                    const unitCode = getStoredUnitCode(measurement, monthlyAverages[code]);
+                                    const chartData = [...monthlyValues]
+                                        .sort((a, b) => new Date(a.date) - new Date(b.date))
+                                        .slice(-365)
+                                        .map((m) => ({
+                                            month: formatMonthLabel(m.date),
+                                            average: toNumeric(m.value)
+                                        }));
+                                    const currentValue = toNumeric(measurement?.value);
 
                                     return (
                                         <div
@@ -145,9 +204,60 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                             <div style={{ color: '#FFF', fontSize: '1rem', fontWeight: 'bold', marginTop: '4px' }}>
                                                 {renderValue(measurement)}
                                             </div>
+                                            <div style={{ color: '#93A7BC', fontSize: '0.72rem' }}>
+                                                Measurement unit: {unitCode || 'Unknown'}
+                                            </div>
                                             <div style={{ color: '#718096', fontSize: '0.72rem' }}>
                                                 {asOf ? `As of ${asOf}` : 'Date unavailable'}
                                             </div>
+                                            {chartData.length > 0 && (
+                                                <div style={{ marginTop: '8px', height: '170px', background: '#152331', borderRadius: '6px', padding: '4px' }}>
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <LineChart data={chartData} margin={{ top: 10, right: 10, left: 5, bottom: 5 }}>
+                                                            <CartesianGrid strokeDasharray="3 3" stroke="#304355" />
+                                                            <XAxis dataKey="month" tick={{ fill: '#B6C2CF', fontSize: 10 }} />
+                                                            <YAxis tick={{ fill: '#B6C2CF', fontSize: 10 }} width={35} />
+                                                            <Tooltip
+                                                                formatter={(value, name) => [
+                                                                    value == null ? 'N/A' : `${value}${unitCode ? ` ${unitCode}` : ''}`,
+                                                                    name === 'average' ? 'Monthly Avg' : name
+                                                                ]}
+                                                                contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #3f5368' }}
+                                                                labelStyle={{ color: '#ffffff' }}
+                                                                itemStyle={{ color: '#ffffff' }}
+                                                            />
+                                                            {currentValue != null && (
+                                                                <ReferenceLine
+                                                                    y={currentValue}
+                                                                    stroke="#FFD166"
+                                                                    strokeDasharray="6 4"
+                                                                    strokeWidth={2}
+                                                                    label={{
+                                                                        value: 'Current',
+                                                                        fill: '#FFD166',
+                                                                        fontSize: 10,
+                                                                        position: 'insideTopRight'
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            <Line
+                                                                type="monotone"
+                                                                dataKey="average"
+                                                                name="Monthly Avg"
+                                                                stroke="#4FC3F7"
+                                                                strokeWidth={2}
+                                                                dot={{ r: 2, fill: '#4FC3F7' }}
+                                                                connectNulls={false}
+                                                            />
+                                                        </LineChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            )}
+                                            {chartData.length === 0 && (
+                                                <div style={{ color: '#718096', fontSize: '0.72rem', marginTop: '6px' }}>
+                                                    Monthly average history unavailable.
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
