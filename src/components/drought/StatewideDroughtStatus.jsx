@@ -1,4 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Typography } from 'antd';
+
+const { Title, Text } = Typography;
 
 const ELEMENT_CODES = ['PREC', 'WTEQ', 'RESC'];
 
@@ -120,9 +123,8 @@ export default function StatewideDroughtStatus() {
     return (
         <div className="card fill-height" style={{ padding: '12px' }}>
             <div style={{ borderBottom: '1px solid #333', paddingBottom: '8px', marginBottom: '12px' }}>
-                <h3 style={{ color: '#FFFF00', margin: 0 }}>Statewide Drought Index Averages (Oregon)</h3>
-                <p style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)
-                </p>
+                <Title level={3} style={{ color: '#FFFF00', margin: 0 }}>Statewide Drought Index Averages (Oregon)</Title>
+                <Text style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)</Text>
             </div>
 
             {loading && <p style={{ color: '#AAAAAA', margin: 0 }}>Loading statewide drought index values...</p>}

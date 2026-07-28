@@ -15,7 +15,7 @@ import StatewideDroughtStatus from '../../components/drought/StatewideDroughtSta
 import OllamaChat from '../../components/ollama_chat/OllamaChat';
 import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Search component
 
-const { Title, Text, Paragraph} = Typography;	// Text replaces <span>, Paragraph replaces <p>, and Title replaces <h>
+const { Title, Text, Paragraph, Link} = Typography;	// Text replaces <span>, Paragraph replaces <p>, and Title replaces <h>, Link replaces <a> for better typography and styling.
 
 //import './IrrigWaterUse.css';
 
@@ -2119,11 +2119,17 @@ const Drought = () => {
 													border: '1px solid #ccc',
 													marginRight: '8px'
 												}} />
-												<strong>{category.level} - {category.label}</strong>
+												{/* <strong>{category.level} - {category.label}</strong> */}
+												<Title level={5}>
+													{category.level} - {category.label}
+												</Title>
 											</div>
-											<div style={{ fontSize: '12px', color: '#eee', paddingLeft: '38px' }}>
+											{/* <div style={{ fontSize: '12px', color: '#eee', paddingLeft: '38px' }}>
 												{category.description}
-											</div>
+											</div> */}
+											<Text>
+												{category.description}
+											</Text>
 										</div>
 									))}
 									<div style={{ marginTop: '16px', fontSize: '11px', color: '#888', borderTop: '1px solid #eee', paddingTop: '8px' }}>
@@ -2252,7 +2258,7 @@ const Drought = () => {
 							)},  {
 								key: '2', label: 'Short Term Stream Flow Forecast', children: (
 									<div>
-										<strong style={{ color: 'white' }}>Streamflow Volume Outlook (SRVO)</strong>
+										<Text strong>Streamflow Volume Outlook (SRVO)</Text>
 										<div
 											style={{ cursor: 'pointer' }}
 											title="Click to expand"
@@ -2272,7 +2278,7 @@ const Drought = () => {
 										title="Click to expand"
 										onClick={() => setModalChart('snow')}
 									>
-										<strong style={{ color: 'white' }}>Snow Pack (SNOTEL)</strong>
+										<Text strong style={{ color: 'white' }}>Snow Pack (SNOTEL)</Text>
 										{renderSnowChart(250)}
 									</div>
 										<Divider style={{ borderColor: '#555', margin: '12px 0' }} />
@@ -2282,7 +2288,7 @@ const Drought = () => {
 										title="Click to expand"
 										onClick={() => setModalChart('reservoir')}
 									>
-										<strong style={{ color: 'white' }}>Reservoir Storage</strong>
+										<Text strong style={{ color: 'white' }}>Reservoir Storage</Text>
 										{renderReservoirChart(250)}
 									</div>
 									</div>
@@ -2356,7 +2362,10 @@ const Drought = () => {
 
 			<div className="row">
 				<Title level={5}>More Information</Title>
-				(1) USDA ERS - Irrigation & Water Use. https: //www.ers.usda.gov/topics/farm-practices-management/irrigation-water-use/.
+				{/* <Text>USDA ERS - Irrigation & Water Use.</Text> */}
+				<Link href="https://www.ers.usda.gov/topics/farm-practices-management/irrigation-water-use/" target="_blank">
+					USDA ERS - Irrigation & Water Use.
+				</Link>
 			</div>
 			<Modal
 				open={modalChart !== null}

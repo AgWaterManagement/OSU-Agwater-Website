@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import {
   Alert,
@@ -263,3 +264,11 @@ export default function AgWqplanAuthManager({
     </div>
   );
 }
+
+AgWqplanAuthManager.propTypes = {
+  apiBaseUrl: PropTypes.string,
+  apiKey: PropTypes.string,
+  showAdmin: PropTypes.bool,
+  onAuthenticated: PropTypes.func,
+  onUserCreated: PropTypes.func,
+};

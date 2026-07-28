@@ -8,7 +8,10 @@ export const darkTheme = {
             //colorText: 'darkblue',
             //colorTextHeading: 'darkslategray',
             //colorBgElevated: '#2b1d11',
-            colorInfoBg: '#232323'
+            colorInfoBg: '#232323',
+            colorWarningBg: '#2b1d11',
+            colorErrorBg: '#2b1d11',
+            colorSuccessBg: '#2b1d11',
         },
         Button: {
             colorLink: '#80b0fc',
@@ -60,8 +63,9 @@ export const darkTheme = {
             //colorBgElevated: '#2b1d11',
         },
         Modal: {
-            colorText: 'white',
-            contentBg: 'darkslategray',
+            titleColor: '#F2F2F2',
+            contentBg: '#565656',
+            headerBg: '#565656',
             colorBgElevated: 'darkslategray',
         },
         Menu: {
@@ -90,6 +94,12 @@ export const darkTheme = {
         },
 
         Slider: { railBg: '#6884f6ec', railHoverBg: '#7871f6ff', trackBg: '#ae300dff', handleBg: '#fff', handleBorderColor: '#4096ff' },
+
+        Space: {
+            padding: 8,
+            paddingLG: 12,
+            paddingXS: 4,
+        },
 
         Statistic: {
             colorTextDescription: 'white',

@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 
 const { Text } = Typography;
 
-const ComplianceInfo = ({ practice, userType }) => {
-  const showComplianceNotes = userType === 'ODA - Compliance';
-  const showTMDLInfo = userType === 'Board / TMDL';
+const ComplianceInfo = ({ practice, userRole }) => {
+  const showComplianceNotes = userRole === 'ODA - Compliance';
+  const showTMDLInfo = userRole === 'Board / TMDL';  // ????
 
   if (!showComplianceNotes && !showTMDLInfo) {
     return null;
@@ -49,7 +49,7 @@ ComplianceInfo.propTypes = {
     tmdls: PropTypes.arrayOf(PropTypes.string),
     compliance_notes: PropTypes.string,
   }).isRequired,
-  userType: PropTypes.string.isRequired,
+  userRole: PropTypes.string.isRequired,
 };
 
 export default ComplianceInfo;

@@ -9,6 +9,8 @@ import {
     Tooltip,
     ReferenceLine
 } from 'recharts';
+import { Typography } from 'antd';
+const { Title, Text } = Typography;
 
 const MEASUREMENT_LABELS = {
     PREC: 'Precipitation Accumulation',
@@ -52,8 +54,8 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
     if (clickedLocation?.lat == null || clickedLocation?.lng == null) {
         return (
             <div className="card fill-height flex-center empty-state">
-                <h3 style={{ color: '#FFFF00' }}>No Map Location Selected</h3>
-                <p>Click on the map to load nearest stations and drought-related measurements.</p>
+                <Title level={3} style={{ color: '#FFFF00', margin: 0 }}>No Map Location Selected</Title>
+                <Text>Click on the map to load nearest stations and drought-related measurements.</Text>
             </div>
         );
     }
@@ -69,8 +71,8 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
     if (stations.length === 0) {
         return (
             <div className="card fill-height flex-center empty-state">
-                <h3 style={{ color: '#FFFF00' }}>No Nearby Stations</h3>
-                <p>No drought-index stations were found near the selected map location.</p>
+                <Title level={3} style={{ color: '#FFFF00', margin: 0 }}>No Nearby Stations</Title>
+                <Text>No drought-index stations were found near the selected map location.</Text>
             </div>
         );
     }
@@ -100,10 +102,10 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
     return (
         <div className="card fill-height" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ borderBottom: '1px solid #333', paddingBottom: '8px' }}>
-                <h3 style={{ color: '#FFFF00', margin: 0 }}>Nearest Drought Monitoring Stations</h3>
-                <p style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>
+                <Title level={3} style={{ color: '#FFFF00', margin: 0 }}>Nearest Drought Monitoring Stations</Title>
+                <Text style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>
                     Clicked location: {clickedLocation.lat.toFixed(4)}, {clickedLocation.lng.toFixed(4)}
-                </p>
+                </Text>
             </div>
 
             <div
@@ -269,7 +271,7 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
 
             {categoryCodes.length === 0 && (
                 <div style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>
-                    No measurement metadata available for nearby stations.
+                    <Text>No measurement metadata available for nearby stations.</Text>
                 </div>
             )}
         </div>

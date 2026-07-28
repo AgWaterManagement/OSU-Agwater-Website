@@ -13,12 +13,12 @@ const { Title, Paragraph, Text } = Typography;
 
 // Step 4: Select and review recommended agricultural water quality practices
 // Props:
-//   - userType: Current user type (for compliance/TMDL display)
+//   - userRole: Current user role (for compliance/TMDL display)
 //   - recommendedPractices: Array of Practice objects recommended based on conditions
 //   - selectedPracticeIds: Array of selected practice IDs
 //   - setSelectedPracticeIds: Function to update selected practice IDs
 const StepPractices = ({
-	userType,
+	userRole,
 	areaRules,
 	agwqmArea,
 	recommendedPractices,
@@ -82,7 +82,8 @@ const StepPractices = ({
 				</Paragraph>
 				<br />
 				{showSummary && (
-					<ChatResponse prompt={prompt.current} />
+					{/* <ChatResponse prompt={prompt.current} /> */}
+					
 				)}
 				<Collapse items={matchingRules.map((rule, index) => ({
 					key: "rule_" + index,
@@ -103,15 +104,10 @@ const StepPractices = ({
 
 	return (
 		<>
-			<Title level={4}>Recommended practices</Title>
-			<Paragraph>
-				Based on your conditions, these practices may help protect water quality and meet
-				rules and TMDL expectations. Select any that you are interested in implementing to see more details and
-				to include them in your plan.
-			</Paragraph>
 
 
-			{applicableAreaRules() && (
+			{applicableAreaRules() && ( <>
+			<Title level={5}>Area Specific Rules Apply</Title>
 				<Alert
 					style={{ marginBottom: 16 }}
 					title={"Area-specific rules or TMDL requirements may apply in this management area (" + agwqmArea + "). Please review the information for each practice carefully."}
@@ -120,9 +116,18 @@ const StepPractices = ({
 					showIcon
 					closable={{ closeIcon: true, 'aria-label': 'close' }}
 				/>
+				</>
 			)}
 
 			{/* Accordion list of API-backed recommended practices with detailed information */}
+
+			<Title level={3}>Recommended practices</Title>
+			<Paragraph>
+				Based on your conditions, these practices may help protect water quality and meet
+				rules and TMDL expectations. Select any that you are interested in implementing to see more details and
+				to include them in your plan.
+			</Paragraph>
+
 
 			{selectedPracticeIds.length === 0 && (
 				<Paragraph style={{ marginTop: 16 }}>
@@ -183,8 +188,7 @@ const StepPractices = ({
 									))}
 								</ul>
 							</Paragraph>
-
-							<ComplianceInfo practice={p} userType={userType} />
+							<ComplianceInfo practice={p} userRole={userRole} />
 
 							<Carousel arrows infinite={false} style={{ width: 400, height: 400 }}>
 								<div>
@@ -213,7 +217,7 @@ const StepPractices = ({
 };
 
 StepPractices.propTypes = {
-	userType: PropTypes.string.isRequired,
+	userRole: PropTypes.string.isRequired,
 	areaRules: PropTypes.arrayOf(
 		PropTypes.shape({
 			id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -243,6 +247,7 @@ StepPractices.propTypes = {
 		PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 	).isRequired,
 	setSelectedPracticeIds: PropTypes.func.isRequired,
+	setError: PropTypes.func.isRequired,
 };
 
 export default StepPractices;

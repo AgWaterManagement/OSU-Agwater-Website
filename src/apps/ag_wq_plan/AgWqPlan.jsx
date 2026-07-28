@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 
-import { Menu, Layout, Steps, Card, Typography, Divider, Space, Button, Spin, Tabs } from 'antd';
+import { Menu, Layout, Steps, Card, Typography, Divider, Select, Space, Button, Spin, Tabs } from 'antd';
 //import Map from '@arcgis/core/Map';
 //import MapView from '@arcgis/core/views/MapView';
 //import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
@@ -20,6 +20,12 @@ import StepSummary from './StepSummary';
 import PracticesGuide from './PracticesGuide';
 import PageRating from '../../components/page_rating/PageRating';
 
+
+import VFSGuide from './Guides/VFSGuide';
+
+
+
+
 const { Content, Footer } = Layout;
 const { Step } = Steps;
 const { Title, Text, Paragraph } = Typography;
@@ -37,12 +43,13 @@ const API_BASE = 'https://agwater.org:5556';
 const AgWqPlan = () => {
   // Current step in the wizard (0-4)
   const [currentMode, setCurrentMode] = useState('generate_plan');
+  const [currentPracticeGuide, setCurrentPracticeGuide] = useState('vfs');
   const [current, setCurrent] = useState(-1);
 
   //------------------------------------------------------------------------------------
   // Global state for planner data and user inputs
   //------------------------------------------------------------------------------------
-  const [sites, setSites] = useState([]);
+  const [sites, setSites] = useState([]);  // these are filtered based on the user ID
   const [commodities, setCommodities] = useState([]);
   const [concerns, setConcerns] = useState([]);
   const [concernQuestions, setConcernQuestions] = useState([]);
@@ -52,7 +59,7 @@ const AgWqPlan = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [loggingIn, setLoggingIn] = useState(false);
   const [showMaps, setShowMaps] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(null);  // User's role (e.g., 'Landowner', 'Resource Conservationist', 'ODA Water Quality Specialist')
 
   // -----------------------------------------------------------------------------------
   // global report data state that gets passed to summary and used for PDF generation
@@ -60,7 +67,7 @@ const AgWqPlan = () => {
   // useRef() for data that doesn't need to trigger re-renders
   // -----------------------------------------------------------------------------------
   const [loginName, setLoginName] = useState(null);
-  const userType = useRef('Landowner');
+  //const userType = useRef('Landowner');
   const userID = useRef(null);
   const [selectedCommodities, setSelectedCommodities] = useState([]);
   //const commodity = useRef('Pasture/Hay');
@@ -77,6 +84,7 @@ const AgWqPlan = () => {
   const [regionalSpecialistPhone, setRegionalSpecialistPhone] = useState(null);
   const [adminRulesLink, setAdminRulesLink] = useState(null);
   const [areaPlanLink, setAreaPlanLink] = useState(null);
+  const [sitePhotos, setSitePhotos] = useState([]);
 
   // -----------------------------------------------------------------------------------
   // Step-specific state
@@ -88,8 +96,7 @@ const AgWqPlan = () => {
   const [selectedGoals, setSelectedGoals] = useState([]);
   const [selectedPracticeIds, setSelectedPracticeIds] = useState([]);
   const [selectedTMDLs, setSelectedTMDLs] = useState([]);
-  const [photos, setPhotos] = useState([]);
-
+ 
   // ------------------------------------------------------------------------------------
   // Success/Error status of each Step for validation and user feedback
   // possible values are wait process finish error
@@ -109,10 +116,10 @@ const AgWqPlan = () => {
     return match ? decodeURIComponent(match[2]) : null;
   }
 
-  const _setUserType = (type) => {
-    console.log("Setting userType to:", type);
-    userType.current = type;
-  }
+  //const _setUserType = (type) => {
+  //  console.log("Setting userType to:", type);
+  //  userType.current = type;
+  //}
 
   const _setUserID = (id) => {
     console.log("Setting userID to:", id);
@@ -122,6 +129,9 @@ const AgWqPlan = () => {
 
   const _setSiteID = (id) => {
     console.log("Setting siteID to:", id);
+    if (id == 'null')
+      id = null;
+
     siteID.current = id;
     setCookie('agwqplan_siteID', id);
   }
@@ -165,8 +175,8 @@ const AgWqPlan = () => {
       setLoadingData(true);
 
       try {
-        const [sitesData, commoditiesData, concernsData, questionsData, practicesData, goalsData, areaRulesData] = await Promise.all([
-          fetchJson('/agwqplan/sites'),
+        const [commoditiesData, concernsData, questionsData, practicesData, goalsData, areaRulesData] = await Promise.all([
+          //fetchJson('/agwqplan/sites'),
           fetchJson('/agwqplan/commodities'),
           fetchJson('/agwqplan/concerns'),
           fetchJson('/agwqplan/concernQuestions'),
@@ -183,7 +193,7 @@ const AgWqPlan = () => {
         setConcernQuestions(Array.isArray(questionsData) ? questionsData : []);
         setPractices(Array.isArray(practicesData) ? practicesData : []);
         setGoals(Array.isArray(goalsData) ? goalsData : []);
-        setSites(Array.isArray(sitesData) ? sitesData : []);
+        // setSites(Array.isArray(sitesData) ? sitesData : []);
         setAreaRules(Array.isArray(areaRulesData) ? areaRulesData : []);
       } catch (error) {
         console.error('Error loading ag_wqplan data:', error);
@@ -193,7 +203,7 @@ const AgWqPlan = () => {
           setConcernQuestions([]);
           setPractices([]);
           setGoals([]);
-          setSites([]);
+          // setSites([]);
           setAreaRules([]);
         }
       } finally {
@@ -243,7 +253,7 @@ const AgWqPlan = () => {
   }, [selectedQuestions, concernQuestions, practices]);
 
   const filteredRecommendedPractices = useMemo(() => {
-    if (userType.current === 'Board/TMDL' && selectedTMDLs.length > 0) {
+    if (userRole === 'Board/TMDL' && selectedTMDLs.length > 0) {   ///  ROLE NO LONGER EXISTS
       return recommendedPractices.filter((p) =>
         p.tmdls && p.tmdls.some((t) => selectedTMDLs.includes(t)),
       );
@@ -293,8 +303,18 @@ const AgWqPlan = () => {
           <Menu onClick={({ key }) => setCurrentMode(key)} selectedKeys={[currentMode]} mode="horizontal" items={[
             { label: 'Generate Plan', key: 'generate_plan' },
             { label: 'View Plan', key: 'view_plan', },
-            { label: 'Learn More', key: 'learn_more', }]}
+            { label: 'Learn More', key: 'learn_more', }]}            
           />
+
+          {userID.current && loginName ? (
+            <Text style={{ fontSize: '1.0em', color: '#888', marginLeft: 8, float:'right' }}>
+              Logged in as: {loginName}/{userID.current} ({userRole})  
+            </Text>
+          ) : (
+            <Text style={{ fontSize: '1.0em', color: '#888', marginLeft: 8, float:'right' }}>
+              Not logged in
+            </Text>
+          )}
 
           <Spin spinning={loadingData} tip="Loading planner data...">
 
@@ -302,16 +322,15 @@ const AgWqPlan = () => {
               <>
                 {current === -1 && (
                   <StartUp
-                    userType={userType.current}
-                    setUserType={_setUserType}
+                    userRole={userRole} setUserRole={_setUserRole}
                     selectedTMDLs={selectedTMDLs}
                     setSelectedTMDLs={setSelectedTMDLs}
                     availableTMDLs={availableTMDLs}
                     setLoginName={_setLoginName}
-                    setUserRole={_setUserRole}
                     setUserID={_setUserID}
                     setLoggingIn={setLoggingIn}
-                    setCurrent={setCurrent} />
+                    setCurrent={setCurrent}
+                    />
                 )}
                 {current >= 0 && (
                   <>
@@ -329,13 +348,15 @@ const AgWqPlan = () => {
 
                 {current === 0 && (
                   <StepWhoWhere
-                    userType={userType.current}
-                    userID={userID.current}
-                    sitesData={sites}
+                    userRole={userRole} setUserRole={setUserRole}
+                    userID={userID.current} setUserID={_setUserID}
+                    setLoginName={setLoginName} setLoggingIn={setLoggingIn}
+                    sites={sites}
+                    setSites={setSites}
                     commoditiesData={commodities}
                     selectedCommodities={selectedCommodities}
                     setSelectedCommodities={setSelectedCommodities}
-                    setPhotos={setPhotos}
+                    sitePhotos={sitePhotos} setSitePhotos={setSitePhotos}
                     siteName={siteName} setSiteName={setSiteName}
                     siteID={siteID.current} setSiteID={_setSiteID }
                     siteDescription={siteDescription} setSiteDescription={setSiteDescription}
@@ -376,7 +397,7 @@ const AgWqPlan = () => {
 
                 {current === 3 && (
                   <StepPractices
-                    userType={userType.current}
+                    userRole={userRole}
                     areaRules={areaRules}
                     agwqmArea={agwqmArea}
                     recommendedPractices={filteredRecommendedPractices}
@@ -388,7 +409,8 @@ const AgWqPlan = () => {
 
                 {current === 4 && (
                   <StepSummary
-                    userType={userType.current}
+                    userRole={userRole}
+                    userID={userID.current}
                     latitude={latitude}
                     longitude={longitude}
                     agWqMArea={agwqmArea}
@@ -399,6 +421,8 @@ const AgWqPlan = () => {
                     adminRulesLink={adminRulesLink}
                     areaPlanLink={areaPlanLink}
                     siteName={siteName}
+                    site={sites.find(s => s.id === siteID.current) || null}
+                    sitePhotos={sitePhotos}
                     selectedCommodities={selectedCommodities}
                     selectedConcerns={selectedConcerns}
                     selectedQuestions={selectedQuestions}
@@ -406,6 +430,7 @@ const AgWqPlan = () => {
                     goalData={goals}
                     selectedPractices={selectedPractices}
                     concernQuestions={concernQuestions}
+                    areaRules={areaRules}
                   />
                 )}
 
@@ -456,6 +481,25 @@ const AgWqPlan = () => {
                       key: 'maps',
                       label: 'Maps',
                       children: <Maps />,
+                    },
+                    {
+                      key: 'additional_guides',
+                      label: 'Additional Guides',
+                      children: <>
+                      Select a guide from the dropdown below to view additional information and guidance for implementing water quality practices.
+                      <br />
+                      <br />
+                      <Select defaultValue="vfs" style={{ width: 200 }} onChange={(value) => setCurrentPracticeGuide(value)} options={[
+                        { label: 'Vegetative Filter Strip (VFS) Guide', value: 'vfs' },
+                        { label: 'Other Guide 1', value: 'other1' }, 
+                        { label: 'Other Guide 2', value: 'other2' }
+                      ]} />,
+                      <div>
+                        {currentPracticeGuide === 'vfs' && <VFSGuide />}
+                        {currentPracticeGuide === 'other1' && <div>Other Guide 1 content goes here...</div>}
+                        {currentPracticeGuide === 'other2' && <div>Other Guide 2 content goes here...</div>}
+                      </div>
+                      </>
                     },
                     {
                       key: 'external_links',
