@@ -23,6 +23,7 @@
     "dayjs": "^1.11.13",
     "framer-motion": "^12.6.3",
     "leaflet": "^1.9.4",
+    "leaflet-geosearch": "^4.4.0",
     "leaflet.locatecontrol": "^0.88.0",
     "ndjson-readablestream": "^1.2.0",
     "prop-types": "^15.8.1",

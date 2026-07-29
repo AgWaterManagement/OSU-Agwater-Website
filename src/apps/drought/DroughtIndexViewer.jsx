@@ -8,8 +8,6 @@ import DatasetModal from '../../components/drought/DatasetModal';
 import './DroughtIndexViewer.css';
 
 
-/* Testing the Git_upload.bat script. */
-
 const DROUGHT_INDEX_LATEST_URL = 'https://agwater.org:5556/drought/latest';
 const DROUGHT_INDEX_TIMESERIES_URL = 'https://agwater.org:5556/drought/timeseries';
 
