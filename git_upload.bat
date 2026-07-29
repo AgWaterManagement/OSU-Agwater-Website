@@ -42,7 +42,7 @@ if "%~1"=="" (
 :: ---- Branch ------------------------------------------------
 if "%~2"=="" (
     set "BRANCH=%DEFAULT_BRANCH%"
-    echo [INFO] Using default branch: !BRANCH!
+    echo [INFO] Using default branch: %BRANCH%
 ) else (
     set "BRANCH=%~2"
 )
@@ -80,7 +80,7 @@ git add --all
 if errorlevel 1 (
     echo [ERROR] "git add" failed.
     pause
-    exit /b 0
+    exit /b 1
 )
 
 :: ---- Commit ------------------------------------------------
@@ -89,7 +89,7 @@ git commit -m "%COMMIT_MSG%"
 if errorlevel 1 (
     echo [ERROR] "git commit" failed.
     pause
-    exit /b 0
+    exit /b 1
 )
 
 :: ---- Push --------------------------------------------------
@@ -102,7 +102,7 @@ if errorlevel 1 (
     echo   - Authentication error       ^(check your credentials / SSH key^)
     echo   - Branch does not exist yet  ^(first push? try: git push -u origin %BRANCH%^)
     pause
-    exit /b 0
+    exit /b 1
 )
 
 echo.
