@@ -89,7 +89,7 @@ git commit -m "%COMMIT_MSG%"
 if errorlevel 1 (
     echo [ERROR] "git commit" failed.
     pause
-    exit /b 1
+    exit /b 0
 )
 
 :: ---- Push --------------------------------------------------
