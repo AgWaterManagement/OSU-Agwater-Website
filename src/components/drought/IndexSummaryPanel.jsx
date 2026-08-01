@@ -10,7 +10,7 @@ import {
     ReferenceLine
 } from 'recharts';
 import { Typography } from 'antd';
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const MEASUREMENT_LABELS = {
     PREC: 'Precipitation Accumulation',
@@ -63,7 +63,7 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
     if (stationData == null) {
         return (
             <div className="card fill-height flex-center empty-state">
-                <p>Loading nearest station metadata...</p>
+                <Paragraph>Loading nearest station metadata...</Paragraph>
             </div>
         );
     }
@@ -149,17 +149,17 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                     gap: '2px'
                                 }}
                             >
-                                <div style={{ color: '#FFF', fontWeight: 'bold' }}>
+                                <Text strong style={{ color: '#FFF' }}>
                                     {MEASUREMENT_LABELS[code] || code} ({code})
-                                </div>
+                                </Text>
                                 {categoryUnitCode && (
-                                    <div style={{ color: '#93A7BC', fontSize: '0.78rem' }}>
+                                    <Text style={{ color: '#93A7BC', fontSize: '0.78rem' }}>
                                         Unit code: {categoryUnitCode}
-                                    </div>
+                                    </Text>
                                 )}
-                                <div style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>
+                                <Text style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>
                                     {stationsWithCategory.length} station{stationsWithCategory.length === 1 ? '' : 's'}
-                                </div>
+                                </Text>
                             </summary>
 
                             <div
@@ -197,21 +197,21 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                                 padding: '8px 10px'
                                             }}
                                         >
-                                            <div style={{ color: '#FFF', fontSize: '0.95rem', fontWeight: 'bold' }}>
+                                            <Paragraph style={{ margin: 0, color: '#FFF', fontSize: '0.95rem', fontWeight: 'bold' }}>
                                                 {station.stationName}
-                                            </div>
-                                            <div style={{ color: '#AAAAAA', fontSize: '0.8rem', marginTop: '2px' }}>
+                                            </Paragraph>
+                                            <Paragraph style={{ margin: '2px 0 0', color: '#AAAAAA', fontSize: '0.8rem' }}>
                                                 Station ID: {station.stationId} | Distance: {station.distanceKm ?? 'N/A'} km
-                                            </div>
-                                            <div style={{ color: '#FFF', fontSize: '1rem', fontWeight: 'bold', marginTop: '4px' }}>
+                                            </Paragraph>
+                                            <Paragraph style={{ margin: '4px 0 0', color: '#FFF', fontSize: '1rem', fontWeight: 'bold' }}>
                                                 {renderValue(measurement)}
-                                            </div>
-                                            <div style={{ color: '#93A7BC', fontSize: '0.72rem' }}>
+                                            </Paragraph>
+                                            {/* <Paragraph style={{ margin: 0, color: '#93A7BC', fontSize: '0.72rem' }}>
                                                 Measurement unit: {unitCode || 'Unknown'}
-                                            </div>
-                                            <div style={{ color: '#718096', fontSize: '0.72rem' }}>
+                                            </Paragraph> */}
+                                            <Paragraph style={{ margin: 0, color: '#718096', fontSize: '0.72rem' }}>
                                                 {asOf ? `As of ${asOf}` : 'Date unavailable'}
-                                            </div>
+                                            </Paragraph>
                                             {chartData.length > 0 && (
                                                 <div style={{ marginTop: '8px', height: '170px', background: '#152331', borderRadius: '6px', padding: '4px' }}>
                                                     <ResponsiveContainer width="100%" height="100%">
@@ -256,9 +256,9 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                                 </div>
                                             )}
                                             {chartData.length === 0 && (
-                                                <div style={{ color: '#718096', fontSize: '0.72rem', marginTop: '6px' }}>
+                                                <Paragraph style={{ margin: '6px 0 0', color: '#718096', fontSize: '0.72rem' }}>
                                                     Monthly average history unavailable.
-                                                </div>
+                                                </Paragraph>
                                             )}
                                         </div>
                                     );
@@ -270,9 +270,9 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
             </div>
 
             {categoryCodes.length === 0 && (
-                <div style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>
-                    <Text>No measurement metadata available for nearby stations.</Text>
-                </div>
+                <Text style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>
+                    No measurement metadata available for nearby stations.
+                </Text>
             )}
         </div>
     );
