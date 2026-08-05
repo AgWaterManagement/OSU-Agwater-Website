@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Typography } from 'antd';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const ELEMENT_CODES = ['PREC', 'WTEQ', 'RESC'];
 
@@ -9,6 +9,15 @@ const ELEMENT_LABELS = {
     PREC: 'Precipitation Accumulation (PREC)',
     WTEQ: 'Snow Water Equivalent (WTEQ)',
     RESC: 'Reservoir Storage (RESC)'
+};
+
+// To allow for the calculation of statewide averages and data retrieval across the Pacific Northwest,
+//  we will use the station triplet format for Oregon, Washington, and Idaho.
+// The triplet format is "*:STATE:*" where STATE is the two-letter state abbreviation.
+const STATION_TRIPLETS = {
+    Oregon: "*:OR:*",
+    Washington: "*:WA:*",
+    Idaho: "*:ID:*"
 };
 
 function formatStartOfToday() {
@@ -52,7 +61,12 @@ function computeStatewideAverages(dataRows) {
 
             totals[code].sum += numericValue;
             totals[code].count += 1;
-            totals[code].unit = totals[code].unit || series?.unitCode || series?.unit || null;
+            totals[code].unit = totals[code].unit ||
+                series?.stationElement?.storedUnitCode ||
+                series?.storedUnitCode ||
+                series?.unitCode ||
+                series?.unit ||
+                null;
         });
     });
 
@@ -67,6 +81,105 @@ function computeStatewideAverages(dataRows) {
     }, {});
 }
 
+function computeMultiDayAverages(dataRows) {
+    const totals = {
+        PREC: { sum: 0, count: 0, unit: null },
+        WTEQ: { sum: 0, count: 0, unit: null },
+        RESC: { sum: 0, count: 0, unit: null }
+    };
+
+    (dataRows || []).forEach((entry) => {
+        (entry?.data || []).forEach((series) => {
+            const code = parseElementCode(series);
+            if (!code || !ELEMENT_CODES.includes(code)) return;
+
+            const unit =
+                series?.stationElement?.storedUnitCode ||
+                series?.storedUnitCode ||
+                series?.unitCode ||
+                series?.unit ||
+                null;
+
+            (series?.values || []).forEach((v) => {
+                const numericValue = Number(v?.value);
+                if (!Number.isFinite(numericValue)) return;
+                totals[code].sum += numericValue;
+                totals[code].count += 1;
+                totals[code].unit = totals[code].unit || unit;
+            });
+        });
+    });
+
+    return ELEMENT_CODES.reduce((acc, code) => {
+        const total = totals[code];
+        acc[code] = {
+            average: total.count > 0 ? total.sum / total.count : null,
+            unit: total.unit
+        };
+        return acc;
+    }, {});
+}
+
+async function fetchTwentyYearAverages() {
+    const today = new Date();
+    const month = today.getMonth();
+    const day = today.getDate();
+    const currentYear = today.getFullYear();
+    const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
+
+    const yearRequests = Array.from({ length: 20 }, (_, i) => {
+        const year = currentYear - 1 - i;
+        // Handle Feb 29 → Feb 28 for non-leap years
+        const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+        const adjustedDay = (month === 1 && day === 29 && !isLeapYear) ? 28 : day;
+        const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(adjustedDay).padStart(2, '0')}`;
+        const params = new URLSearchParams({
+            stationTriplets: '*:OR:*',
+            elements: ELEMENT_CODES.join(','),
+            duration: 'DAILY',
+            returnFlags: 'false',
+            beginDate: date,
+            endDate: date
+        });
+        return fetch(`${dataUrl}?${params}`, { headers: { Accept: 'application/json' } })
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null);
+    });
+
+    const results = await Promise.allSettled(yearRequests);
+    const allDataRows = results
+        .filter(r => r.status === 'fulfilled' && Array.isArray(r.value))
+        .flatMap(r => r.value);
+
+    return computeStatewideAverages(allDataRows);
+}
+
+async function fetchSevenDayAverages() {
+    const today = new Date();
+    const fmt = (d) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() - 1);
+    const beginDate = new Date(today);
+    beginDate.setDate(today.getDate() - 7);
+
+    const dataUrl = 'https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data';
+    const params = new URLSearchParams({
+        stationTriplets: '*:OR:*',
+        elements: ELEMENT_CODES.join(','),
+        duration: 'DAILY',
+        returnFlags: 'false',
+        beginDate: fmt(beginDate),
+        endDate: fmt(endDate)
+    });
+
+    const response = await fetch(`${dataUrl}?${params}`, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return computeMultiDayAverages(data);
+}
+
 function formatAverage(value) {
     if (value === null || value === undefined) return 'N/A';
     return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -76,6 +189,10 @@ export default function StatewideDroughtStatus() {
     const [averages, setAverages] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [twentyYearAverages, setTwentyYearAverages] = useState(null);
+    const [loadingHistory, setLoadingHistory] = useState(true);
+    const [sevenDayAverages, setSevenDayAverages] = useState(null);
+    const [loadingSevenDay, setLoadingSevenDay] = useState(true);
 
     const startDate = useMemo(() => formatStartOfToday(), []);
 
@@ -117,20 +234,47 @@ export default function StatewideDroughtStatus() {
             }
         };
 
+        const fetchHistoricalData = async () => {
+            try {
+                setLoadingHistory(true);
+                const historical = await fetchTwentyYearAverages();
+                setTwentyYearAverages(historical);
+            } catch (err) {
+                console.error('Error fetching 20-year averages:', err);
+                setTwentyYearAverages(null);
+            } finally {
+                setLoadingHistory(false);
+            }
+        };
+
+        const fetchSevenDayData = async () => {
+            try {
+                setLoadingSevenDay(true);
+                const sevenDay = await fetchSevenDayAverages();
+                setSevenDayAverages(sevenDay);
+            } catch (err) {
+                console.error('Error fetching 7-day averages:', err);
+                setSevenDayAverages(null);
+            } finally {
+                setLoadingSevenDay(false);
+            }
+        };
+
         fetchStatewideDroughtData();
+        fetchHistoricalData();
+        fetchSevenDayData();
     }, [startDate]);
 
     return (
         <div className="card fill-height" style={{ padding: '12px' }}>
             <div style={{ borderBottom: '1px solid #333', paddingBottom: '8px', marginBottom: '12px' }}>
-                <h3 style={{ color: '#FFFF00', margin: 0 }}>Statewide Drought Index Averages (Oregon)</h3>
-                <p style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)
-                </p>
+                <Title style={{ color: '#FFFF00', margin: 0 }}>Statewide Drought Index Averages (Oregon)</Title>
+                <Paragraph style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)</Paragraph>
             </div>
 
-            {loading && <p style={{ color: '#AAAAAA', margin: 0 }}>Loading statewide drought index values...</p>}
+            {loading && <Paragraph style={{ color: '#AAAAAA', margin: 0 }}>Loading statewide drought index values...</Paragraph>}
 
-            {!loading && error && <p style={{ color: '#FF8A80', margin: 0 }}>{error}</p>}
+            {!loading && error && <Paragraph style={{ color: '#FF8A80', margin: 0 }}>{error}</Paragraph>}
 
             {!loading && !error && (
                 <div
@@ -142,6 +286,15 @@ export default function StatewideDroughtStatus() {
                 >
                     {ELEMENT_CODES.map((code) => {
                         const metric = averages?.[code] || { average: null, unit: null, stationCount: 0 };
+                        const historical = twentyYearAverages?.[code];
+                        const sevenDayAvg = sevenDayAverages?.[code];
+                        const pctChange =
+                            !loadingHistory &&
+                            metric.average != null &&
+                            historical?.average != null &&
+                            historical.average !== 0
+                                ? ((metric.average - historical.average) / Math.abs(historical.average)) * 100
+                                : null;
                         return (
                             <div
                                 key={code}
@@ -153,12 +306,41 @@ export default function StatewideDroughtStatus() {
                                 }}
                             >
                                 <div style={{ color: '#AAAAAA', fontSize: '0.82rem' }}>{ELEMENT_LABELS[code]}</div>
-                                <div style={{ color: '#FFF', fontSize: '1.15rem', fontWeight: 'bold', marginTop: '3px' }}>
-                                    {formatAverage(metric.average)}
-                                    {metric.unit ? ` ${metric.unit}` : ''}
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '3px' }}>
+                                    <div style={{ color: '#FFF', fontSize: '1.15rem', fontWeight: 'bold' }}>
+                                        {formatAverage(metric.average)}
+                                        {metric.unit ? ` ${metric.unit}` : ''}
+                                    </div>
+                                    {pctChange !== null && (
+                                        <Text style={{ color: pctChange >= 0 ? '#48BB78' : '#FC8181', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                                            {pctChange >= 0 ? '+' : ''}{pctChange.toFixed(1)}%
+                                        </Text>
+                                    )}
+                                </div>
+                                <div style={{ fontSize: '0.78rem', marginTop: '4px' }}>
+                                    <Text style={{ color: '#718096' }}>7-day avg: </Text>
+                                    {loadingSevenDay ? (
+                                        <Text style={{ color: '#718096' }}>Loading...</Text>
+                                    ) : (
+                                        <Text style={{ color: '#90CAF9', fontWeight: 'bold' }}>
+                                            {formatAverage(sevenDayAvg?.average)}
+                                            {metric.unit ? ` ${metric.unit}` : ''}
+                                        </Text>
+                                    )}
                                 </div>
                                 <div style={{ color: '#718096', fontSize: '0.75rem', marginTop: '3px' }}>
                                     {metric.stationCount} station{metric.stationCount === 1 ? '' : 's'}
+                                </div>
+                                <div style={{ fontSize: '0.78rem', marginTop: '6px', borderTop: '1px solid #2D3748', paddingTop: '6px' }}>
+                                    <Text style={{ color: '#718096' }}>20-yr avg: </Text>
+                                    {loadingHistory ? (
+                                        <Text style={{ color: '#718096' }}>Loading...</Text>
+                                    ) : (
+                                        <Text style={{ color: '#B0BEC5', fontWeight: 'bold' }}>
+                                            {formatAverage(historical?.average)}
+                                            {metric.unit ? ` ${metric.unit}` : ''}
+                                        </Text>
+                                    )}
                                 </div>
                             </div>
                         );
