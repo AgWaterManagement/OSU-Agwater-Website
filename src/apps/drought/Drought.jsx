@@ -47,27 +47,37 @@ const SnotelMapLegend = () => {
 	];
 
 	return (
-		<Card title="SNOTEL: SWE vs. Avg" size="small" style={{ marginTop: '12px' }}>
-			{snotelLegendItems.map(({ color, label }) => (
-				<div key={label} style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-					<svg width="14" height="14" style={{ marginRight: '8px', flexShrink: 0 }}>
-						<circle cx="7" cy="7" r="6" fill={color} stroke="#555" strokeWidth="1" />
-					</svg>
-					<Text>{label}</Text>
-				</div>
-			))}
-			<div style={{ marginTop: '8px', borderTop: '1px solid #444', paddingTop: '6px' }}>
-				<div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>Marker size = avg annual SWE</div>
-				{sizeExamples.map(({ label, r }) => (
-					<div key={label} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-						<svg width="28" height="28" style={{ marginRight: '8px', flexShrink: 0 }}>
-							<circle cx="14" cy="14" r={r} fill="#1e88e5" stroke="#555" strokeWidth="1" />
-						</svg>
-						<Text style={{ fontSize: '12px' }}>{label} avg annual SWE</Text>
-					</div>
-				))}
-			</div>
-		</Card>
+		<Collapse
+			size="small"
+			style={{ marginTop: '12px' }}
+			items={[{
+				key: 'snotel-legend',
+				label: 'SNOTEL Legend: Stream Water Equivalent (SWE) vs. Avg',
+				children: (
+					<>
+						{snotelLegendItems.map(({ color, label }) => (
+							<div key={label} style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+								<svg width="14" height="14" style={{ marginRight: '8px', flexShrink: 0 }}>
+									<circle cx="7" cy="7" r="6" fill={color} stroke="#555" strokeWidth="1" />
+								</svg>
+								<Text>{label}</Text>
+							</div>
+						))}
+						<div style={{ marginTop: '8px', borderTop: '1px solid #444', paddingTop: '6px' }}>
+							<div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>Marker size = avg annual SWE</div>
+							{sizeExamples.map(({ label, r }) => (
+								<div key={label} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+									<svg width="28" height="28" style={{ marginRight: '8px', flexShrink: 0 }}>
+										<circle cx="14" cy="14" r={r} fill="#1e88e5" stroke="#555" strokeWidth="1" />
+									</svg>
+									<Text style={{ fontSize: '12px' }}>{label} avg annual SWE</Text>
+								</div>
+							))}
+						</div>
+					</>
+				),
+			}]}
+		/>
 	);
 };
 
@@ -258,44 +268,8 @@ const Drought = () => {
 	const [snotelData, setSnotelData] = useState(null);
 	const [snotelCurrentSwe, setSnotelCurrentSwe] = useState({});
 	const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
+	const [selectedLegendCategory, setSelectedLegendCategory] = useState(null);
 
-	const countyCentroids = {
-		"Baker": { latitude: 44.7661, longitude: -117.8334, zoneId: "ORZ001" },
-		"Benton": { latitude: 44.6288, longitude: -123.3383, zoneId: "ORZ002" },
-		"Clackamas": { latitude: 45.2027, longitude: -122.4087, zoneId: "ORZ003" },
-		"Clatsop": { latitude: 46.1695, longitude: -123.1867, zoneId: "ORZ004" },
-		"Columbia": { latitude: 45.7455, longitude: -122.8232, zoneId: "ORZ005" },
-		"Coos": { latitude: 43.1890, longitude: -124.4335, zoneId: "ORZ006" },
-		"Crook": { latitude: 44.2658, longitude: -120.8552, zoneId: "ORZ007" },
-		"Curry": { latitude: 42.2025, longitude: -124.5700, zoneId: "ORZ008" },
-		"Deschutes": { latitude: 43.8304, longitude: -121.7800, zoneId: "ORZ009" },
-		"Douglas": { latitude: 43.2166, longitude: -123.3640, zoneId: "ORZ010" },
-		"Gilliam": { latitude: 45.2060, longitude: -120.2240, zoneId: "ORZ011" },
-		"Grant": { latitude: 44.3000, longitude: -118.8000, zoneId: "ORZ012" },
-		"Harney": { latitude: 43.5900, longitude: -118.9620, zoneId: "ORZ013" },
-		"Hood River": { latitude: 45.5000, longitude: -121.5000, zoneId: "ORZ014" },
-		"Jackson": { latitude: 42.3000, longitude: -122.8000, zoneId: "ORZ015" },
-		"Jefferson": { latitude: 44.6000, longitude: -121.1000, zoneId: "ORZ016" },
-		"Josephine": { latitude: 42.4000, longitude: -123.3000, zoneId: "ORZ017" },
-		"Klamath": { latitude: 42.2000, longitude: -121.8000, zoneId: "ORZ018" },
-		"Lake": { latitude: 42.2000, longitude: -120.6000, zoneId: "ORZ019" },
-		"Lane": { latitude: 43.9700, longitude: -123.1000, zoneId: "ORZ020" },
-		"Lincoln": { latitude: 44.6000, longitude: -124.0000, zoneId: "ORZ021" },
-		"Linn": { latitude: 44.5000, longitude: -122.8000, zoneId: "ORZ022" },
-		"Malheur": { latitude: 43.6000, longitude: -117.2000, zoneId: "ORZ023" },
-		"Marion": { latitude: 44.9000, longitude: -123.0000, zoneId: "ORZ024" },
-		"Morrow": { latitude: 45.5000, longitude: -119.3000, zoneId: "ORZ025" },
-		"Multnomah": { latitude: 45.5155, longitude: -122.6750, zoneId: "ORZ026" },
-		"Polk": { latitude: 44.9000, longitude: -123.3000, zoneId: "ORZ027" },
-		"Sherman": { latitude: 45.5000, longitude: -120.5000, zoneId: "ORZ028" },
-		"Tillamook": { latitude: 45.4500, longitude: -123.8000, zoneId: "ORZ029" },
-		"Umatilla": { latitude: 45.5000, longitude: -118.8000, zoneId: "ORZ030" },
-		"Union": { latitude: 45.3000, longitude: -118.2000, zoneId: "ORZ031" },
-		"Wallowa": { latitude: 45.4000, longitude: -117.2000, zoneId: "ORZ032" },
-		"Wasco": { latitude: 45.5000, longitude: -121.2000, zoneId: "ORZ033" },
-		"Washington": { latitude: 45.5000, longitude: -123.1000, zoneId: "ORZ034" },
-		"Yamhill": { latitude: 45.2000, longitude: -123.2000, zoneId: "ORZ035" }
-	};
 
 	// process the data returned from the drought severity API to create a more usable structure for the charts.
 	// The API returns an array of objects, each containing a county name, a valid end date, and the percentage
@@ -2029,6 +2003,8 @@ const Drought = () => {
 		);
 	};
 
+	const isMobile = (typeof navigator !== 'undefined') && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 	return (
 		<>
 			<div style={{ margin: 0, padding: '1em' }}>
@@ -2099,40 +2075,54 @@ const Drought = () => {
 						<>
 							<Col xs={24} sm={5}>
 								<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
-									<Button
-										type="default"
-										icon={<DoubleLeftOutlined />}
-										onClick={() => setIsLeftPanelCollapsed(true)}
-										title="Collapse map and legends"
-									>
-										Hide Left Panel
-									</Button>
+									{!isMobile && (
+										<Button
+											type="default"
+											icon={<DoubleLeftOutlined />}
+											onClick={() => setIsLeftPanelCollapsed(true)}
+											title="Collapse map and legends"
+										>
+											Hide Left Panel
+										</Button>
+									)}
 								</div>
 								<Card title="U.S. Drought Monitor Legend" size="small" style={{ marginBottom: 0 }}>
-									{droughtCategories.map(category => (
-										<div key={category.level} style={{ marginBottom: '12px' }}>
-											<div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-												<div style={{
-													width: '30px',
-													height: '20px',
+									<div style={{ display: 'flex', gap: '4px', marginBottom: '6px' }}>
+										{droughtCategories.map(category => (
+											<div
+												key={category.level}
+												title={category.level}
+												style={{
+													flex: 1,
+													height: '28px',
 													backgroundColor: category.color,
-													border: '1px solid #ccc',
-													marginRight: '8px'
-												}} />
-												{/* <strong>{category.level} - {category.label}</strong> */}
-												<Title level={5}>
-													{category.level} - {category.label}
-												</Title>
+													border: selectedLegendCategory?.level === category.level ? '2px solid #fff' : '1px solid #888',
+													borderRadius: '3px',
+													cursor: 'pointer',
+													display: 'flex',
+													alignItems: 'center',
+													justifyContent: 'center',
+													fontSize: '10px',
+													fontWeight: 'bold',
+													color: '#333'
+												}}
+												onClick={() => setSelectedLegendCategory(
+													selectedLegendCategory?.level === category.level ? null : category
+												)}
+											>
+												{category.level}
 											</div>
-											{/* <div style={{ fontSize: '12px', color: '#eee', paddingLeft: '38px' }}>
-												{category.description}
-											</div> */}
-											<Text>
-												{category.description}
-											</Text>
+										))}
+									</div>
+									{selectedLegendCategory && (
+										<div style={{ padding: '8px', border: `1px solid ${selectedLegendCategory.color}`, borderRadius: '4px', marginBottom: '6px' }}>
+											<Title level={5} style={{ margin: '0 0 4px 0' }}>
+												{selectedLegendCategory.level} — {selectedLegendCategory.label}
+											</Title>
+											<Text>{selectedLegendCategory.description}</Text>
 										</div>
-									))}
-									<div style={{ marginTop: '16px', fontSize: '11px', color: '#888', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+									)}
+									<div style={{ fontSize: '11px', color: '#888', borderTop: '1px solid #eee', paddingTop: '8px' }}>
 										Data Source: <a href="https://droughtmonitor.unl.edu/" target="_blank" rel="noopener noreferrer">U.S. Drought Monitor</a>
 									</div>
 								</Card>

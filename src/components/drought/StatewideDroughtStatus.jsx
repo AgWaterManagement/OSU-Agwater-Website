@@ -6,9 +6,9 @@ const { Title, Text, Paragraph } = Typography;
 const ELEMENT_CODES = ['PREC', 'WTEQ', 'RESC'];
 
 const ELEMENT_LABELS = {
-    PREC: 'Precipitation Accumulation (PREC)',
-    WTEQ: 'Snow Water Equivalent (WTEQ)',
-    RESC: 'Reservoir Storage (RESC)'
+    PREC: 'Precipitation Accumulation',
+    WTEQ: 'Snow Water Equivalent',
+    RESC: 'Reservoir Storage'
 };
 
 // To allow for the calculation of statewide averages and data retrieval across the Pacific Northwest,
@@ -180,9 +180,9 @@ async function fetchSevenDayAverages() {
     return computeMultiDayAverages(data);
 }
 
-function formatAverage(value) {
+function formatAverage(value, maxFractionDigits = 2) {
     if (value === null || value === undefined) return 'N/A';
-    return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return value.toLocaleString(undefined, { maximumFractionDigits: maxFractionDigits });
 }
 
 export default function StatewideDroughtStatus() {
@@ -288,7 +288,21 @@ export default function StatewideDroughtStatus() {
                         const metric = averages?.[code] || { average: null, unit: null, stationCount: 0 };
                         const historical = twentyYearAverages?.[code];
                         const sevenDayAvg = sevenDayAverages?.[code];
-                        const pctChange =
+                        // const pctChange =
+                        //     !loadingHistory &&
+                        //     metric.average != null &&
+                        //     historical?.average != null &&
+                        //     historical.average !== 0
+                        //         ? ((metric.average - historical.average) / Math.abs(historical.average)) * 100
+                        //         : null;
+                        const sevenDayChange =
+                            !loadingSevenDay &&
+                            metric.average != null &&
+                            sevenDayAvg?.average != null &&
+                            sevenDayAvg.average !== 0
+                                ? ((metric.average - sevenDayAvg.average) / Math.abs(sevenDayAvg.average)) * 100
+                                : null;
+                        const twentyYearChange =
                             !loadingHistory &&
                             metric.average != null &&
                             historical?.average != null &&
@@ -305,42 +319,58 @@ export default function StatewideDroughtStatus() {
                                     padding: '10px 12px'
                                 }}
                             >
-                                <div style={{ color: '#AAAAAA', fontSize: '0.82rem' }}>{ELEMENT_LABELS[code]}</div>
+                                {/* <div style={{ color: '#AAAAAA', fontSize: '0.82rem' }}>{ELEMENT_LABELS[code]}</div> */}
+                                {/* <Title level={4} style={{margin: '0 0 6px 0' }}>{ELEMENT_LABELS[code]}</Title> */}
+                                <Text style={{ fontSize: '1.2rem' }}>{ELEMENT_LABELS[code]}</Text>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '3px' }}>
-                                    <div style={{ color: '#FFF', fontSize: '1.15rem', fontWeight: 'bold' }}>
+                                    {/* <div style={{fontSize: '1.15rem', fontWeight: 'bold' }}>
                                         {formatAverage(metric.average)}
                                         {metric.unit ? ` ${metric.unit}` : ''}
-                                    </div>
-                                    {pctChange !== null && (
+                                    </div> */}
+                                    <Text style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                                        {formatAverage(metric.average, 0)}
+                                        {metric.unit ? ` ${metric.unit}` : ''}
+                                    </Text>
+                                    {/* {pctChange !== null && (
                                         <Text style={{ color: pctChange >= 0 ? '#48BB78' : '#FC8181', fontSize: '0.85rem', fontWeight: 'bold' }}>
                                             {pctChange >= 0 ? '+' : ''}{pctChange.toFixed(1)}%
                                         </Text>
-                                    )}
+                                    )} */}
                                 </div>
-                                <div style={{ fontSize: '0.78rem', marginTop: '4px' }}>
-                                    <Text style={{ color: '#718096' }}>7-day avg: </Text>
+                                <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
+                                    <Text>7-day avg: </Text>
                                     {loadingSevenDay ? (
-                                        <Text style={{ color: '#718096' }}>Loading...</Text>
+                                        <Text>Loading...</Text>
                                     ) : (
-                                        <Text style={{ color: '#90CAF9', fontWeight: 'bold' }}>
-                                            {formatAverage(sevenDayAvg?.average)}
+                                        <Text style={{ fontWeight: 'bold' }}>
+                                            {formatAverage(sevenDayAvg?.average, 0)}
                                             {metric.unit ? ` ${metric.unit}` : ''}
                                         </Text>
                                     )}
+                                    {sevenDayChange !== null && (
+                                        <Text style={{ color: sevenDayChange >= 0 ? '#48BB78' : '#FC8181', fontSize: '0.75rem', fontWeight: 'bold', marginLeft: '6px' }}>
+                                            {sevenDayChange >= 0 ? '+' : ''}{sevenDayChange.toFixed(1)}% Change from 7-day avg
+                                        </Text>
+                                    )}
                                 </div>
-                                <div style={{ color: '#718096', fontSize: '0.75rem', marginTop: '3px' }}>
-                                    {metric.stationCount} station{metric.stationCount === 1 ? '' : 's'}
-                                </div>
-                                <div style={{ fontSize: '0.78rem', marginTop: '6px', borderTop: '1px solid #2D3748', paddingTop: '6px' }}>
-                                    <Text style={{ color: '#718096' }}>20-yr avg: </Text>
+                                <div style={{ fontSize: '0.9rem', marginTop: '6px', borderTop: '1px solid #2D3748', paddingTop: '6px' }}>
+                                    <Text>20-yr avg: </Text>
                                     {loadingHistory ? (
-                                        <Text style={{ color: '#718096' }}>Loading...</Text>
+                                        <Text>Loading...</Text>
                                     ) : (
-                                        <Text style={{ color: '#B0BEC5', fontWeight: 'bold' }}>
-                                            {formatAverage(historical?.average)}
+                                        <Text style={{ fontWeight: 'bold' }}>
+                                            {formatAverage(historical?.average, 0)}
                                             {metric.unit ? ` ${metric.unit}` : ''}
                                         </Text>
                                     )}
+                                    {twentyYearChange !== null && (
+                                        <Text style={{ color: twentyYearChange >= 0 ? '#48BB78' : '#FC8181', fontSize: '0.75rem', fontWeight: 'bold', marginLeft: '6px' }}>
+                                            {twentyYearChange >= 0 ? '+' : ''}{twentyYearChange.toFixed(1)}% Change from 20-yr avg
+                                        </Text>
+                                    )}
+                                </div>
+                                <div style={{ fontSize: '0.9rem', marginTop: '3px' }}>
+                                    {metric.stationCount} station{metric.stationCount === 1 ? '' : 's'}
                                 </div>
                             </div>
                         );
