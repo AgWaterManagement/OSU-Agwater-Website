@@ -49,7 +49,8 @@ import AgWqPlanAdminPanel from '../../apps/ag_wq_plan/AgWqPlanAdminPanel';
 import NewExperiment from '../../pages/new_experiment/NewExperiment';
 import NeedsAssessment from '../../components/needs_assessment/NeedsAssessment';
 import UploadObservations from '../../pages/upload_observations/UploadObservations';
-import SmartTAPPilot1 from '../../pages/Smart_TAP_Pilot_1/SmartTAPPilot1';
+// import SmartTAPPilot1 from '../../pages/Smart_TAP_Pilot_1/SmartTAPPilot1';
+import SmartTAPPilot1 from '../../apps/smarttap/pilot1/SmartTapWorkspace';
 
 import DroughtSurvey from '../../pages/survey/DroughtSurvey';
 import DroughtSurvey1 from '../../pages/survey/DroughtSurvey1';
@@ -115,7 +116,7 @@ const AppRoutes = () => (
 
         <Route path="/uploadObservations" element={<UploadObservations />} />
 
-        <Route path="/apps/smartTap" element={<SmartTAPPilot1 />} />
+        <Route path="/apps/smartTap/pilot1" element={<SmartTAPPilot1 />} />
 
 
         {/* Catch-all route for 404 Not Found */}

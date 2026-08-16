@@ -1,10 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-import { Button } from "../../../components/smarttap/pilot_1/shared/ui/Button";
-import { Panel } from "../../../components/smarttap/pilot_1/shared/ui/Panel";
+import { Button, Card, Input } from "antd";
 import { smartTapApi } from "./api.ts";
-import { ChartRenderer } from "./ChartRenderer";
-import type { ChatMessage, HealthResponse, JsonRecord, UiStatus, VisualizationResponse } from "./types";
+import { ChartRenderer } from "./ChartRenderer.tsx";
+import type { ChatMessage, HealthResponse, JsonRecord, UiStatus, VisualizationResponse } from "./types.ts";
 import {
   assistantMessageForResult,
   dataframeToCsv,
@@ -15,7 +14,7 @@ import {
   nextStatus,
   resolvedRequestItems,
   resultSnapshot,
-} from "./utils";
+} from "./utils.ts";
 
 type EditField = "crop" | "location" | "time_range" | "metric";
 
@@ -334,7 +333,7 @@ export function SmartTapWorkspace() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(320px,0.95fr)_minmax(360px,1.1fr)]">
         <div className="space-y-6">
-          <Panel>
+          <Card>
             <div className="space-y-6">
               <div>
                 <h2 className="font-display text-xl text-ink">What SmartTap Does</h2>
@@ -356,7 +355,7 @@ export function SmartTapWorkspace() {
 
               <div className="flex items-center justify-between gap-3">
                 <StatusChip status={status} />
-                <Button type="button" variant="secondary" onClick={clearResults}>
+                <Button onClick={clearResults}>
                   Clear Results
                 </Button>
               </div>
@@ -367,9 +366,9 @@ export function SmartTapWorkspace() {
                 </p>
               ) : null}
             </div>
-          </Panel>
+          </Card>
 
-          <Panel title="Chat">
+          <Card title="Chat">
             <div className="max-h-[26rem] space-y-3 overflow-auto pr-1">
               {messages.length === 0 ? (
                 <div className="rounded-md border border-dashed border-border bg-white/50 p-5 text-sm text-ink/65">
@@ -392,23 +391,23 @@ export function SmartTapWorkspace() {
             </div>
 
             <form className="mt-4 space-y-3" onSubmit={handleQuerySubmit}>
-              <textarea
-                className="min-h-28 w-full rounded-md border border-border bg-white/75 px-4 py-3 text-sm text-ink shadow-inner outline-none transition focus:border-forest/40 focus:ring-2 focus:ring-forest/20"
+              <Input.TextArea
                 placeholder="Ask about Oregon weather, water, or crop patterns..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
+                autoSize={{ minRows: 4 }}
               />
               <div className="flex flex-wrap gap-3">
-                <Button type="submit" disabled={status === "loading"}>
+                <Button type="primary" htmlType="submit" disabled={status === "loading"}>
                   {status === "loading" ? "Running SmartTap..." : "Run Query"}
                 </Button>
               </div>
             </form>
-          </Panel>
+          </Card>
         </div>
 
         <div className="space-y-6">
-          <Panel title="Results">
+          <Card title="Results">
             {confirmationSpec ? (
               <div className="space-y-4">
                 <div className="rounded-md border border-[#edcf8d] bg-[#fff6dd] p-4 text-sm text-[#6f561d]">
@@ -417,12 +416,11 @@ export function SmartTapWorkspace() {
                 </div>
                 <DefinitionGrid items={confirmationRequest} />
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Button fullWidth onClick={handleConfirm}>
+                  <Button type="primary" block onClick={handleConfirm}>
                     Confirm And Run
                   </Button>
                   <Button
-                    fullWidth
-                    variant="secondary"
+                    block
                     onClick={() => {
                       openEditor();
                     }}
@@ -511,10 +509,10 @@ export function SmartTapWorkspace() {
                     </div>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <Button fullWidth onClick={handleApplyEdit}>
+                      <Button type="primary" block onClick={handleApplyEdit}>
                         Apply Change
                       </Button>
-                      <Button fullWidth variant="secondary" onClick={closeEditor}>
+                      <Button block onClick={closeEditor}>
                         Cancel Edit
                       </Button>
                     </div>
@@ -556,13 +554,11 @@ export function SmartTapWorkspace() {
                         "text/csv",
                       )
                     }
-                    variant="secondary"
                   >
                     Download Data (CSV)
                   </Button>
                   {currentResult.vega_spec ? (
                     <Button
-                      variant="secondary"
                       onClick={() =>
                         downloadTextFile(
                           `smarttap_spec_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`,
@@ -583,10 +579,10 @@ export function SmartTapWorkspace() {
                 Run a query to see a visualization.
               </div>
             ) : null}
-          </Panel>
+          </Card>
 
           {currentResult?.secondary_views?.length ? (
-            <Panel title="Companion Views">
+            <Card title="Companion Views">
               <div className="space-y-5">
                 {currentResult.secondary_views.map((view, index) => (
                   <div key={`${view.caption}-${index}`} className="rounded-md bg-white/60 p-4">
@@ -613,11 +609,11 @@ export function SmartTapWorkspace() {
                   </div>
                 ))}
               </div>
-            </Panel>
+            </Card>
           ) : null}
 
           {(currentSnapshot.length || currentResolvedRequest.length) ? (
-            <Panel title="Result Details">
+            <Card title="Result Details">
               <div className="space-y-4">
                 {currentSnapshot.length ? (
                   <div>
@@ -636,17 +632,17 @@ export function SmartTapWorkspace() {
                   </div>
                 ) : null}
               </div>
-            </Panel>
+            </Card>
           ) : null}
 
           {currentResult?.data_preview ? (
-            <Panel title="Data Preview">
+            <Card title="Data Preview">
               <DataTable frame={currentResult.data_preview} title="Data Preview" />
-            </Panel>
+            </Card>
           ) : null}
 
           {advancedVisible ? (
-            <Panel title="Advanced">
+            <Card title="Advanced">
               <div className="space-y-4">
                 {currentResult?.vega_spec ? (
                   <div>
@@ -681,10 +677,12 @@ export function SmartTapWorkspace() {
                   </div>
                 ) : null}
               </div>
-            </Panel>
+            </Card>
           ) : null}
         </div>
       </div>
     </div>
   );
 }
+
+export default SmartTapWorkspace;

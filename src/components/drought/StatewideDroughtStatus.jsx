@@ -3,6 +3,8 @@ import { Typography } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
 
+const isMobile = (typeof navigator !== 'undefined') && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 const ELEMENT_CODES = ['PREC', 'WTEQ', 'RESC'];
 
 const ELEMENT_LABELS = {
@@ -193,6 +195,7 @@ export default function StatewideDroughtStatus() {
     const [loadingHistory, setLoadingHistory] = useState(true);
     const [sevenDayAverages, setSevenDayAverages] = useState(null);
     const [loadingSevenDay, setLoadingSevenDay] = useState(true);
+    const [collapsed, setCollapsed] = useState(isMobile);
 
     const startDate = useMemo(() => formatStartOfToday(), []);
 
@@ -267,9 +270,30 @@ export default function StatewideDroughtStatus() {
 
     return (
         <div className="card fill-height" style={{ padding: '12px' }}>
-            <div style={{ borderBottom: '1px solid #333', paddingBottom: '8px', marginBottom: '12px' }}>
-                <Title style={{ color: '#FFFF00', margin: 0 }}>Statewide Drought Index Averages (Oregon)</Title>
-                <Paragraph style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)</Paragraph>
+            <div style={{ borderBottom: '1px solid #333', paddingBottom: '8px', marginBottom: '12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div>
+                    <Title style={{ color: '#FFFF00', margin: 0 }}>Statewide Drought Index Averages (Oregon)</Title>
+                    <Paragraph style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)</Paragraph>
+                </div>
+                {isMobile && (
+                    <button
+                        onClick={() => setCollapsed(prev => !prev)}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid #555',
+                            borderRadius: '4px',
+                            color: '#AAAAAA',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            padding: '4px 8px',
+                            whiteSpace: 'nowrap',
+                            marginLeft: '8px',
+                            flexShrink: 0
+                        }}
+                    >
+                        {collapsed ? 'Show Details' : 'Hide Details'}
+                    </button>
+                )}
             </div>
 
             {loading && <Paragraph style={{ color: '#AAAAAA', margin: 0 }}>Loading statewide drought index values...</Paragraph>}
@@ -337,41 +361,45 @@ export default function StatewideDroughtStatus() {
                                         </Text>
                                     )} */}
                                 </div>
-                                <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-                                    <Text>7-day avg: </Text>
-                                    {loadingSevenDay ? (
-                                        <Text>Loading...</Text>
-                                    ) : (
-                                        <Text style={{ fontWeight: 'bold' }}>
-                                            {formatAverage(sevenDayAvg?.average, 0)}
-                                            {metric.unit ? ` ${metric.unit}` : ''}
-                                        </Text>
-                                    )}
-                                    {sevenDayChange !== null && (
-                                        <Text style={{ color: sevenDayChange >= 0 ? '#48BB78' : '#FC8181', fontSize: '0.75rem', fontWeight: 'bold', marginLeft: '6px' }}>
-                                            {sevenDayChange >= 0 ? '+' : ''}{sevenDayChange.toFixed(1)}% Change from 7-day avg
-                                        </Text>
-                                    )}
-                                </div>
-                                <div style={{ fontSize: '0.9rem', marginTop: '6px', borderTop: '1px solid #2D3748', paddingTop: '6px' }}>
-                                    <Text>20-yr avg: </Text>
-                                    {loadingHistory ? (
-                                        <Text>Loading...</Text>
-                                    ) : (
-                                        <Text style={{ fontWeight: 'bold' }}>
-                                            {formatAverage(historical?.average, 0)}
-                                            {metric.unit ? ` ${metric.unit}` : ''}
-                                        </Text>
-                                    )}
-                                    {twentyYearChange !== null && (
-                                        <Text style={{ color: twentyYearChange >= 0 ? '#48BB78' : '#FC8181', fontSize: '0.75rem', fontWeight: 'bold', marginLeft: '6px' }}>
-                                            {twentyYearChange >= 0 ? '+' : ''}{twentyYearChange.toFixed(1)}% Change from 20-yr avg
-                                        </Text>
-                                    )}
-                                </div>
-                                <div style={{ fontSize: '0.9rem', marginTop: '3px' }}>
-                                    {metric.stationCount} station{metric.stationCount === 1 ? '' : 's'}
-                                </div>
+                                {!collapsed && (
+                                    <>
+                                        <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
+                                            <Text>7-day avg: </Text>
+                                            {loadingSevenDay ? (
+                                                <Text>Loading...</Text>
+                                            ) : (
+                                                <Text style={{ fontWeight: 'bold' }}>
+                                                    {formatAverage(sevenDayAvg?.average, 0)}
+                                                    {metric.unit ? ` ${metric.unit}` : ''}
+                                                </Text>
+                                            )}
+                                            {sevenDayChange !== null && (
+                                                <Text style={{ color: sevenDayChange >= 0 ? '#48BB78' : '#FC8181', fontSize: '0.75rem', fontWeight: 'bold', marginLeft: '6px' }}>
+                                                    {sevenDayChange >= 0 ? '+' : ''}{sevenDayChange.toFixed(1)}% Change from 7-day avg
+                                                </Text>
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: '0.9rem', marginTop: '6px', borderTop: '1px solid #2D3748', paddingTop: '6px' }}>
+                                            <Text>20-yr avg: </Text>
+                                            {loadingHistory ? (
+                                                <Text>Loading...</Text>
+                                            ) : (
+                                                <Text style={{ fontWeight: 'bold' }}>
+                                                    {formatAverage(historical?.average, 0)}
+                                                    {metric.unit ? ` ${metric.unit}` : ''}
+                                                </Text>
+                                            )}
+                                            {twentyYearChange !== null && (
+                                                <Text style={{ color: twentyYearChange >= 0 ? '#48BB78' : '#FC8181', fontSize: '0.75rem', fontWeight: 'bold', marginLeft: '6px' }}>
+                                                    {twentyYearChange >= 0 ? '+' : ''}{twentyYearChange.toFixed(1)}% Change from 20-yr avg
+                                                </Text>
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: '0.9rem', marginTop: '3px' }}>
+                                            {metric.stationCount} station{metric.stationCount === 1 ? '' : 's'}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         );
                     })}

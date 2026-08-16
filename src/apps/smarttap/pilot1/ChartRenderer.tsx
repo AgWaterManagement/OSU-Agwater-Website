@@ -14,7 +14,10 @@ import {
   YAxis,
 } from "recharts";
 
+import { Typography } from "antd";
 import type { ChartModel, JsonRecord } from "./types";
+
+const { Text, Title, Paragraph } = Typography;
 
 const fallbackPalette = [
   "#4c78a8",
@@ -79,7 +82,7 @@ export function ChartRenderer({
     }
     return (
       <div className="w-full rounded-md border border-border bg-white p-4" data-testid={testId}>
-        <p className="mb-3 text-center text-sm font-semibold text-ink">{resolvedTitle}</p>
+        <Title level={5} style={{ textAlign: "center", marginBottom: 12 }}>{resolvedTitle}</Title>
         <div className="h-[340px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -114,7 +117,7 @@ export function ChartRenderer({
   if (chartModel.kind === "line") {
     return (
       <div className="w-full rounded-md border border-border bg-white p-4" data-testid={testId}>
-        <p className="mb-3 text-center text-sm font-semibold text-ink">{resolvedTitle}</p>
+        <Title level={5} style={{ textAlign: "center", marginBottom: 12 }}>{resolvedTitle}</Title>
         <div className="h-[360px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart {...commonProps}>
@@ -155,7 +158,7 @@ export function ChartRenderer({
 
   return (
     <div className="w-full rounded-md border border-border bg-white p-4" data-testid={testId}>
-      <p className="mb-3 text-center text-sm font-semibold text-ink">{resolvedTitle}</p>
+        <Title level={5} style={{ textAlign: "center", marginBottom: 12 }}>{resolvedTitle}</Title>
       <div className="h-[360px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart {...commonProps} layout={chartModel.horizontal ? "vertical" : "horizontal"}>

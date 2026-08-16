@@ -17,6 +17,9 @@ import "@arcgis/map-components/components/arcgis-search"; // Import ArcGIS Searc
 
 const { Title, Text, Paragraph, Link} = Typography;	// Text replaces <span>, Paragraph replaces <p>, and Title replaces <h>, Link replaces <a> for better typography and styling.
 
+const isMobile = (typeof navigator !== 'undefined') && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+
 //import './IrrigWaterUse.css';
 
 const droughtCategories = [
@@ -64,7 +67,8 @@ const SnotelMapLegend = () => {
 							</div>
 						))}
 						<div style={{ marginTop: '8px', borderTop: '1px solid #444', paddingTop: '6px' }}>
-							<div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>Marker size = avg annual SWE</div>
+							{/* <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>Marker size = avg annual SWE</div> */}
+							<Text style={{ fontSize: '11px', marginBottom: '4px' }}>Marker size = avg annual SWE</Text>
 							{sizeExamples.map(({ label, r }) => (
 								<div key={label} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
 									<svg width="28" height="28" style={{ marginRight: '8px', flexShrink: 0 }}>
@@ -131,12 +135,14 @@ const DroughtSummary = ({ countyDroughtData, countyName }) => {
 
     if (!countyDroughtData) {
         console.log('County drought data is not available');
-        return <div style={{ textAlign: 'center', padding: '20px' }}>Drought severity data has not been loaded.</div>;
+        // return <div style={{ textAlign: 'center', padding: '20px' }}>Drought severity data has not been loaded.</div>;
+		return <Text style={{ textAlign: 'center', padding: '20px', display: 'block' }}>Drought severity data has not been loaded.</Text>;
     }
 
     if (countyName == null) {
         console.log('County name is null');
-        return <div style={{ textAlign: 'center', padding: '20px' }}>Drought severity data not available for this county.</div>;
+        // return <div style={{ textAlign: 'center', padding: '20px' }}>Drought severity data not available for this county.</div>;
+		return <Text style={{ textAlign: 'center', padding: '20px', display: 'block' }}>Drought severity data not available for this county.</Text>;
     }
 
     countyName = countyName.replace(/ County$/, '').trim(); // Remove "County" from the name if it exists
@@ -2003,8 +2009,6 @@ const Drought = () => {
 		);
 	};
 
-	const isMobile = (typeof navigator !== 'undefined') && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
 	return (
 		<>
 			<div style={{ margin: 0, padding: '1em' }}>
@@ -2189,6 +2193,7 @@ const Drought = () => {
 															Distance from click: {station.distanceKm ?? 'N/A'} km
 															<div style={{ marginTop: '6px' }}>
 																<strong>Latest values</strong>
+																{/* <Text style={{ fontWeight: 'bold' }}>Latest values</Text> */}
 																{measurementCodes.map((code) => {
 																	const m = dataEntry?.latestMeasurements?.[code];
 																	const unitCode = m?.storedUnitCode || m?.unit || null;
@@ -2197,10 +2202,15 @@ const Drought = () => {
 																		<div key={`${station.stationId}-${code}`}>
 																			{code}{unitCode ? ` [${unitCode}]` : ''}: {valueText}{m?.date ? ` (${m.date})` : ''}
 																		</div>
+																		// Using the Text component is doable, but it currently displays white text on a white background.
+																		// <Text key={`${station.stationId}-${code}`} style={{ display: 'block', marginBottom: '2px' }}>
+																		// 	{code}{unitCode ? ` [${unitCode}]` : ''}: {valueText}{m?.date ? ` (${m.date})` : ''}
+																		// </Text>
 																	);
 																})}
 																{measurementCodes.length === 0 && (
-																	<div style={{ color: '#888' }}>No measurement metadata available.</div>
+																	// <div style={{ color: '#888' }}>No measurement metadata available.</div>
+																	<Text>No measurement metadata available.</Text>
 																)}
 															</div>
 														</div>

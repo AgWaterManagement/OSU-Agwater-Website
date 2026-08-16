@@ -1,5 +1,7 @@
-const configuredApiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim().replace(/\/+$/, "");
-const deployedBaseUrl = import.meta.env.BASE_URL.replace(/\/+$/, "");
+//const configuredApiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim().replace(/\/+$/, "");
+const configuredApiBaseUrl = "http://localhost:8000".trim().replace(/\/+$/, "");
+//const deployedBaseUrl = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const deployedBaseUrl = "http://localhost:8000".replace(/\/+$/, "");
 const apiBaseUrl = configuredApiBaseUrl || deployedBaseUrl;
 
 function resolveRequestPath(path: string): string {
