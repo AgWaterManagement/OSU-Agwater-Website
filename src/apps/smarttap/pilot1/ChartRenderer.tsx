@@ -83,7 +83,7 @@ export function ChartRenderer({
     return (
       <div className="w-full rounded-md border border-border bg-white p-4" data-testid={testId}>
         <Title level={5} style={{ textAlign: "center", marginBottom: 12 }}>{resolvedTitle}</Title>
-        <div className="h-[340px] w-full">
+        <div className="h-[340px] w-full" style={{ height: 340, width: "100%" }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Tooltip formatter={tooltipFormatter(chartModel.value_format)} />
@@ -118,7 +118,7 @@ export function ChartRenderer({
     return (
       <div className="w-full rounded-md border border-border bg-white p-4" data-testid={testId}>
         <Title level={5} style={{ textAlign: "center", marginBottom: 12 }}>{resolvedTitle}</Title>
-        <div className="h-[360px] w-full">
+        <div className="h-[360px] w-full" style={{ height: 360, width: "100%" }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart {...commonProps}>
               <CartesianGrid stroke="#d6ddd8" strokeDasharray="3 3" />
@@ -159,7 +159,7 @@ export function ChartRenderer({
   return (
     <div className="w-full rounded-md border border-border bg-white p-4" data-testid={testId}>
         <Title level={5} style={{ textAlign: "center", marginBottom: 12 }}>{resolvedTitle}</Title>
-      <div className="h-[360px] w-full">
+      <div className="h-[360px] w-full" style={{ height: 360, width: "100%" }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart {...commonProps} layout={chartModel.horizontal ? "vertical" : "horizontal"}>
             <CartesianGrid stroke="#d6ddd8" strokeDasharray="3 3" />

@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-import { Button, Card, Input } from "antd";
+import { Row, Col, Button, Card, Collapse, Input, Typography, Table } from "antd";
+
 import { smartTapApi } from "./api.ts";
 import { ChartRenderer } from "./ChartRenderer.tsx";
 import type { ChatMessage, HealthResponse, JsonRecord, UiStatus, VisualizationResponse } from "./types.ts";
@@ -16,6 +17,8 @@ import {
   resultSnapshot,
 } from "./utils.ts";
 
+const {Text, Title, Paragraph} = Typography;
+
 type EditField = "crop" | "location" | "time_range" | "metric";
 
 function DefinitionGrid({ items }: { items: [string, unknown][] }) {
@@ -23,15 +26,33 @@ function DefinitionGrid({ items }: { items: [string, unknown][] }) {
     return null;
   }
 
+  const dataSource = items.map(([label, value]) => ({
+    key: label,
+    label: formatLabel(label),
+    value: formatValue(value),
+  }));
+
+  const columns = [
+    {
+      title: "Field",
+      dataIndex: "label",
+      key: "label",
+      className: "font-semibold text-ink",
+    },
+    {
+      title: "Value",
+      dataIndex: "value",
+      key: "value",
+    },
+  ];
+
   return (
-    <dl className="grid gap-4 sm:grid-cols-2">
-      {items.map(([label, value]) => (
-        <div key={label} className="rounded-md bg-white/60 p-3">
-          <dt className="text-sm font-semibold text-ink">{formatLabel(label)}</dt>
-          <dd className="mt-1 text-xs text-ink/70">{formatValue(value)}</dd>
-        </div>
-      ))}
-    </dl>
+    <Table
+      dataSource={dataSource}
+      columns={columns}
+      pagination={false}
+      size="small"
+    />
   );
 }
 
@@ -40,34 +61,27 @@ function DataTable({ frame, title }: { frame: { columns: string[]; records: Json
     return null;
   }
 
+  const columns = frame.columns.map((column) => ({
+    title: column,
+    dataIndex: column,
+    key: column,
+    render: (value: unknown) => (value == null ? "—" : String(value)),
+  }));
+
+  const dataSource = frame.records.map((record, index) => ({
+    key: `${title}-${index}`,
+    ...record,
+  }));
+
   return (
-    <div className="overflow-hidden rounded-3xl border border-border bg-white/70">
-      <div className="border-b border-border px-4 py-3 text-sm font-semibold text-ink">{title}</div>
-      <div className="max-h-80 overflow-auto">
-        <table className="min-w-full border-collapse text-left text-sm">
-          <thead className="sticky top-0 bg-sand/95 text-ink">
-            <tr>
-              {frame.columns.map((column) => (
-                <th key={column} className="px-4 py-3 font-semibold">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {frame.records.map((record, index) => (
-              <tr key={`${title}-${index}`} className="border-t border-border/80">
-                {frame.columns.map((column) => (
-                  <td key={column} className="px-4 py-3 align-top text-ink/85">
-                    {record[column] == null ? "—" : String(record[column])}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Table
+      title={() => title}
+      dataSource={dataSource}
+      columns={columns}
+      pagination={false}
+      size="small"
+      scroll={{ y: 320 }}
+    />
   );
 }
 
@@ -82,9 +96,9 @@ function StatusChip({ status }: { status: UiStatus }) {
   };
 
   return (
-    <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink/65">
+    <Text className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink/65">
       {labelMap[status]}
-    </span>
+    </Text>
   );
 }
 
@@ -324,69 +338,108 @@ export function SmartTapWorkspace() {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl bg-[linear-gradient(135deg,#101418_0%,#24333d_100%)] px-6 py-5 text-sand shadow-soft">
-        <h1 className="font-display text-4xl">SmartTap</h1>
-        <p className="mt-2 text-sm text-[#d8d0c3]">
+        <Title level={1} className="font-display text-4xl">SmartTap</Title>
+        <Paragraph className="mt-2 text-sm text-[#d8d0c3]">
           Ask about Oregon agricultural and weather data. SmartTap will parse, fetch, validate, and visualize the
           result.
-        </p>
+        </Paragraph>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(320px,0.95fr)_minmax(360px,1.1fr)]">
         <div className="space-y-6">
           <Card>
             <div className="space-y-6">
-              <div>
-                <h2 className="font-display text-xl text-ink">What SmartTap Does</h2>
-                <ul className="mt-3 space-y-2 text-sm text-ink/80">
-                  <li>Builds charts from plain-English ag and weather questions</li>
-                  <li>Shows a short explanation plus inspectable source rows</li>
-                  <li>Supports crop summaries, trends, and comparisons</li>
-                </ul>
-              </div>
 
-              <div>
-                <h2 className="font-display text-xl text-ink">Example Queries</h2>
-                <ul className="mt-3 space-y-2 text-sm text-ink/80">
-                  <li>`Show temperature in Corvallis for July 2024`</li>
-                  <li>`What is the average ETa in Hood River in 2024?`</li>
-                  <li>`What crops are grown in Benton County?`</li>
-                </ul>
-              </div>
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Title level={2} className="font-display text-xl text-ink">What SmartTap Does</Title>
+                  <ul className="mt-3 space-y-2 text-sm text-ink/80">
+                    <li>Builds charts from plain-English ag and weather questions</li>
+                    <li>Shows a short explanation plus inspectable source rows</li>
+                    <li>Supports crop summaries, trends, and comparisons</li>
+                  </ul>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <Title level={2} className="font-display text-xl text-ink">Example Queries</Title>
+                  <ul className="mt-3 space-y-2 text-sm text-ink/80">
+                    <li>`Show temperature in Corvallis for July 2024`</li>
+                    <li>`What are the monthly ETa values in Hood River for the year 2022?`</li>
+                    <li>`What crops are grown in Benton County?`</li>
+                  </ul>
+                </Col>
+              </Row>
+
+
+              <Title level={4} className="font-display text-lg text-ink">Disclaimer</Title>
+              <Paragraph className="text-sm text-ink/80">
+                Due to limited data coverage,
+                the available OpenET data only covers up to October 1st, 2022.
+                Queries made to the OpenET dataset after this date may not return accurate results.
+              </Paragraph>
+              <Paragraph className="text-sm text-ink/80">
+                It should also be noted that, in general, queries to the OpenET dataset are very sensitive to the exact phrasing of the query.
+                For instance, the query "What are the monthly ETa values for Hood River in 2020?" will operate under the assumption that the user
+                wants to gather the monthly ETa values for a reference crop called Hood River. Instead, such a query should specify that these
+                OpenET measurements are coming from in the specified city or county. For example, a better phrasing of the query would be
+                "What are the monthly ETa values in Hood River in 2020?".
+              </Paragraph>
+              <Paragraph className="text-sm text-ink/80">
+                Please use the tool with caution and verify the data before making any decisions based on it.
+              </Paragraph>
 
               <div className="flex items-center justify-between gap-3">
-                <StatusChip status={status} />
+                <Paragraph>SmartTAP API Status: <StatusChip status={status} /></Paragraph>
                 <Button onClick={clearResults}>
                   Clear Results
                 </Button>
               </div>
 
               {healthError ? (
-                <p className="rounded-md bg-[#fbe8e3] px-4 py-3 text-sm text-[#7d3d29]">
+                <Paragraph className="rounded-md bg-[#fbe8e3] px-4 py-3 text-sm text-[#7d3d29]">
                   API metadata could not be loaded: {healthError}
-                </p>
+                </Paragraph>
               ) : null}
             </div>
           </Card>
 
           <Card title="Chat">
-            <div className="max-h-[26rem] space-y-3 overflow-auto pr-1">
+            {/* In the future, the chat history will likely be composed of ant-design/x Bubble elements.
+                Unfortunately however, there are npm dependency conflicts that are preventing this from being implemented.
+                For now, we are using a custom implementation for initial user testing. */}
+            <div className="max-h-[26rem] space-y-3 overflow-auto pr-1" style={{ maxHeight: "26rem", overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.75rem", paddingRight: "0.25rem" }}>
               {messages.length === 0 ? (
                 <div className="rounded-md border border-dashed border-border bg-white/50 p-5 text-sm text-ink/65">
                   Start with a question about Oregon weather, water, or crop patterns.
                 </div>
               ) : null}
               {messages.map((message, index) => (
-                <article
+                <div
                   key={`${message.role}-${index}`}
-                  className={[
-                    "max-w-[92%] rounded-xl px-4 py-3 text-sm leading-6",
-                    message.role === "user"
-                      ? "ml-auto bg-forest text-sand"
-                      : "bg-white/85 text-ink ring-1 ring-border",
-                  ].join(" ")}
+                  style={{
+                    display: "flex",
+                    justifyContent: message.role === "user" ? "flex-end" : "flex-start",
+                  }}
                 >
-                  {message.content}
-                </article>
+                  <article
+                    className={[
+                      "max-w-[92%] rounded-xl px-4 py-3 text-sm leading-6",
+                      message.role === "user"
+                        ? "bg-forest text-sand"
+                        : "bg-white/85 text-ink ring-1 ring-border",
+                    ].join(" ")}
+                    style={{
+                      maxWidth: "92%",
+                      backgroundColor: message.role === "user" ? "#2f5233" : "rgba(255,255,255,0.85)",
+                      color: message.role === "user" ? "#f5f0e6" : "#1f2a24",
+                      borderRadius: "1.25rem",
+                      padding: "0.875rem 1.25rem",
+                      boxShadow: message.role === "assistant" ? "0 0 0 1px rgba(0,0,0,0.1)" : "none",
+                    }}
+                  >
+                    {message.content}
+                  </article>
+                </div>
               ))}
             </div>
 
@@ -411,8 +464,8 @@ export function SmartTapWorkspace() {
             {confirmationSpec ? (
               <div className="space-y-4">
                 <div className="rounded-md border border-[#edcf8d] bg-[#fff6dd] p-4 text-sm text-[#6f561d]">
-                  <p className="font-semibold">Confirmation required before SmartTap runs this request.</p>
-                  <p className="mt-2">{messages[messages.length - 1]?.content}</p>
+                  <Paragraph className="font-semibold">Confirmation required before SmartTap runs this request.</Paragraph>
+                  <Paragraph className="mt-2">{messages[messages.length - 1]?.content}</Paragraph>
                 </div>
                 <DefinitionGrid items={confirmationRequest} />
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -431,10 +484,10 @@ export function SmartTapWorkspace() {
 
                 {editorOpen ? (
                   <div className="rounded-md bg-mist/85 p-4">
-                    <p className="text-sm font-semibold text-ink">Edit Request</p>
-                    <p className="mt-1 text-sm text-ink/70">
+                    <Paragraph className="text-sm font-semibold text-ink">Edit Request</Paragraph>
+                    <Paragraph className="mt-1 text-sm text-ink/70">
                       Apply one deterministic change at a time, then confirm the refreshed request.
-                    </p>
+                    </Paragraph>
 
                     <div className="mt-4 grid gap-4">
                       <label className="grid gap-2 text-sm font-medium text-ink">
@@ -524,8 +577,8 @@ export function SmartTapWorkspace() {
             {!confirmationSpec && status === "clarification" ? (
               <div className="space-y-4">
                 <div className="rounded-md border border-[#c9d8cc] bg-white/70 p-4 text-sm text-ink/80">
-                  <p className="font-semibold text-ink">Clarification needed</p>
-                  <p className="mt-2">{messages[messages.length - 1]?.content}</p>
+                  <Paragraph className="font-semibold text-ink">Clarification needed</Paragraph>
+                  <Paragraph className="mt-2">{messages[messages.length - 1]?.content}</Paragraph>
                 </div>
                 <DefinitionGrid items={clarificationSummary} />
               </div>
@@ -540,8 +593,8 @@ export function SmartTapWorkspace() {
 
                 {currentResult.explanation ? (
                   <div className="rounded-md border-l-4 border-forest bg-mist px-5 py-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-forest">What this means</p>
-                    <p className="mt-2 text-sm leading-7 text-ink">{currentResult.explanation}</p>
+                    <Paragraph className="text-xs font-semibold uppercase tracking-[0.16em] text-forest">What this means</Paragraph>
+                    <Paragraph className="mt-2 text-sm leading-7 text-ink">{currentResult.explanation}</Paragraph>
                   </div>
                 ) : null}
 
@@ -586,9 +639,9 @@ export function SmartTapWorkspace() {
               <div className="space-y-5">
                 {currentResult.secondary_views.map((view, index) => (
                   <div key={`${view.caption}-${index}`} className="rounded-md bg-white/60 p-4">
-                    <p className="text-sm font-semibold text-ink">
+                    <Title level={5} className="text-sm font-semibold text-ink">
                       View {index + 1}. {view.caption || "Companion chart"}
-                    </p>
+                    </Title>
                     <div className="mt-3">
                       <ChartRenderer
                         chartModel={view.chart_model}
@@ -612,72 +665,87 @@ export function SmartTapWorkspace() {
             </Card>
           ) : null}
 
-          {(currentSnapshot.length || currentResolvedRequest.length) ? (
-            <Card title="Result Details">
-              <div className="space-y-4">
-                {currentSnapshot.length ? (
-                  <div>
-                    <p className="text-sm font-semibold text-ink">Snapshot</p>
-                    <div className="mt-3">
-                      <DefinitionGrid items={currentSnapshot} />
-                    </div>
-                  </div>
-                ) : null}
-                {currentResolvedRequest.length ? (
-                  <div>
-                    <p className="text-sm font-semibold text-ink">Resolved Request</p>
-                    <div className="mt-3">
-                      <DefinitionGrid items={currentResolvedRequest} />
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </Card>
-          ) : null}
+          <Row gutter={[16, 16]}>
+            {(currentSnapshot.length || currentResolvedRequest.length) ? (
+              <Col xs={24} md={12}>
+                <Card title="Result Details">
+                  <Row gutter={[16, 16]}>
+                    {currentSnapshot.length ? (
+                      <Col xs={24} md={12}>
+                        <Title level={5} className="text-sm font-semibold text-ink">Snapshot</Title>
+                        <div className="mt-3">
+                          <DefinitionGrid items={currentSnapshot} />
+                        </div>
+                      </Col>
+                    ) : null}
+                    {currentResolvedRequest.length ? (
+                      <Col xs={24} md={12}>
+                        <Title level={5} className="text-sm font-semibold text-ink">Resolved Request</Title>
+                        <div className="mt-3">
+                          <DefinitionGrid items={currentResolvedRequest} />
+                        </div>
+                      </Col>
+                    ) : null}
+                  </Row>
+                </Card>
+              </Col>
+            ) : null}
 
-          {currentResult?.data_preview ? (
-            <Card title="Data Preview">
-              <DataTable frame={currentResult.data_preview} title="Data Preview" />
-            </Card>
-          ) : null}
+            {currentResult?.data_preview ? (
+              <Col xs={24} md={12}>
+                <Card title="Data Preview">
+                  <DataTable frame={currentResult.data_preview} title="Data Preview" />
+                </Card>
+              </Col>
+            ) : null}
+          </Row>
 
           {advancedVisible ? (
-            <Card title="Advanced">
-              <div className="space-y-4">
-                {currentResult?.vega_spec ? (
-                  <div>
-                    <p className="text-sm font-semibold text-ink">Primary Vega-Lite Spec</p>
-                    <pre className="mt-2 overflow-auto rounded-md bg-[#15221d] p-4 text-xs text-sand">
-                      {JSON.stringify(currentResult.vega_spec, null, 2)}
-                    </pre>
-                  </div>
-                ) : null}
+            <Collapse
+              defaultActiveKey={[]}
+              items={[
+                {
+                  key: "advanced",
+                  label: "Advanced",
+                  children: (
+                    <div className="space-y-4">
+                      {currentResult?.vega_spec ? (
+                        <div>
+                          <Title level={5} className="text-sm font-semibold text-ink">Primary Vega-Lite Spec</Title>
+                          <pre className="mt-2 overflow-auto rounded-md bg-[#15221d] p-4 text-xs text-sand">
+                            {JSON.stringify(currentResult.vega_spec, null, 2)}
+                          </pre>
+                        </div>
+                      ) : null}
 
-                {currentResult?.secondary_views.map((view, index) =>
-                  view.vega_spec ? (
-                    <div key={`secondary-spec-${index}`}>
-                      <p className="text-sm font-semibold text-ink">Companion Vega-Lite Spec {index + 1}</p>
-                      <pre className="mt-2 overflow-auto rounded-md bg-[#15221d] p-4 text-xs text-sand">
-                        {JSON.stringify(view.vega_spec, null, 2)}
-                      </pre>
-                    </div>
-                  ) : null,
-                )}
+                      {currentResult?.secondary_views.map((view, index) =>
+                        view.vega_spec ? (
+                          <div key={`secondary-spec-${index}`}>
+                            <Title level={5} className="text-sm font-semibold text-ink">Companion Vega-Lite Spec {index + 1}</Title>
+                            <pre className="mt-2 overflow-auto rounded-md bg-[#15221d] p-4 text-xs text-sand">
+                              {JSON.stringify(view.vega_spec, null, 2)}
+                            </pre>
+                          </div>
+                        ) : null,
+                      )}
 
-                {Object.keys(currentResult?.files ?? {}).length ? (
-                  <div className="rounded-md bg-white/65 p-4">
-                    <p className="text-sm font-semibold text-ink">Saved Files</p>
-                    <div className="mt-3 space-y-2 text-sm text-ink/80">
-                      {Object.entries(currentResult?.files ?? {}).map(([label, path]) => (
-                        <p key={label}>
-                          <span className="font-semibold">{formatLabel(label)}:</span> <code>{path}</code>
-                        </p>
-                      ))}
+                      {Object.keys(currentResult?.files ?? {}).length ? (
+                        <div className="rounded-md bg-white/65 p-4">
+                          <Title level={5} className="text-sm font-semibold text-ink">Saved Files</Title>
+                          <div className="mt-3 space-y-2 text-sm text-ink/80">
+                            {Object.entries(currentResult?.files ?? {}).map(([label, path]) => (
+                              <Paragraph key={label}>
+                                <span className="font-semibold">{formatLabel(label)}:</span> <code>{path}</code>
+                              </Paragraph>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
-                  </div>
-                ) : null}
-              </div>
-            </Card>
+                  ),
+                },
+              ]}
+            />
           ) : null}
         </div>
       </div>

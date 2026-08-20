@@ -1,17 +1,23 @@
-//const configuredApiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim().replace(/\/+$/, "");
-const configuredApiBaseUrl = "http://localhost:8000".trim().replace(/\/+$/, "");
-//const deployedBaseUrl = import.meta.env.BASE_URL.replace(/\/+$/, "");
-const deployedBaseUrl = "http://localhost:8000".replace(/\/+$/, "");
-const apiBaseUrl = configuredApiBaseUrl || deployedBaseUrl;
+const apiBaseUrl = (
+  import.meta.env.VITE_SMARTTAP_API_BASE ?? "/apps/smarttap/pilot1"
+)
+  .trim()
+  .replace(/\/+$/, "");
 
 function resolveRequestPath(path: string): string {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
   if (!apiBaseUrl) {
-    return path;
+    return normalizedPath;
   }
-  return `${apiBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+
+  return `${apiBaseUrl}${normalizedPath}`;
 }
 
-export async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+export async function requestJson<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
   const response = await fetch(resolveRequestPath(path), {
     ...init,
     headers: {
@@ -22,19 +28,27 @@ export async function requestJson<T>(path: string, init?: RequestInit): Promise<
 
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`;
-    try {
-      const payload = await response.json();
-      if (typeof payload?.detail === "string") {
-        message = payload.detail;
-      } else if (typeof payload?.error === "string") {
-        message = payload.error;
-      }
-    } catch {
-      const text = await response.text();
-      if (text) {
-        message = text;
+    const responseBody = await response.text();
+
+    if (responseBody) {
+      try {
+        const payload = JSON.parse(responseBody) as {
+          detail?: unknown;
+          error?: unknown;
+        };
+
+        if (typeof payload.detail === "string") {
+          message = payload.detail;
+        } else if (typeof payload.error === "string") {
+          message = payload.error;
+        } else {
+          message = responseBody;
+        }
+      } catch {
+        message = responseBody;
       }
     }
+
     throw new Error(message);
   }
 
