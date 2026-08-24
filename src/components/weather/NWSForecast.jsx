@@ -35,11 +35,6 @@ const HEAVY_RAIN = '/images/nws_forecast/icon_1_1.png';
 const THUNDERSTORMS = '/images/nws_forecast/icon_1_2.png';
 
 
-
-
-
-
-
 // NWSForecast component: displays weather forecast for a location using _nws_forecast array
 const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
     showTemperatureChart = true, showPrecipitationChart = true, showETChart = true,

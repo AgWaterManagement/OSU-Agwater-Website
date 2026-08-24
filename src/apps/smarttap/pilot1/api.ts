@@ -1,4 +1,4 @@
-import { requestJson } from "../../../components/smarttap/pilot_1/shared/api/http";
+import { requestJson } from "../../../components/smarttap/pilot_1/shared/api/http.ts";
 import type { HealthResponse, VisualizationResponse } from "./types";
 
 export const smartTapApi = {

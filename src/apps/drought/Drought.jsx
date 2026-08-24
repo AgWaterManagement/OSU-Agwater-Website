@@ -435,7 +435,8 @@ const Drought = () => {
 
 
 	const GetWeatherAlerts = async (zoneId) => {
-		const alertsUrl = `http://api.weather.gov/alerts/active/zone/ORZ001`  //${zoneId}`;
+		// IMPORTANT: The deployed front-end does not like making requests to an HTTP endpoint.
+		const alertsUrl = `https://api.weather.gov/alerts/active/zone/ORZ001`  //${zoneId}`;
 		const headers = {
 			"User-Agent": "(AgWaterAPI, contact@agwater.org)"  // NWS requires a User-Agent
 		};

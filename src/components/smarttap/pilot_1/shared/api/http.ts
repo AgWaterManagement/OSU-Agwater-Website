@@ -1,5 +1,13 @@
+// const apiBaseUrl = (
+//   import.meta.env.VITE_SMARTTAP_API_BASE ?? "/apps/smarttap/pilot1"
+// )
+//   .trim()
+//   .replace(/\/+$/, "");
+
+import { secrets } from "../../../../../secrets.js";
+
 const apiBaseUrl = (
-  import.meta.env.VITE_SMARTTAP_API_BASE ?? "/apps/smarttap/pilot1"
+  import.meta.env.VITE_SMARTTAP_API_BASE ?? "https://agwater.org:5556/smarttap"
 )
   .trim()
   .replace(/\/+$/, "");
@@ -22,6 +30,7 @@ export async function requestJson<T>(
     ...init,
     headers: {
       "Content-Type": "application/json",
+      "X-API-Key": secrets.agwater_api_key,
       ...(init?.headers ?? {}),
     },
   });
