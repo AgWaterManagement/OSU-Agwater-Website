@@ -19,6 +19,7 @@ import DroughtIndexViewer from '../../apps/drought/DroughtIndexViewer';
 import CropCoeffCalculator from '../../apps/crop_coeff_calculator/CropCoeffCalculator';
 import Agrivoltaics from '../../apps/agrivoltaics/agrivoltaics';
 import OregonAgrivoltaics from '../../apps/oregon_agrivoltaics/OregonAgrivoltaics';
+import IrrigationMeasurement from '../../apps/irrig_measurement/IrrigationMeasurement';
 
 
 //import UserRegistration from '../../apps/crop_management_system/UserRegistration';
@@ -74,6 +75,7 @@ const AppRoutes = () => (
         <Route path="/apps/irrigWaterUse" element={<IrrigWaterUse />} />
         <Route path="/apps/oregonCropWaterUse" element={<OregonCropWaterUse />} />
         <Route path="/apps/vegNutrientPlan" element={<VegNutrientPlan />} />
+        <Route path="/apps/irrigationMeasurement" element={<IrrigationMeasurement />} />
 
         <Route path="/apps/agWqPlan" element={<AgWqPlan />} />
         <Route path="/apps/agWqPlanEditor" element={<AgWqPlanEditor />} />

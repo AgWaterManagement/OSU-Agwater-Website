@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Typography } from 'antd';
+import { Typography, Button, Card } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -272,11 +272,11 @@ export default function StatewideDroughtStatus() {
         <div className="card fill-height" style={{ padding: '12px' }}>
             <div style={{ borderBottom: '1px solid #333', paddingBottom: '8px', marginBottom: '12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                    <Title style={{ color: '#FFFF00', margin: 0 }}>Statewide Drought Index Averages (Oregon)</Title>
-                    <Paragraph style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)</Paragraph>
+                    <Title style={{ margin: 0 }}>Statewide Drought Index Averages (Oregon)</Title>
+                    <Paragraph style={{ margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)</Paragraph>
                 </div>
                 {isMobile && (
-                    <button
+                    <Button
                         onClick={() => setCollapsed(prev => !prev)}
                         style={{
                             background: 'transparent',
@@ -292,13 +292,13 @@ export default function StatewideDroughtStatus() {
                         }}
                     >
                         {collapsed ? 'Show Details' : 'Hide Details'}
-                    </button>
+                    </Button>
                 )}
             </div>
 
-            {loading && <Paragraph style={{ color: '#AAAAAA', margin: 0 }}>Loading statewide drought index values...</Paragraph>}
+            {loading && <Paragraph style={{ margin: 0 }}>Loading statewide drought index values...</Paragraph>}
 
-            {!loading && error && <Paragraph style={{ color: '#FF8A80', margin: 0 }}>{error}</Paragraph>}
+            {!loading && error && <Paragraph style={{ margin: 0 }}>{error}</Paragraph>}
 
             {!loading && !error && (
                 <div
@@ -334,7 +334,9 @@ export default function StatewideDroughtStatus() {
                                 ? ((metric.average - historical.average) / Math.abs(historical.average)) * 100
                                 : null;
                         return (
-                            <div
+                            // <div
+                            <Card
+                                title={ELEMENT_LABELS[code]}
                                 key={code}
                                 style={{
                                     background: '#1E2D3D',
@@ -345,7 +347,7 @@ export default function StatewideDroughtStatus() {
                             >
                                 {/* <div style={{ color: '#AAAAAA', fontSize: '0.82rem' }}>{ELEMENT_LABELS[code]}</div> */}
                                 {/* <Title level={4} style={{margin: '0 0 6px 0' }}>{ELEMENT_LABELS[code]}</Title> */}
-                                <Text style={{ fontSize: '1.2rem' }}>{ELEMENT_LABELS[code]}</Text>
+                                {/* <Text style={{ fontSize: '1.2rem' }}>{ELEMENT_LABELS[code]}</Text> */}
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '3px' }}>
                                     {/* <div style={{fontSize: '1.15rem', fontWeight: 'bold' }}>
                                         {formatAverage(metric.average)}
@@ -400,7 +402,7 @@ export default function StatewideDroughtStatus() {
                                         </div>
                                     </>
                                 )}
-                            </div>
+                            </Card>//</div>
                         );
                     })}
                 </div>

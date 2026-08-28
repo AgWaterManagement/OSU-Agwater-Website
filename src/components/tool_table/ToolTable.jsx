@@ -69,6 +69,16 @@ const toolsData = [
         status: 'live'
       },
       {
+        title: 'Irrigation Measurement Calculators',
+        description: (<><img src={imagePath + 'IrrigMeasurement.png'} alt='Irrigation Measurement Calculators' width={360} />
+        Access a set of interactive calculators for
+         measuring and analyzing irrigation systems, including pump discharge, applied depth, catch-can uniformity, 
+         and root-zone soil-water deficit. </>),
+        keywords: ['irrigation', 'measurement', 'pumping', 'soil water', 'performance'],
+        link: '/apps/irrigationMeasurement',
+        status: 'live'
+      },
+      {
         title: 'Crop Water Use in Oregon',
         description: (<><img src={imagePath + 'OIP-2795785401.jpg'} alt='Crop Water Use' width={360} />This tool provides information on crop water
                      use in Oregon, including data on irrigation practices and water

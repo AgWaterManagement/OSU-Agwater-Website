@@ -135,6 +135,7 @@ export const darkTheme = {
         Typography: {
             colorTextHeading: 'yellow',
             colorText: 'white',
+            colorTextDescription : 'lightgray',
         },
 
     }
@@ -143,7 +144,6 @@ export const darkTheme = {
 
 export const lightTheme = {
     token: {
-        colorPrimary: 'blue',
         colorText: 'black',
         colorTextHeading: '0x111111',
     },
