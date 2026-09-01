@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SmartTap Pilot 3 hydrology literature digest" />
+    <title>SmartTap Pilot 3</title>
+    <link rel="stylesheet" href="./assets/app.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__inner">
+        <div>
+          <p class="eyebrow">SmartTap · Pilot 3</p>
+          <h1>Hydrology research digest</h1>
+          <p class="lede">Retrieve, rank, and review current Oregon and Pacific Northwest water research.</p>
+        </div>
+        <div class="service-state" aria-live="polite">
+          <span id="health-dot" class="dot dot--pending"></span>
+          <div>
+            <strong id="health-label">Checking service</strong>
+            <small id="health-detail">Connecting to Pilot 3</small>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel controls" aria-labelledby="run-title">
+        <div class="panel__heading">
+          <div>
+            <p class="section-label">New run</p>
+            <h2 id="run-title">Build a literature digest</h2>
+          </div>
+          <span class="badge">One run at a time</span>
+        </div>
+
+        <form id="run-form">
+          <div class="field-grid">
+            <label>
+              <span>Publication year</span>
+              <input id="year" name="year" type="number" min="1900" max="2100" required />
+            </label>
+            <label>
+              <span>OpenAlex papers</span>
+              <input id="max-results" name="max_results" type="number" min="1" max="2000" required />
+            </label>
+            <label>
+              <span>Items per source</span>
+              <input id="email-k" name="email_k" type="number" min="1" max="20" value="5" required />
+            </label>
+            <label>
+              <span>Greeting name</span>
+              <input id="recipient-name" name="recipient_name" maxlength="200" value="Research team" required />
+            </label>
+          </div>
+
+          <label class="wide-field">
+            <span>Digest subject <em>optional</em></span>
+            <input id="subject" name="subject" maxlength="200" placeholder="Weekly hydrology research update" />
+          </label>
+
+          <fieldset>
+            <legend>Optional stages</legend>
+            <label class="check-row">
+              <input id="summarize" type="checkbox" />
+              <span><strong>OpenRouter summaries</strong><small>Requires the server-side OpenRouter key and may incur usage cost.</small></span>
+            </label>
+            <label class="check-row">
+              <input id="scholar" type="checkbox" />
+              <span><strong>Google Scholar results</strong><small>Requires the server-side SerpApi key.</small></span>
+            </label>
+            <label class="check-row">
+              <input id="map" type="checkbox" />
+              <span><strong>Oregon/PNW tag file</strong><small>Creates transparent keyword-based regional tags.</small></span>
+            </label>
+          </fieldset>
+
+          <div id="form-message" class="message" role="status" aria-live="polite"></div>
+          <button id="run-button" class="primary" type="submit">Start digest run</button>
+        </form>
+      </section>
+
+      <section class="panel status-panel" aria-labelledby="status-title">
+        <div class="panel__heading">
+          <div>
+            <p class="section-label">Latest activity</p>
+            <h2 id="status-title">Run status</h2>
+          </div>
+          <button id="refresh-button" class="secondary" type="button">Refresh</button>
+        </div>
+        <div id="empty-state" class="empty-state">No Pilot 3 runs have been recorded yet.</div>
+        <div id="job-card" class="job-card" hidden>
+          <div class="job-card__top">
+            <span id="job-status" class="status-pill">Unknown</span>
+            <code id="job-id"></code>
+          </div>
+          <dl>
+            <div><dt>Created</dt><dd id="job-created">—</dd></div>
+            <div><dt>Year</dt><dd id="job-year">—</dd></div>
+            <div><dt>Records requested</dt><dd id="job-max">—</dd></div>
+            <div><dt>Completed</dt><dd id="job-completed">—</dd></div>
+          </dl>
+          <p id="job-error" class="error-text" hidden></p>
+          <div id="artifact-actions" class="actions" hidden>
+            <button id="view-digest" class="primary" type="button">View digest</button>
+            <button id="view-results" class="secondary" type="button">View ranked results</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="results-panel" class="panel results-panel" aria-labelledby="results-title" hidden>
+        <div class="panel__heading">
+          <div>
+            <p class="section-label">Output</p>
+            <h2 id="results-title">Latest digest</h2>
+          </div>
+          <button id="close-results" class="secondary" type="button">Close</button>
+        </div>
+        <div id="results-summary"></div>
+        <pre id="digest-output" tabindex="0"></pre>
+        <div id="paper-list" class="paper-list"></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>SmartTap Pilot 3</span>
+      <span id="version-label">Service version —</span>
+    </footer>
+    <script src="./assets/app.js" defer></script>
+  </body>
+</html>

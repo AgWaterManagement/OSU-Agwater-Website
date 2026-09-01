@@ -7,7 +7,7 @@
 import { secrets } from "../../../../../secrets.js";
 
 const apiBaseUrl = (
-  import.meta.env.VITE_SMARTTAP_API_BASE ?? "https://agwater.org:5556/smarttap"
+  import.meta.env.VITE_SMARTTAP_API_BASE ?? "https://agwater.org:5556/smarttap/pilot1"
 )
   .trim()
   .replace(/\/+$/, "");
