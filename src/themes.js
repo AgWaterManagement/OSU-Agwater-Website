@@ -1,7 +1,7 @@
 export const darkTheme = {
     token: {
-        colorText: 'white',
-        colorTextHeading: 'yellow'
+        colorText: '#eeeeee',
+        colorTextHeading: '#FBEC5D'
     },
     components: {
         Alert: {
@@ -14,6 +14,7 @@ export const darkTheme = {
             colorSuccessBg: '#2b1d11',
         },
         Button: {
+            colorPrimary: '#0051C2',
             colorLink: '#80b0fc',
             colorLinkActive: '#0958d9',
             colorLinkHover: 'brown',
@@ -25,34 +26,34 @@ export const darkTheme = {
         Card: {
             headerBg: 'darkslategray',
             actionsBg: 'darkslategray',
-            colorBgContainer: 'black',
-            colorText: 'white',
+            colorBgContainer: '#1c1c1c',
+            colorText: '#eeeeee',
         },
         Collapse: {
-            labelColor: 'white',
+            labelColor: '#eeeeee',
             headerBg: 'rgba(1, 1, 1, 0.5)',
-            contentBg: 'black',
+            contentBg: '#1c1c1c',
         },
         DatePicker: {
-            colorText: 'black',
+            colorText: '#1c1c1c',
             colorBgElevated: '#ECECEC',
-            colorIcon: 'black',
+            colorIcon: '#1c1c1c',
             cellHoverBg: 'lightgray',
             colorTextDisabled: '#666666',
-            colorTextHeading: 'black',
+            colorTextHeading: '#1c1c1c',
         },
         Divider: {
             colorSplit: '#CCC',
         },
         Form: {
-            labelColor: 'white',
+            labelColor: '#eeeeee',
         },
         InputNumber: {
-            colorText: 'black',
+            colorText: '#1c1c1c',
             addonBg: 'lightgrey',
         },
         Input: {
-            colorText: 'black',
+            colorText: '#1c1c1c',
             addonBg: 'lightgrey',
         },
         Message: {
@@ -81,13 +82,24 @@ export const darkTheme = {
             //buttonBorderColor: '#1677ff',
             //buttonHoverColor: 'white',
             //buttonHoverBorderColor: '#4096ff',
-            buttonCheckedBg: '#1677ff',
-            buttonSolidCheckedBg: '#1677ff',
+            buttonCheckedBg: '#0051C2',
+            buttonSolidCheckedBg: '#0051C2',
             //buttonSolidCheckedColor: 'white',
             //colorBgContainer: '#ECECEC',
         },
 
         Rate: { starBg: 'rgba(245,242,242,0.2)', starColor: 'gold' },
+
+        Segmented: {
+            itemActiveBg:'rgba(0,0,0,0.15)',
+            itemColor: 'rgba(0,0,0,0.55)',  
+            itemHoverBg: 'rgba(0,0,0,0.06)',
+            itemHoverColor: 'rgba(0,0,0,0.88)',
+            itemSelectedBg: '#ffffff',
+            itemSelectedColor: 'rgba(0,0,0,0.88)',
+            trackBg: '#f5f5f5',
+            trackPadding: 2
+        },
 
         Select: {
             colorText: 'black',
@@ -102,7 +114,7 @@ export const darkTheme = {
         },
 
         Statistic: {
-            colorTextDescription: 'white',
+            colorTextDescription: '#eeeeee',
         },
         Steps: {
             //colorPrimary: 'white',
@@ -112,15 +124,15 @@ export const darkTheme = {
         },
         Table: {
             headerBg: 'darkslategray',
-            headerColor: 'white',
-            colorText: 'white',
+            headerColor: '#eeeeee',
+            colorText: '#eeeeee',
             colorBgContainer: 'black',
             colorBgElevated: 'black',
             colorBorder: '#CCC',
         },
         Tabs: {
-            itemActiveColor: 'yellow',
-            itemColor: 'white',
+            itemActiveColor: '#FBEC5D',
+            itemColor:'#eeeeee',
             itemHoverColor: '#4096ff',
             itemSelectedColor: '#4096ff'
         },
@@ -133,9 +145,10 @@ export const darkTheme = {
             colorText: 'black',
         },
         Typography: {
-            colorTextHeading: 'yellow',
-            colorText: 'white',
-            colorTextDescription : 'lightgray',
+            colorTextHeading: '#FBEC5D',
+            colorText: '#fafafa',
+            colorTextDescription : '#eeeeee',
+            colorLink: '#FBEC5D',
         },
 
     }
@@ -144,12 +157,14 @@ export const darkTheme = {
 
 export const lightTheme = {
     token: {
-        colorText: 'black',
-        colorTextHeading: '0x111111',
+        colorText: '#1a1a1a',
+        colorTextHeading: '#111111',
+        colorTextDescription: '#333333',
     },
     components: {
 
         Button: {
+            colorPrimary: '#0051C2',
             colorLink: 'blue',
             colorLinkActive: '#0958d9',
             colorLinkHover: 'brown',
@@ -162,6 +177,9 @@ export const lightTheme = {
             colorBgContainer: '#E6E6E6',
             colorText: 'black',
         },
+        Statistic: {
+            colorTextDescription: '#1a1a1a',
+        },
         Steps: {
             colorText: 'darkblue',
             colorTextSecondary: 'black',
@@ -173,6 +191,9 @@ export const lightTheme = {
             colorBorder: '#593815',
         },
         Typography: {
+            colorTextHeading: '#1a1a1a',
+            colorText: '#1a1a1a',
+            colorTextDescription : '#222222',
         }
     }
 }

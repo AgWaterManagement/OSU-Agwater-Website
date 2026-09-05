@@ -2011,9 +2011,8 @@ const Drought = () => {
 	};
 
 	return (
-		<>
-			<div style={{ margin: 0, padding: '1em' }}>
-				<Title level={2}>Drought in Oregon</Title>
+			<div style={{padding: '1em' }}>
+				<Title level={1}>Drought in Oregon</Title>
 				<Paragraph>
 					Drought may significantly impact Oregon's diverse agricultural sector, affecting everything from irrigation water
 					availability to crop yields and livestock management. The tools available below provide information and guidance
@@ -2040,8 +2039,8 @@ const Drought = () => {
 				<Button type="link" onClick={() => setShowMoreInfo(!showMoreInfo)}>
 					{showMoreInfo ? 'Show Less' : 'Show More...'}
 				</Button>
-			</div>
-			<Divider />
+
+			<Divider size="small" />
 
 			<Tabs defaultActiveKey='map' items={[
 				{
@@ -2055,15 +2054,16 @@ const Drought = () => {
 				},
 				{
 					key: 'guides', label: 'Guides', children: (<Text>
-						Access a series fo guides for managing drought.
+						Access a series of guides for managing drought.
 					</Text>),
 				}]}
 				onChange={onChangeTab}
 			/>
-			<Divider />
+			<Divider  size="small" />
 
 			{currentTab === 'map' && ( <>
 			<StatewideDroughtStatus />
+			<br/>
 
 				<Row gutter={16}>
 					{isLeftPanelCollapsed ? (
@@ -2087,7 +2087,7 @@ const Drought = () => {
 											onClick={() => setIsLeftPanelCollapsed(true)}
 											title="Collapse map and legends"
 										>
-											Hide Left Panel
+											Hide Map
 										</Button>
 									)}
 								</div>
@@ -2128,7 +2128,7 @@ const Drought = () => {
 										</div>
 									)}
 									<div style={{ fontSize: '11px', color: '#888', borderTop: '1px solid #eee', paddingTop: '8px' }}>
-										Data Source: <a href="https://droughtmonitor.unl.edu/" target="_blank" rel="noopener noreferrer">U.S. Drought Monitor</a>
+										Data Source: <Button type="link" href="https://droughtmonitor.unl.edu/" target="_blank" rel="noopener noreferrer">U.S. Drought Monitor</Button>
 									</div>
 								</Card>
 								<SnotelMapLegend />
@@ -2233,13 +2233,13 @@ const Drought = () => {
 							</div>
 						)}
 						{selectedCounty ? (
-							<div style={{ fontSize: 'medium', color: 'yellow' }}>
+							<Text strong>
 								Results for <strong>{selectedCounty.properties.NAME}</strong>
-							</div>
+							</Text>
 						) : (
-							<div style={{ fontSize: 'medium', color: 'yellow' }}>
+							<Text strong>
 								Click on a county to see detailed drought information and forecasts.
-							</div>
+							</Text>
 						)}
 
 						<Collapse accordion={true}
@@ -2282,7 +2282,7 @@ const Drought = () => {
 										<Text strong style={{ color: 'white' }}>Snow Pack (SNOTEL)</Text>
 										{renderSnowChart(250)}
 									</div>
-										<Divider style={{ borderColor: '#555', margin: '12px 0' }} />
+										<Divider size="small" />
 
 									<div
 										style={{ cursor: 'pointer' }}
@@ -2328,9 +2328,9 @@ const Drought = () => {
 
 						<Card title="Drought Impacts on Oregon Agriculture" size="small">
 							<ul>
-								<li style={{ color: 'white' }}>Reduced water availability for irrigation, leading to lower crop yields.</li>
-								<li style={{ color: 'white' }}>Increased costs for farmers due to the need for supplemental feed for livestock.</li>
-								<li style={{ color: 'white' }}>Degradation of soil quality and increased erosion risk.</li>
+								<li>Reduced water availability for irrigation, leading to lower crop yields.</li>
+								<li>Increased costs for farmers due to the need for supplemental feed for livestock.</li>
+								<li>Degradation of soil quality and increased erosion risk.</li>
 							</ul>
 
 						</Card>
@@ -2351,7 +2351,7 @@ const Drought = () => {
 
 
 
-			<Divider />
+			<Divider size='small'  />
 			<Collapse
 				items={[{
 					key: 'chat',
@@ -2359,7 +2359,7 @@ const Drought = () => {
 					children: <OllamaChat />
 				}]}
 			/>
-			<Divider />
+			<Divider size="small" />
 
 			<div className="row">
 				<Title level={5}>More Information</Title>
@@ -2388,7 +2388,7 @@ const Drought = () => {
 					{modalChart === 'stream' && renderStreamForecastChart(500)}
 				</div>
 			</Modal>
-		</>
+		</div>
 	)
 };
 

@@ -39,7 +39,7 @@ const THUNDERSTORMS = '/images/nws_forecast/icon_1_2.png';
 const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
     showTemperatureChart = true, showPrecipitationChart = true, showETChart = true,
 
- }) => {
+}) => {
 
     const [forecastData, setForecastData] = useState(propForecastData || []);
     const [etForecastData, setEtForecastData] = useState([]);
@@ -186,128 +186,132 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                 display: 'flex', flexDirection: 'column', flexWrap: 'nowrap',
                 justifyContent: 'center', alignItems: 'center',
                 overflow: 'hidden',
-                width: '100%', height:'1200',
-                backgroundColor: '#f9f9f9', padding: 0, margin: 0, borderRadius: 2
+                width: '100%', height: '1200',
+                padding: 0, margin: 0, borderRadius: 2
             }}>
-               
-                <div style={{overflowX: 'auto', width: '100%'}}>
+
+                <div style={{ overflowX: 'auto', width: '100%' }}>
                     {/* Calendar row container for the daily forecasts - this should scroll within the parent div  */}
-                    <div style={{ display: 'flex', width: (cardWidth+8)* 7, justifyContent: 'center', alignItems: 'center',
-                         gap: 8, padding: '0 0' }}>
+                    <div style={{
+                        display: 'flex', width: (cardWidth + 8) * 7, justifyContent: 'center', alignItems: 'center',
+                        gap: 8, padding: '0 0'
+                    }}>
 
-                    {/* Make individual calendar day containers next for the daily forecasts  */}
-                    {days.map((day, i) => {
-                        const forecasts = getForecasts(day, forecastData);
-                        //console.log('Calendar date:', day.format('YYYY-MM-DD'), 'Forecasts for this date:', forecasts);
+                        {/* Make individual calendar day containers next for the daily forecasts  */}
+                        {days.map((day, i) => {
+                            const forecasts = getForecasts(day, forecastData);
+                            //console.log('Calendar date:', day.format('YYYY-MM-DD'), 'Forecasts for this date:', forecasts);
 
-                        let dayForecast = null;
-                        let nightForecast = null;
-                        for (let i = 0; i < forecasts.length; i++) {
-                            const period = forecasts[i];
-                            if (period.isDaytime)
-                                dayForecast = period;
-                            else
-                                nightForecast = period;
-                        }
+                            let dayForecast = null;
+                            let nightForecast = null;
+                            for (let i = 0; i < forecasts.length; i++) {
+                                const period = forecasts[i];
+                                if (period.isDaytime)
+                                    dayForecast = period;
+                                else
+                                    nightForecast = period;
+                            }
 
-                        const forecastImage = getForecastImage(dayForecast);
+                            const forecastImage = getForecastImage(dayForecast);
 
-                        const dayOfMonth = zeroPad(day.date(), 2);
-                        const dayOfWeek = day.format('ddd');
-                        const bkgrColor = forecasts.length > 0 ? '#eee' : '#fff';
+                            const dayOfMonth = zeroPad(day.date(), 2);
+                            const dayOfWeek = day.format('ddd');
+                            const bkgrColor = forecasts.length > 0 ? '#eee' : '#fff';
 
-                        return (
-                            <>
-                                <div key={'day_' + i} style={{
-                                    minWidth: cardWidth,
-                                    display: 'inline-block',
-                                    //flex: '0 0 auto',
-                                    color: '#333',
-                                    background: '#fff',
-                                    padding: 8,
-                                    borderRadius: 6,
-                                    textAlign: 'center',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
-                                }}>
-                                    {/* day of week and day of month number */}
-                                    <span style={{ float: 'left', textAlign: 'left', width: '50%', fontSize: '1.1em', fontWeight: 500, marginBottom: 0 }}>
-                                        {dayOfWeek}
-                                    </span>
-                                    <span style={{ float: 'right', textAlign: 'right', width: '50%', fontSize: '1.1em', fontWeight: 500, marginBottom: 0 }}>
-                                        {dayOfMonth}
-                                    </span>
-
-                                    <div style={{
-                                        border: '1px solid #fff',
-                                        borderRadius: 2,
-                                        marginTop: '1.6em',
-                                        padding: 2,
-                                        textAlign: 'right',
-                                        color: 'black',
-                                        background: 'white',
-                                        width: '100%',
+                            return (
+                                <>
+                                    <div key={'day_' + i} style={{
+                                        minWidth: cardWidth,
+                                        display: 'inline-block',
+                                        //flex: '0 0 auto',
+                                        color: '#333',
+                                        background: '#fff',
+                                        padding: 8,
+                                        borderRadius: 6,
+                                        textAlign: 'center',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
                                     }}>
-                                    </div>
+                                        {/* day of week and day of month number */}
+                                        <span style={{ float: 'left', textAlign: 'left', width: '50%', fontSize: '1.1em', fontWeight: 500, marginBottom: 0 }}>
+                                            {dayOfWeek}
+                                        </span>
+                                        <span style={{ float: 'right', textAlign: 'right', width: '50%', fontSize: '1.1em', fontWeight: 500, marginBottom: 0 }}>
+                                            {dayOfMonth}
+                                        </span>
 
-                                    {/* content panel - forecast data for the day */}
-                                    <div style={{
-                                        backgroundColor: bkgrColor,
-                                        marginTop: 0,
-                                        borderRadius: 2,
-                                        padding: 0,
-                                        backgroundImage: 'url(' + forecastImage + ')',
-                                        backgroundSize: '8em 8em',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: '80% 50%',
-                                        backgroundOrigin: 'content-box',
-                                        height: '8em',
-                                    }}
-                                    > <>
-                                        {dayForecast && (
-                                            <>
-                                                <div style={{
-                                                    margin: 0, marginBottom: '0em', borderRadius: 2, padding: 0,
-                                                    textAlign: 'right', color: 'black',
-                                                    width: '100%', height: '100%',
-                                                }} >
-                                                    <span style={{
-                                                        display: 'block', color: 'black', textAlign: 'right',
-                                                        marginTop: 0, marginBottom: 0,
-                                                        borderRadius: 2, padding: 0,
-                                                        backgroundColor: 'rgba(255, 255, 255, 0.35)',
-                                                        fontSize: '2.5em'
-                                                    }} >
-                                                        {dayForecast.temperature}&deg;
-                                                    </span>
-
-<br/>
-                                                    <span style={{
-                                                        marginTop: '2em', borderRadius: 2, padding: 0,
-                                                         color: 'black', textAlign: 'left',
-                                                        fontSize: '1.5em', width: '100%', 
-                                                    }} >
-                                                    {nightForecast.temperature}&deg;
-                                                    </span>
-                                                </div>
-                                            </>
-                                        )}
-                                        </>
-                                    </div>
-                                        <div style={{ 
-                                            color: 'black', 
-                                            marginTop: '0.5em',
-                                            marginBottom: '0.5em',
-                                            height: '3em'}}>
-                                                {dayForecast ? dayForecast.shortForecast : ''}
+                                        <div style={{
+                                            border: '1px solid #fff',
+                                            borderRadius: 2,
+                                            marginTop: '1.6em',
+                                            padding: 2,
+                                            textAlign: 'right',
+                                            color: 'black',
+                                            background: 'white',
+                                            width: '100%',
+                                        }}>
                                         </div>
 
-                                </div>
-                            </>
+                                        {/* content panel - forecast data for the day */}
+                                        <div style={{
+                                            backgroundColor: bkgrColor,
+                                            marginTop: 0,
+                                            borderRadius: 2,
+                                            padding: 0,
+                                            backgroundImage: 'url(' + forecastImage + ')',
+                                            backgroundSize: '8em 8em',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: '80% 50%',
+                                            backgroundOrigin: 'content-box',
+                                            height: '8em',
+                                        }}
+                                        > <>
+                                                {dayForecast && (
+                                                    <>
+                                                        <div style={{
+                                                            margin: 0, marginBottom: '0em', borderRadius: 2, padding: 0,
+                                                            textAlign: 'right', color: 'black',
+                                                            width: '100%', height: '100%',
+                                                        }} >
+                                                            <span style={{
+                                                                display: 'block', color: 'black', textAlign: 'right',
+                                                                marginTop: 0, marginBottom: 0,
+                                                                borderRadius: 2, padding: 0,
+                                                                backgroundColor: 'rgba(255, 255, 255, 0.35)',
+                                                                fontSize: '2.5em'
+                                                            }} >
+                                                                {dayForecast.temperature}&deg;
+                                                            </span>
+
+                                                            <br />
+                                                            <span style={{
+                                                                marginTop: '2em', borderRadius: 2, padding: 0,
+                                                                color: 'black', textAlign: 'left',
+                                                                fontSize: '1.5em', width: '100%',
+                                                            }} >
+                                                                {nightForecast.temperature}&deg;
+                                                            </span>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </>
+                                        </div>
+                                        <div style={{
+                                            color: 'black',
+                                            marginTop: '0.5em',
+                                            marginBottom: '0.5em',
+                                            height: '3em'
+                                        }}>
+                                            {dayForecast ? dayForecast.shortForecast : ''}
+                                        </div>
+
+                                    </div>
+                                </>
+                            )
+                        }
                         )}
-                    )}
                     </div>
 
-                    <div style={{ display: 'flex', width: (cardWidth+8)* 7, justifyContent: 'center', alignItems: 'center',  gap: 8, padding: '8px 0', paddingBottom: '4px' }}>
+                    <div style={{ display: 'flex', width: (cardWidth + 8) * 7, justifyContent: 'center', alignItems: 'center', gap: 8, padding: '8px 0', paddingBottom: '4px' }}>
                         {createForecastCharts()}
                     </div>
                 </div>
@@ -361,7 +365,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                 //const label = parsedDate.isValid() ? parsedDate.format('ddd M/D') : String(time);
                 const label = period['Date'];
                 const et = period['eto (mm)'] || 0;
-                    
+
                 return {
                     date: label,
                     et: Number(et) || 0, // Use the 'eto' value if it's a valid number, otherwise default to 0
@@ -412,10 +416,10 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
             };
         };
 
-        const ChartContainer = ({ chartData, datakey, chartType, color, backgroundColor, label, source, y='60%', domain=null }) => {
+        const ChartContainer = ({ chartData, datakey, chartType, color, backgroundColor, label, source, y = '60%', domain = null }) => {
             const backgroundGradient = 'linear-gradient(135deg,rgba(255, 255, 255, 1) 0%, ' + backgroundColor + ' 100%)';
             //console.log('Rendering chart with data:', chartData, 'datakey:', datakey, 'chartType:', chartType, 'color:', color, 'label:', label, 'source:', source);
-            const y2 = '' + (parseInt(y.split('%')[0])+15) + '%';
+            const y2 = '' + (parseInt(y.split('%')[0]) + 15) + '%';
             let domain2 = domain || [Math.min(...chartData.map(d => d[datakey])), Math.max(...chartData.map(d => d[datakey]))];
             const pointLabelRenderer = createPointLabel(chartData);
 
@@ -431,28 +435,28 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                             <CartesianGrid strokeDasharray="3 3" />
                             <YAxis domain={domain2} stroke={color} />
 
-                        { chartType === 'line' && (
-                            <Line
-                                type="monotone"
-                                dataKey={datakey}
-                                name={label}
-                                stroke={color}
-                                strokeWidth={2}
-                                dot={{ r: 3 }}
-                                activeDot={{ r: 5 }}
-                            >
-                                <LabelList dataKey={datakey} content={pointLabelRenderer} />
-                            </Line>
+                            {chartType === 'line' && (
+                                <Line
+                                    type="monotone"
+                                    dataKey={datakey}
+                                    name={label}
+                                    stroke={color}
+                                    strokeWidth={2}
+                                    dot={{ r: 3 }}
+                                    activeDot={{ r: 5 }}
+                                >
+                                    <LabelList dataKey={datakey} content={pointLabelRenderer} />
+                                </Line>
                             )}
 
-                        { chartType === 'bar' && (
-                            <Bar
-                                dataKey={datakey}
-                                name={label}
-                                fill={color}
-                            >
-                                <LabelList dataKey={datakey} content={pointLabelRenderer} />
-                            </Bar>
+                            {chartType === 'bar' && (
+                                <Bar
+                                    dataKey={datakey}
+                                    name={label}
+                                    fill={color}
+                                >
+                                    <LabelList dataKey={datakey} content={pointLabelRenderer} />
+                                </Bar>
                             )}
 
                             <text
@@ -488,7 +492,7 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                 <ChartContainer
                     key="TempChart"
                     chartData={chartData}
-                    domain={[25,100]}
+                    domain={[25, 100]}
                     datakey="temperature"
                     chartType="line"
                     color="#ff0c0c"
@@ -527,20 +531,20 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
                         y='90%'
                     />
                 )}
-                <br/>
+                <br />
                 <span style={{ marginLeft: 8, fontSize: 12, color: '#555' }}>
-                Sources: Temperature, Precipitation - 
-                
-                <a style={{color: '#043461'}} href={`https://agwater.org:5556/agrimet/nws_forecast?latitude=${lat}&longitude=${lng}`} target="_blank" rel="noopener noreferrer">
-                    National Weather Service (via the agwater API)
-                </a>; ET - <a style={{color: '#043461'}}
-                 href={`https://agwater.org:5556/fms/userfield/weather/forecast?lat=${lat}&long=${lng}`} target="_blank" rel="noopener noreferrer">
-                    OpenET (via the agwater API)
-                </a>
+                    Sources: Temperature, Precipitation -
+
+                    <a style={{ color: '#043461' }} href={`https://agwater.org:5556/agrimet/nws_forecast?latitude=${lat}&longitude=${lng}`} target="_blank" rel="noopener noreferrer">
+                        National Weather Service (via the agwater API)
+                    </a>; ET - <a style={{ color: '#043461' }}
+                        href={`https://agwater.org:5556/fms/userfield/weather/forecast?lat=${lat}&long=${lng}`} target="_blank" rel="noopener noreferrer">
+                        OpenET (via the agwater API)
+                    </a>
                 </span>
 
             </div>
-    );
+        );
     }
 
     const getForecastImage = (forecast) => {
@@ -559,19 +563,19 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
         const cloudy = f.includes('Cloudy') || f.includes('Clouds') || f.includes('Overcast');
 
         if (sunny) return SUNNY;
-        if(mostly && sunny) return SUNNY;
+        if (mostly && sunny) return SUNNY;
 
-        if(partly && sunny) return PARTLY_SUNNY;
+        if (partly && sunny) return PARTLY_SUNNY;
 
-        if(cloudy) return CLOUDY;
+        if (cloudy) return CLOUDY;
 
-        if(light && rain) return LIGHT_RAIN;
+        if (light && rain) return LIGHT_RAIN;
 
         if (heavy && rain) return HEAVY_RAIN;
 
-        if(rain) return RAIN;
+        if (rain) return RAIN;
 
-        if(thunder) return THUNDERSTORMS;
+        if (thunder) return THUNDERSTORMS;
 
         // Implementation for getting forecast image
         return forecast.icon || null;
@@ -719,8 +723,8 @@ const NWSForecast = ({ lat, lng, locationName, forecastData: propForecastData,
             <Row gutter={16} align="middle">
                 <Col xs={24} md={24}>
                     <Title level={4} style={{ marginBottom: 0 }}>{locationName}</Title>
-                    <Text>Forecast for {currentDate} 
-                        {lat && lng && (', Latitude: ' + lat.toFixed(3) + '° ' + ' Longitude: ' + lng.toFixed(3) + '°'  )}
+                    <Text>Forecast for {currentDate}
+                        {lat && lng && (', Latitude: ' + lat.toFixed(3) + '° ' + ' Longitude: ' + lng.toFixed(3) + '°')}
                     </Text>
                     <Divider style={{ margin: '8px 0' }} />
                     <Text>{current.detailedForecast}</Text>

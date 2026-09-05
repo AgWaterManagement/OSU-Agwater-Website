@@ -13,7 +13,7 @@ const Tools = () => {
   return (
     <div>
 
-      <Title style={{ marginLeft: '0.25em' }} level={4}>Apps and Tools for Agricultural Water Management</Title>
+      <Title style={{ marginLeft: '0.75em' }} level={4}>Apps and Tools for Agricultural Water Management</Title>
 
       <Paragraph style={{ marginLeft: '1em' }}>
         Below are apps and tools to inform and assist with understanding and managing water resources

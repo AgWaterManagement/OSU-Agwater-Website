@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import {
 	Alert,
 	Button,
@@ -15,10 +16,10 @@ import {
 	Space,
 	Statistic,
 	Typography,
+	Tabs,
 } from 'antd';
 
 import {
-	CalculatorOutlined,
 	InfoCircleOutlined,
 	PrinterOutlined,
 	RightOutlined,
@@ -298,10 +299,6 @@ const IrrigationMeasurement = () => {
 	const uniformityResult = calcUniformity();
 	const soilResult = calcSoil();
 
-	const onChangeTab = (e) => {
-		console.log(`radio checked:${e.target.value}`);
-	}
-
 	const renderCatchBars = () => {
 		if (!uniformityResult.values.length) {
 			return <Text type="secondary">No valid catch-can observations yet.</Text>;
@@ -332,8 +329,9 @@ const IrrigationMeasurement = () => {
 
 
 	const FlowCalculator = () => (
-		<>
-			<Title level={4}>Timed-volume Pump Discharge</Title>
+		<section id="tool-panel-flow" role="tabpanel" aria-labelledby="tool-tab-flow" hidden={activeTool !== 'flow'}>
+
+			<Title level={4} id="tool-panel-flow-title">Timed-volume Pump Discharge</Title>
 			<Paragraph>
 				Collect water in a container of known volume and time each fill. Enter one fill time per trial; the calculator averages the trial discharges.
 			</Paragraph>
@@ -360,12 +358,13 @@ const IrrigationMeasurement = () => {
 				<Text>Formula</Text>
 				<Text code>Q = volume ÷ time, averaged across trials</Text>
 			</Space>
-		</>
+		</section>
 	)
 
 	const DepthCalculator = () => (
-		<>
-			<Title level={4}>Applied Irrigation Depth</Title>
+		<section id="tool-panel-depth" role="tabpanel" aria-labelledby="tool-tab-depth" hidden={activeTool !== 'depth'}>
+
+			<Title level={4} id="tool-panel-depth-title">Applied Irrigation Depth</Title>
 			<Paragraph>Convert system flow and runtime to an average depth over the irrigated area.</Paragraph>
 			<Row gutter={16}>
 				<Col xs={24} sm={12}>
@@ -385,19 +384,19 @@ const IrrigationMeasurement = () => {
 					<InputNumber min={1} max={100} step="any" value={efficiency} onChange={(value) => setEfficiency(Number(value ?? 0))} addonAfter="%" style={{ width: '10em', marginBottom: 16 }} />
 				</Col>
 			</Row>
-			<br/>
+			<br />
 			<Alert type="info" showIcon message="Use a measured efficiency when available." />
 			<Divider style={{ margin: '4px 0' }} />
 			<Space direction="vertical" size={4}>
 				<Text type="secondary">Method</Text>
 				<Text code>depth = applied volume ÷ irrigated area</Text>
 			</Space>
-		</>
+		</section>
 	)
 
 	const UniformityCalculator = () => (
-		<>
-			<Title level={4}>Catch-can Uniformity</Title>
+		<section id="tool-panel-uniformity" role="tabpanel" aria-labelledby="tool-tab-uniformity" hidden={activeTool !== 'uniformity'}>
+			<Title level={4} id="tool-panel-uniformity-title">Catch-can Uniformity</Title>
 			<Paragraph>Paste catch depths to calculate low-quarter distribution uniformity and Christiansen CU.</Paragraph>
 			<Text strong>Catch-can observations</Text>
 			<Input.TextArea
@@ -408,17 +407,22 @@ const IrrigationMeasurement = () => {
 			/>
 			<Alert type="info" showIcon message="Separate values with commas, spaces, or line breaks. Keep all observations in the same unit." />
 			{renderCatchBars()}
+			<Text type="secondary" aria-live="polite" style={{ display: 'block', marginTop: 8 }}>
+				{uniformityResult.values.length > 0
+					? `Entered ${uniformityResult.values.length} catch observations. Lowest value ${Math.min(...uniformityResult.values)} and highest value ${Math.max(...uniformityResult.values)}.`
+					: 'No catch observations entered.'}
+			</Text>
 			<Divider style={{ margin: '4px 0' }} />
 			<Space direction="vertical" size={4}>
 				<Text type="secondary">Formula</Text>
 				<Text code>DUlq = low-quarter mean ÷ overall mean</Text>
 			</Space>
-		</>
+		</section>
 	)
 
 	const SoilWaterCalculator = () => (
-		<>
-			<Title level={4}>Root Zone Soil-Water Deficit</Title>
+		<section id="tool-panel-soil" role="tabpanel" aria-labelledby="tool-tab-soil" hidden={activeTool !== 'soil'}>
+			<Title level={4} id="tool-panel-soil-title">Root Zone Soil-Water Deficit</Title>
 			<Paragraph>Estimate the refill needed to return the active root zone to field capacity.</Paragraph>
 			<Row gutter={12}>
 				<Col xs={24}>
@@ -460,25 +464,24 @@ const IrrigationMeasurement = () => {
 				<Text type="secondary">Formula</Text>
 				<Text code>deficit = (θfc − θv) × root depth</Text>
 			</Space>
-		</>
+		</section>
 	)
 
 	const resultsPanel = (() => {
 		if (activeTool === 'flow') {
-			return (
-				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-					<Statistic title="Estimated discharge" value={formatNumber(flowResult.primary, 2)} suffix={flowResult.primaryUnit} />
-					<Divider/>
-					<Statistic title="Converted flow" value={formatNumber(flowResult.secondary, 2)} suffix={flowResult.secondaryUnit} />
-					<Alert type="success" showIcon message={`Average of ${flowResult.trials} trial${flowResult.trials === 1 ? '' : 's'}. Use at least three replicate fills for scheduling.`} />
-				</Space>
+			return (<>
+				<Statistic title="Estimated discharge" value={formatNumber(flowResult.primary, 2)} suffix={flowResult.primaryUnit} />
+				<Divider size="small" />
+				<Statistic title="Converted flow" value={formatNumber(flowResult.secondary, 2)} suffix={flowResult.secondaryUnit} />
+				<Alert type="success" showIcon message={`Average of ${flowResult.trials} trial${flowResult.trials === 1 ? '' : 's'}. Use at least three replicate fills for scheduling.`} />
+			</>
 			);
 		}
 
 		if (activeTool === 'depth') {
 			return (<>
 				<Statistic title="Net applied depth" value={formatNumber(depthResult.net, 2)} suffix={depthResult.depthUnit} />
-				<Divider/>
+				<Divider size="small" />
 				<Row gutter={12}>
 					<Col span={12}>
 						<Statistic title="Gross depth" value={formatNumber(depthResult.gross, 2)} suffix={depthResult.depthUnit} />
@@ -493,38 +496,36 @@ const IrrigationMeasurement = () => {
 		}
 
 		if (activeTool === 'uniformity') {
-			return (
-				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-					<Title level={4}>Uniformity Results</Title>
-					<Statistic title="Low-quarter DU" value={formatNumber(uniformityResult.du, 0)} suffix="%" />
-					<Divider/>
-					<Row gutter={12}>
-						<Col span={12}>
-							<Statistic title="Christiansen CU" value={formatNumber(uniformityResult.cu, 0)} suffix="%" />
-						</Col>
-						<Col span={12}>
-							<Statistic title="Mean catch" value={formatNumber(uniformityResult.average, 1)} suffix="depth units" />
-						</Col>
-					</Row>
-					<Alert type="info" showIcon message={`Based on ${uniformityResult.values.length} valid catch observation${uniformityResult.values.length === 1 ? '' : 's'}.`} />
-				</Space>
+			return (<>
+				<Title level={4}>Uniformity Results</Title>
+				<Statistic title="Low-quarter DU" value={formatNumber(uniformityResult.du, 0)} suffix="%" />
+				<Divider size="small" />
+				<Row gutter={12}>
+					<Col span={12}>
+						<Statistic title="Christiansen CU" value={formatNumber(uniformityResult.cu, 0)} suffix="%" />
+					</Col>
+					<Col span={12}>
+						<Statistic title="Mean catch" value={formatNumber(uniformityResult.average, 1)} suffix="depth units" />
+					</Col>
+				</Row>
+				<Alert type="info" showIcon message={`Based on ${uniformityResult.values.length} valid catch observation${uniformityResult.values.length === 1 ? '' : 's'}.`} />
+			</>
 			);
 		}
 
-		return (
-			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-				<Statistic title="Gross refill depth" value={formatNumber(soilResult.gross, 2)} suffix={soilResult.unit} />
-				<Divider/>
-				<Row gutter={12}>
-					<Col span={12}>
-						<Statistic title="Net deficit" value={formatNumber(soilResult.net, 2)} suffix={soilResult.unit} />
-					</Col>
-					<Col span={12}>
-						<Statistic title="Available water depleted" value={formatNumber(soilResult.depletion, 0)} suffix="%" />
-					</Col>
-				</Row>
-				<Alert type="warning" showIcon message="Texture presets are starting values. Calibrate with field measurements." />
-			</Space>
+		return (<>
+			<Statistic title="Gross refill depth" value={formatNumber(soilResult.gross, 2)} suffix={soilResult.unit} />
+			<Divider size="small" />
+			<Row gutter={12}>
+				<Col span={12}>
+					<Statistic title="Net deficit" value={formatNumber(soilResult.net, 2)} suffix={soilResult.unit} />
+				</Col>
+				<Col span={12}>
+					<Statistic title="Available water depleted" value={formatNumber(soilResult.depletion, 0)} suffix="%" />
+				</Col>
+			</Row>
+			<Alert type="warning" showIcon message="Texture presets are starting values. Calibrate with field measurements." />
+		</>
 		);
 	})();
 
@@ -583,33 +584,83 @@ const IrrigationMeasurement = () => {
 		borderRadius: 4,
 	}
 
+
+	const isMobile = useMediaQuery({ query: '(max-width: 800px)' })
+
 	return (
-		<div style={{ maxWidth: 1240, margin: '0 auto', padding: '1rem' }}>
-			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+		<main aria-labelledby="irrigation-measurement-title" style={{ maxWidth: 1240, margin: '0 auto', padding: '1rem' }}>
+			<div>
+				<Title level={2} id="irrigation-measurement-title" style={{ marginBottom: 8 }}>
+					Irrigation measurement calculators
+				</Title>
+				<Paragraph style={{ maxWidth: 980, marginBottom: 12 }}>
+					Interactive calculators for pump discharge, applied depth, catch-can uniformity, and root-zone soil-water deficit. Each calculator shows the formula behind the result so field measurements become irrigation-ready numbers.
+				</Paragraph>
+				<Title level={4} style={{ marginTop: 0 }}>Measure water. Manage every drop.</Title>
+				<Segmented
+					aria-label="Unit system"
+					value={units}
+					onChange={switchUnits}
+					options={[
+						{ label: 'US units', value: 'us' },
+						{ label: 'Metric Units', value: 'metric' },
+					]}
+					style={{ marginBottom: 16 }}
+				/>
+			</div>
+
+			{!isMobile ? (
 				<div>
-					<Title level={2} style={{ marginBottom: 8 }}>
-						<CalculatorOutlined style={{ marginRight: 10 }} />
-						Irrigation measurement calculators
-					</Title>
-					<Paragraph style={{ maxWidth: 980, marginBottom: 12 }}>
-						Interactive calculators for pump discharge, applied depth, catch-can uniformity, and root-zone soil-water deficit. Each calculator shows the formula behind the result so field measurements become irrigation-ready numbers.
-					</Paragraph>
-					<Title level={4} style={{ marginTop: 0 }}>Measure water. Manage every drop.</Title>
-					<Segmented
-						value={units}
-						onChange={switchUnits}
-						options={[
-							{ label: 'US units', value: 'us' },
-							{ label: 'Metric Units', value: 'metric' },
+					<Tabs
+						defaultActiveKey="flow"
+						onChange={(key) => setActiveTool(key)}
+						items={[
+							{
+								key: 'flow',
+								label: <div style={activeTool == 'flow' ? buttonStyleSelected : buttonStyle} onClick={() => setActiveTool('depth')}>
+									<Text type="secondary">TIMED VOLUME</Text><br />
+									<Text strong style={{ fontSize: 'large' }}>Pump Discharge</Text>
+								</div>,
+							},
+							{
+								key: 'depth',
+								label:
+										<div style={activeTool == 'depth' ? buttonStyleSelected : buttonStyle} onClick={() => setActiveTool('depth')}>
+										<Text type="secondary">FLOW x TIME</Text><br />
+										<Text strong style={{ fontSize: 'large' }}>Applied Depth</Text>
+									</div>,
+							},
+							{
+								key: 'uniformity',
+								label: <div style={activeTool == 'uniformity' ? buttonStyleSelected : buttonStyle} onClick={() => setActiveTool('uniformity')}>
+									<Text type="secondary">CATCH CANS</Text><br />
+									<Text strong style={{ fontSize: 'large' }}>Uniformity</Text>
+								</div>,
+							},
+							{
+								key: 'soil',
+								label: <div style={activeTool == 'soil' ? buttonStyleSelected : buttonStyle} onClick={() => setActiveTool('soil')}>
+									<Text type="secondary">ROOT ZONE REFILL</Text><br />
+									<Text strong style={{ fontSize: 'large' }}>Soil Water</Text>
+								</div>,
+							},
 						]}
 					/>
 				</div>
+			) : (
 				<Row gutter={8}>
 					<Col xs={24} sm={12} md={6}>
-						<div style={activeTool == 'flow' ? buttonStyleSelected : buttonStyle} onClick={() => setActiveTool('flow')}>
-							<Text type="secondary">TIMED VOLUME</Text><br />
+						<Button
+							id="tool-tab-flow"
+							type="text"
+							role="tab"
+							aria-selected={activeTool === 'flow'}
+							aria-controls="tool-panel-flow"
+							onClick={() => setActiveTool('flow')}
+							style={activeTool === 'flow' ? buttonStyleSelected : buttonStyle}
+						>
 							<Text strong style={{ fontSize: 'large' }}>Pump discharge</Text>
-						</div>
+						</Button>
 					</Col>
 
 					<Col xs={24} sm={12} md={6}>
@@ -631,134 +682,139 @@ const IrrigationMeasurement = () => {
 						</div>
 					</Col>
 				</Row>
+			)
+			}
 
-				<div style={buttonStyleSelected}>
-					<Row gutter={16} align="top">
-						<Col xs={24} lg={16}>
-							<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-								{activeTool === 'flow' && <FlowCalculator />}
-								{activeTool === 'depth' && <DepthCalculator />}
-								{activeTool === 'uniformity' && <UniformityCalculator />}
-								{activeTool === 'soil' && <SoilWaterCalculator />}
+			<div style={buttonStyleSelected}>
+				<Row gutter={16} align="top">
+					<Col xs={24} lg={16}>
+						<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+							{activeTool === 'flow' && <FlowCalculator />}
+							{activeTool === 'depth' && <DepthCalculator />}
+							{activeTool === 'uniformity' && <UniformityCalculator />}
+							{activeTool === 'soil' && <SoilWaterCalculator />}
+						</Space>
+					</Col>
+					<Col xs={24} lg={8}>
+						<Card style={{ background: 'rgba(215,63,9,0.7)' }} aria-live="polite" aria-atomic="true" role="status" >
+							<Title level={4} id="calculated-result-title">
+								CALCULATED RESULT
+							</Title>
+							{resultsPanel}
+							<Text style={{ display: 'block', marginTop: 16, fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
+								Results update as you type · {unitLabel}
+							</Text>
+						</Card>
+					</Col>
+				</Row>
+			</div>
+
+			<Divider />
+
+			<section>
+				<Title level={3}>Measure with a method, not a guess</Title>
+				<Paragraph>
+					Good calculations begin with representative observations. Use these short protocols to prepare, measure, and document each field test.
+				</Paragraph>
+				<Collapse
+					accordion
+					activeKey={openGuide}
+					onChange={(key) => setOpenGuide(Array.isArray(key) ? key[0] : key)}
+					items={guideItems}
+				/>
+			</section>
+
+			<Divider />
+
+			<section>
+				<Title level={3}>Three habits improve every result</Title>
+				<Row gutter={[16, 16]}>
+					<Col xs={24} md={8}>
+						<Card>
+							<Text strong style={{ color: 'var(--orange, #d73f09)' }}>01</Text>
+							<Title level={4} style={{ marginTop: 8 }}>Repeat</Title>
+							<Paragraph>Collect replicates across representative operating conditions, not just the easiest point to access.</Paragraph>
+						</Card>
+					</Col>
+					<Col xs={24} md={8}>
+						<Card>
+							<Text strong style={{ color: 'var(--orange, #d73f09)' }}>02</Text>
+							<Title level={4} style={{ marginTop: 8 }}>Record</Title>
+							<Paragraph>Note pressure, wind, runtime, set area, sensor depth, and unusual field conditions with the measurement.</Paragraph>
+						</Card>
+					</Col>
+					<Col xs={24} md={8}>
+						<Card>
+							<Text strong style={{ color: 'var(--orange, #d73f09)' }}>03</Text>
+							<Title level={4} style={{ marginTop: 8 }}>Compare</Title>
+							<Paragraph>Compare measured performance with design values, prior tests, and crop or soil-water requirements.</Paragraph>
+						</Card>
+					</Col>
+				</Row>
+			</section>
+
+			<Divider />
+
+			<section>
+				<Title level={3}>Conversions worth keeping close</Title>
+				<Paragraph>Use these identities to check units before the result reaches an irrigation schedule.</Paragraph>
+				<Row gutter={[16, 16]}>
+					{conversionCards.map((item) => (
+						<Col xs={24} sm={12} lg={6} key={item.label}>
+							<Card style={{ textAlign: 'center' }}>
+								<Text type="secondary" style={{ display: 'block' }}>{item.label}</Text>
+								<Title level={2} style={{ margin: '8px 0', color: 'var(--orange, #d73f09)' }}>{item.value}</Title>
+								<Text>{item.unit}</Text>
+							</Card>
+						</Col>
+					))}
+				</Row>
+			</section>
+
+			<Divider />
+
+			<section>
+				<Title level={3}>References and further reading</Title>
+				<List
+					itemLayout="vertical"
+					dataSource={referenceItems}
+					renderItem={(item) => (
+						<List.Item>
+							<Space align="start" style={{ width: '100%', justifyContent: 'space-between' }}>
+								<Paragraph style={{ marginBottom: 0, flex: 1 }}>{item.text}</Paragraph>
+								<Button type="link" href={item.href} target="_blank" rel="noreferrer">
+									{item.label}
+								</Button>
 							</Space>
-						</Col>
-						<Col xs={24} lg={8}>
-							<Card style={{ background: 'rgba(215,63,9,0.7)' }} >
-								<Title level={4}>
-									CALCULATED RESULT
-								</Title>
-								{resultsPanel}
-								<Text style={{ display: 'block', marginTop: 16, fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
-									Results update as you type · {unitLabel}
-								</Text>
-							</Card>
-						</Col>
-					</Row>
-				</div>
+						</List.Item>
+					)}
+				/>
 
-				<Divider />
+				<Space wrap style={{ marginTop: 16 }}>
+					<Button type="primary" href="https://osuagrohydrology.com/files/irrigation-measurement-field-guide.pdf" target="_blank" rel="noreferrer">
+						Download the field guide
+					</Button>
 
-				<section>
-					<Title level={3}>Measure with a method, not a guess</Title>
-					<Paragraph>
-						Good calculations begin with representative observations. Use these short protocols to prepare, measure, and document each field test.
-					</Paragraph>
-					<Collapse
-						accordion
-						activeKey={openGuide}
-						onChange={(key) => setOpenGuide(Array.isArray(key) ? key[0] : key)}
-						items={guideItems}
-					/>
-				</section>
+					<Button icon={<PrinterOutlined />} onClick={() => window.print()}>
+						Print this page
+					</Button>
+				</Space>
 
-				<Divider />
-
-				<section>
-					<Title level={3}>Three habits improve every result</Title>
-					<Row gutter={[16, 16]}>
-						<Col xs={24} md={8}>
-							<Card>
-								<Text strong style={{ color: 'var(--orange, #d73f09)' }}>01</Text>
-								<Title level={4} style={{ marginTop: 8 }}>Repeat</Title>
-								<Paragraph>Collect replicates across representative operating conditions, not just the easiest point to access.</Paragraph>
-							</Card>
-						</Col>
-						<Col xs={24} md={8}>
-							<Card>
-								<Text strong style={{ color: 'var(--orange, #d73f09)' }}>02</Text>
-								<Title level={4} style={{ marginTop: 8 }}>Record</Title>
-								<Paragraph>Note pressure, wind, runtime, set area, sensor depth, and unusual field conditions with the measurement.</Paragraph>
-							</Card>
-						</Col>
-						<Col xs={24} md={8}>
-							<Card>
-								<Text strong style={{ color: 'var(--orange, #d73f09)' }}>03</Text>
-								<Title level={4} style={{ marginTop: 8 }}>Compare</Title>
-								<Paragraph>Compare measured performance with design values, prior tests, and crop or soil-water requirements.</Paragraph>
-							</Card>
-						</Col>
-					</Row>
-				</section>
-
-				<Divider />
-
-				<section>
-					<Title level={3}>Conversions worth keeping close</Title>
-					<Paragraph>Use these identities to check units before the result reaches an irrigation schedule.</Paragraph>
-					<Row gutter={[16, 16]}>
-						{conversionCards.map((item) => (
-							<Col xs={24} sm={12} lg={6} key={item.label}>
-								<Card style={{ textAlign: 'center' }}>
-									<Text type="secondary" style={{ display: 'block' }}>{item.label}</Text>
-									<Title level={2} style={{ margin: '8px 0', color: 'var(--orange, #d73f09)' }}>{item.value}</Title>
-									<Text>{item.unit}</Text>
-								</Card>
-							</Col>
-						))}
-					</Row>
-				</section>
-
-				<Divider />
-
-				<section>
-					<Title level={3}>References and further reading</Title>
-					<List
-						itemLayout="vertical"
-						dataSource={referenceItems}
-						renderItem={(item) => (
-							<List.Item>
-								<Space align="start" style={{ width: '100%', justifyContent: 'space-between' }}>
-									<Paragraph style={{ marginBottom: 0, flex: 1 }}>{item.text}</Paragraph>
-									<Button type="link" href={item.href} target="_blank" rel="noreferrer">
-										{item.label}
-									</Button>
-								</Space>
-							</List.Item>
-						)}
-					/>
-
-					<Space wrap style={{ marginTop: 16 }}>
-						<Button icon={<PrinterOutlined />} onClick={() => window.print()}>
-							Print this page
-						</Button>
-					</Space>
-
-					<Alert
-						style={{ marginTop: 20 }}
-						icon={<InfoCircleOutlined />}
-						type="warning"
-						showIcon
-						message="Use results with context"
-						description={(
-							<span>
-								These calculators support field measurements and learning. Verify measurements, assumptions, system limits, and crop requirements before making operational decisions. For questions, contact the AHGRI Lab at{' '}
-								<Link href="mailto:floyid.nicolas@oregonstate.edu">floyid.nicolas@oregonstate.edu</Link>.
-							</span>
-						)}
-					/>
-				</section>
-			</Space>
-		</div>
+				<Alert
+					style={{ marginTop: 20 }}
+					icon={<InfoCircleOutlined />}
+					type="warning"
+					showIcon
+					message="Use results with context"
+					description={(
+						<span>
+							These calculators support field measurements and learning. Verify measurements, assumptions, system limits, and crop requirements before making operational decisions. For questions, contact the AHGRI Lab at{' '}
+							<Link href="mailto:floyid.nicolas@oregonstate.edu">floyid.nicolas@oregonstate.edu</Link>.
+						</span>
+					)}
+				/>
+			</section>
+		</main>
 	);
 };
 

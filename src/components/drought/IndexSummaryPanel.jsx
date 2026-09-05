@@ -9,7 +9,7 @@ import {
     Tooltip,
     ReferenceLine
 } from 'recharts';
-import { Typography } from 'antd';
+import {Card, Typography } from 'antd';
 const { Title, Text, Paragraph } = Typography;
 
 const MEASUREMENT_LABELS = {
@@ -100,11 +100,11 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
     ];
 
     return (
-        <div className="card fill-height" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <Card>
             <div style={{ borderBottom: '1px solid #333', paddingBottom: '8px' }}>
-                <Title level={3} style={{ color: '#FFFF00', margin: 0 }}>Nearest Drought Monitoring Stations</Title>
-                <Text style={{ color: '#AAAAAA', margin: '4px 0 0 0' }}>
-                    Clicked location: {clickedLocation.lat.toFixed(4)}, {clickedLocation.lng.toFixed(4)}
+                <Title level={3}>Nearest Drought Monitoring Stations</Title>
+                <Text>
+                    Location Lat/Long: {clickedLocation.lat.toFixed(4)}/{clickedLocation.lng.toFixed(4)}
                 </Text>
             </div>
 
@@ -133,7 +133,6 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                         <details
                             key={code}
                             style={{
-                                background: '#2A3C4F',
                                 borderRadius: '8px',
                                 borderLeft: '4px solid #00e5ff',
                                 overflow: 'hidden'
@@ -149,15 +148,15 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                     gap: '2px'
                                 }}
                             >
-                                <Text strong style={{ color: '#FFF' }}>
+                                <Text strong>
                                     {MEASUREMENT_LABELS[code] || code} ({code})
                                 </Text>
                                 {categoryUnitCode && (
-                                    <Text style={{ color: '#93A7BC', fontSize: '0.78rem' }}>
+                                    <Text type="secondary">
                                         Unit code: {categoryUnitCode}
                                     </Text>
                                 )}
-                                <Text style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>
+                                <Text>
                                     {stationsWithCategory.length} station{stationsWithCategory.length === 1 ? '' : 's'}
                                 </Text>
                             </summary>
@@ -192,24 +191,23 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                         <div
                                             key={`${code}-${station.stationTriplet || station.stationId}`}
                                             style={{
-                                                background: '#1E2D3D',
                                                 borderRadius: '6px',
                                                 padding: '8px 10px'
                                             }}
                                         >
-                                            <Paragraph style={{ margin: 0, color: '#FFF', fontSize: '0.95rem', fontWeight: 'bold' }}>
+                                            <Paragraph style={{  fontSize: '0.95rem', fontWeight: 'bold' }}>
                                                 {station.stationName}
                                             </Paragraph>
-                                            <Paragraph style={{ margin: '2px 0 0', color: '#AAAAAA', fontSize: '0.8rem' }}>
+                                            <Paragraph style={{ fontSize: '0.8rem' }}>
                                                 Station ID: {station.stationId} | Distance: {station.distanceKm ?? 'N/A'} km
                                             </Paragraph>
-                                            <Paragraph style={{ margin: '4px 0 0', color: '#FFF', fontSize: '1rem', fontWeight: 'bold' }}>
+                                            <Paragraph style={{ fontSize: '1rem', fontWeight: 'bold' }}>
                                                 {renderValue(measurement)}
                                             </Paragraph>
                                             {/* <Paragraph style={{ margin: 0, color: '#93A7BC', fontSize: '0.72rem' }}>
                                                 Measurement unit: {unitCode || 'Unknown'}
                                             </Paragraph> */}
-                                            <Paragraph style={{ margin: 0, color: '#718096', fontSize: '0.72rem' }}>
+                                            <Paragraph style={{ fontSize: '0.72rem' }}>
                                                 {asOf ? `As of ${asOf}` : 'Date unavailable'}
                                             </Paragraph>
                                             {chartData.length > 0 && (
@@ -256,7 +254,7 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
                                                 </div>
                                             )}
                                             {chartData.length === 0 && (
-                                                <Paragraph style={{ margin: '6px 0 0', color: '#718096', fontSize: '0.72rem' }}>
+                                                <Paragraph style={{ margin: '6px 0 0', fontSize: '0.72rem' }}>
                                                     Monthly average history unavailable.
                                                 </Paragraph>
                                             )}
@@ -270,10 +268,10 @@ export default function SummaryPanel({ clickedLocation, stationData, measurement
             </div>
 
             {categoryCodes.length === 0 && (
-                <Text style={{ color: '#AAAAAA', fontSize: '0.85rem' }}>
+                <Text>
                     No measurement metadata available for nearby stations.
                 </Text>
             )}
-        </div>
+        </Card>
     );
 }

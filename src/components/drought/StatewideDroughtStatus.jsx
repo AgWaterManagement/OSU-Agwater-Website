@@ -269,10 +269,9 @@ export default function StatewideDroughtStatus() {
     }, [startDate]);
 
     return (
-        <div className="card fill-height" style={{ padding: '12px' }}>
-            <div style={{ borderBottom: '1px solid #333', paddingBottom: '8px', marginBottom: '12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <Card >
                 <div>
-                    <Title style={{ margin: 0 }}>Statewide Drought Index Averages (Oregon)</Title>
+                    <Title level={2} style={{ margin: 0 }}>Statewide Drought Index Averages (Oregon)</Title>
                     <Paragraph style={{ margin: '4px 0 0 0' }}>Data date: {startDate} (start of day)</Paragraph>
                 </div>
                 {isMobile && (
@@ -282,7 +281,6 @@ export default function StatewideDroughtStatus() {
                             background: 'transparent',
                             border: '1px solid #555',
                             borderRadius: '4px',
-                            color: '#AAAAAA',
                             cursor: 'pointer',
                             fontSize: '0.8rem',
                             padding: '4px 8px',
@@ -294,7 +292,6 @@ export default function StatewideDroughtStatus() {
                         {collapsed ? 'Show Details' : 'Hide Details'}
                     </Button>
                 )}
-            </div>
 
             {loading && <Paragraph style={{ margin: 0 }}>Loading statewide drought index values...</Paragraph>}
 
@@ -339,7 +336,6 @@ export default function StatewideDroughtStatus() {
                                 title={ELEMENT_LABELS[code]}
                                 key={code}
                                 style={{
-                                    background: '#1E2D3D',
                                     borderLeft: '4px solid #00e5ff',
                                     borderRadius: '8px',
                                     padding: '10px 12px'
@@ -407,6 +403,6 @@ export default function StatewideDroughtStatus() {
                     })}
                 </div>
             )}
-        </div>
+        </Card>
     );
 }
