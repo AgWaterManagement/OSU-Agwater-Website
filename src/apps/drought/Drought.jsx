@@ -2109,7 +2109,7 @@ const Drought = () => {
 													justifyContent: 'center',
 													fontSize: '10px',
 													fontWeight: 'bold',
-													color: '#333'
+													color: (category.level === 'D3' || category.level === 'D4') ? '#fff' : '#333'
 												}}
 												onClick={() => setSelectedLegendCategory(
 													selectedLegendCategory?.level === category.level ? null : category
@@ -2121,7 +2121,7 @@ const Drought = () => {
 									</div>
 									{selectedLegendCategory && (
 										<div style={{ padding: '8px', border: `1px solid ${selectedLegendCategory.color}`, borderRadius: '4px', marginBottom: '6px' }}>
-											<Title level={5} style={{ margin: '0 0 4px 0' }}>
+											<Title level={3} style={{ margin: '0 0 4px 0' }}>
 												{selectedLegendCategory.level} — {selectedLegendCategory.label}
 											</Title>
 											<Text>{selectedLegendCategory.description}</Text>

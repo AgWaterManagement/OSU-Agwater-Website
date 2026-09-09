@@ -100,7 +100,7 @@ const AppLayout = () => {
                     </span> */}
 
                     <Link className='top-link' to="/">
-                        <img src={osuLogo2} className="logo" alt="logo" />
+                        <img src={osuLogo2} className="logo" alt="Oregon State University" />
                     </Link>
 
                     {/* app bar title */}
