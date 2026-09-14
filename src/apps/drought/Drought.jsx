@@ -1605,7 +1605,7 @@ const Drought = () => {
 					{!selectedCounty
 						? 'Select a county to view snow pack data.'
 						: snowForecast?.noStations
-							? `No SNOTEL stations are located in ${selectedCounty.properties.NAME.replace(/ County$/i, '')} County.`
+							? `No SNOTEL stations are located in ${selectedCounty.properties.NAME} County.`
 							: 'Loading snow data...'}
 				</p>
 			);
