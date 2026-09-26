@@ -1,0 +1,80 @@
+ .justify-start{
+    display: flex;
+    justify-content: start;
+  }
+  .justify-end{
+    display: flex;
+    justify-content: end;
+  }
+  
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .message-container {
+    margin-bottom: 16px;
+  }
+  
+
+  .user-message {
+    width: fit-content;
+    max-width: 70%;
+    padding:0.5em;
+    border-radius: 8px;
+    background-color: yellow;
+    color:black
+  }
+  
+  .ai-message {
+    padding-left:0.5em;
+    padding-right:0.5em;
+    border-radius: 8px;
+    background-color: #eee;
+    color:black;
+    width: 100%;
+    margin-left:3em;
+    margin-right:1em;
+  }
+
+  .ai-message a {
+    color: #1a0dab;
+    text-decoration: none;
+  }
+
+  
+  /* Style for reference links updated as requested by users. */
+  /*
+  a {
+    color: #1a0dab;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  } */
+
+  .chat-prompt {
+    background-color: darkgrey;
+    padding: .5em;
+    border-radius: 6px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+
+  
+  .textarea {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px 0 0 4px;
+    resize: none;
+    overflow: hidden;
+    margin-right: 1em;
+    color:black
+  }

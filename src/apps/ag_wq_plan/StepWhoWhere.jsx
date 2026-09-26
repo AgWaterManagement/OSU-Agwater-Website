@@ -63,7 +63,7 @@ const StepWhoWhere = ({
 
   userRole, setUserRole,
   userID, setUserID,
-  setLoginName, setLoggingIn,
+  setUserName, setLoggingIn,
   sites, setSites,
   commoditiesData,
   selectedCommodities,
@@ -971,7 +971,7 @@ const StepWhoWhere = ({
                       showCancel={false}
                       onLoginSuccess={(result) => {
                         console.log("Login successful:", result);
-                        setLoginName(result.user.username);
+                        setUserName(result.user.username);
                         setUserRole(result.user.role);
                         setUserID(result.user.id);
                         setLoggingIn(false);
@@ -983,7 +983,7 @@ const StepWhoWhere = ({
                       }}
                       onLogout={() => {
                         console.log("Logged out");
-                        setLoginName(null);
+                        setUserName(null);
                         setUserRole(null);
                         setLoggingIn(false);
                       }}
@@ -1283,7 +1283,7 @@ StepWhoWhere.propTypes = {
   userID: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   userRole: PropTypes.string,
   setUserRole: PropTypes.func,
-  setLoginName: PropTypes.func,
+  setUserName: PropTypes.func,
   setLoggingIn: PropTypes.func,
   setUserID: PropTypes.func,
   sites: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.object, PropTypes.string])),

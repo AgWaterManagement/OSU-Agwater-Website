@@ -42,6 +42,11 @@ export const darkTheme = {
             colorTextDisabled: '#666666',
             colorTextHeading: '#1c1c1c',
         },
+        Descriptions: {
+            //labelColor: '#adc01f',
+            colorSecondary: '#eeeeee',
+            contentColor: '#FBEC5D',
+        },
         Divider: {
             colorSplit: '#CCC',
         },
@@ -140,6 +145,14 @@ export const darkTheme = {
             defaultColor: '#e89a3c',
             defaultBg: '#2b1d11',
             colorBorder: '#593815',
+            colorSuccess: '#eeeeee',
+            colorWarning: '#ff9800',
+            colorError: '#f44336',
+            colorInfo: '#2196f3',
+            colorSuccessBg: '#053a11',
+            colorWarningBg: '#2b1d11',
+            colorErrorBg: '#6d3a3fbe',
+            colorInfoBg: '#2b1d11',
         },
         TreeSelect: {
             colorText: 'black',

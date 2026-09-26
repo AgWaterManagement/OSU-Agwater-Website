@@ -10,8 +10,8 @@ const StartUp = ({
     userRole, setUserRole,
     selectedTMDLs, setSelectedTMDLs,
     availableTMDLs,
-    setLoginName, setUserID, setLoggingIn,
-    setCurrent
+    setUserName, setUserID, setLoggingIn,
+    setCurrentStep
 }) => {
 
     const [loginModalOpen, setLoginModalOpen] = useState(false);
@@ -40,7 +40,7 @@ const StartUp = ({
                             showCancel={false}
                             onLoginSuccess={(result) => {
                                 console.log("Login successful:", result);
-                                setLoginName(result.user.username);
+                                setUserName(result.user.username);
                                 setUserRole(result.user.role);
                                 setUserID(result.user.id);
                                 setLoggingIn(false);
@@ -52,7 +52,7 @@ const StartUp = ({
                             }}
                             onLogout={() => {
                                 console.log("Logged out");
-                                setLoginName(null);
+                                setUserName(null);
                                 setUserRole(null);
                                 setLoggingIn(false);
                             }}
@@ -84,14 +84,14 @@ const StartUp = ({
                         <br />
                     </>
                 ) : (
-                    <>
-                        <Button type="primary" style={{ marginRight: '1em' }} onClick={() => setCurrent(0)}>
-                            Start New Plan
+                    <> 
+                        <Button type="primary" style={{ marginRight: '1em', marginTop: '2em' }} onClick={() => setCurrentStep(0)}>
+                            Tap/Click to Start New Plan
                         </Button>
-
-                        <Button type="primary" style={{ marginLeft: '1em' }} onClick={() => setCurrent(0)}>
+{/*
+                        <Button type="primary" style={{ marginLeft: '1em' }} onClick={() => setCurrentStep(0)}>
                             Access Existing Plan
-                        </Button>
+                        </Button> */}
                     </>
                 )}
             </div>
@@ -116,10 +116,10 @@ StartUp.propTypes = {
     selectedTMDLs: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.object])),
     setSelectedTMDLs: PropTypes.func.isRequired,
     availableTMDLs: PropTypes.array,
-    setLoginName: PropTypes.func.isRequired,
+    setUserName: PropTypes.func.isRequired,
     setUserID: PropTypes.func.isRequired,
     setLoggingIn: PropTypes.func.isRequired,
-    setCurrent: PropTypes.func.isRequired,
+    setCurrentStep: PropTypes.func.isRequired,
 };
 
 export default StartUp;

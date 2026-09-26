@@ -53,6 +53,7 @@ import UploadObservations from '../../pages/upload_observations/UploadObservatio
 // import SmartTAPPilot1 from '../../pages/Smart_TAP_Pilot_1/SmartTAPPilot1';
 import SmartTAPPilot1 from '../../apps/smarttap/pilot1/Pilot1Workspace';
 import SmartTAPPilot3 from '../../apps/smarttap/pilot3/Pilot3Workspace';
+import AgWaterChat from '../../pages/ag_water_chat_v2/Chat_v2';
 
 import DroughtSurvey from '../../pages/survey/DroughtSurvey';
 import DroughtSurvey1 from '../../pages/survey/DroughtSurvey1';
@@ -86,6 +87,7 @@ const AppRoutes = () => (
         <Route path="/apps/wotus" element={<Wotus />} />
         <Route path="/apps/drought" element={<Drought />} />
         <Route path="/apps/droughtIndexViewer" element={<DroughtIndexViewer />} />
+        <Route path="/apps/agWaterChat" element={<AgWaterChat />} />
         <Route path="/droughtSurvey" element={<DroughtSurvey />} />
         <Route path="/droughtSurvey1" element={<DroughtSurvey1 />} />
         <Route path="/apps/cropCoeffCalculator" element={<CropCoeffCalculator />} />

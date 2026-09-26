@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Divider, Typography, Tag, Space, Row, Col } from 'antd';
+import { secrets } from "../../secrets";
 
 const { Collapse, Title, Paragraph, Text } = Typography;
 
@@ -18,7 +19,7 @@ const { Collapse, Title, Paragraph, Text } = Typography;
 //   - concernQuestions: Array of fetched concern question objects from /agwqplan/concernQuestions
 const Report = ({
   userType,
-  userID,
+  userName,
   latitude,
   longitude,
   agWqMArea,
@@ -60,74 +61,64 @@ const Report = ({
   const handleSaveReport = () => {
     // Implement saving logic here (e.g., send data to server or save to local storage)
     console.log('Saving report...');
-    // Example: You could send the selected practices and other details to a backend API
-   /*
-  userType,
-  latitude,
-  longitude,
-  agWqMArea,
-  region,
-  regionalSpecialist,
-  regionalSpecialistEmail,
-  regionalSpecialistPhone,
-  adminRulesLink,
-  areaPlanLink,
-  siteName,
-  site,
-  sitePhotos,
-  selectedCommodities,
-  selectedConcerns,
-  selectedQuestions,
-  selectedGoals,
-  goalData,
-  selectedPractices,
-  concernQuestions,
-  areaRules */
-
-const now = () => new Date().toISOString(); // Helper function to get current timestamp in ISO format
-
-const reportData = {
-  userType,
-  userID,
-  latitude,
-  longitude,
-  agWqMArea,
-  region,
-  regionalSpecialist,
-  regionalSpecialistEmail,
-  regionalSpecialistPhone,
-  adminRulesLink,
-  areaPlanLink,
-  siteName,
-  site,
-  sitePhotos,
-  selectedCommodities,
-  selectedConcerns,
-  selectedQuestions,
-  selectedGoals,
-  //goalData,
-  selectedPractices,
-  //concernQuestions,
-  //areaRules
-};
+    const now = () => new Date().toISOString(); // Helper function to get current timestamp in ISO format
 
 
-const record = {
-    //id: integer NOT NULL,
-    //report:  // text COLLATE pg_catalog."default" NOT NULL,
-    report_data: reportData, // jsonb,
-    created_by: userID,  // text COLLATE pg_catalog."default",
-    site_id: site.id,   // integer,
-    latitude: latitude,   // real,
-    longitude: longitude,   // real,
-    keywords: "",   // text COLLATE pg_catalog."default",
-    created_at: now(),   // timestamp with time zone DEFAULT now(),
-    updated_at: now(),   // timestamp with time zone DEFAULT now(),
+    const _selectedPractices = selectedPractices.map((practice) => practice.id);
+
+    const reportData = {
+      userType,
+      userName,
+      latitude,
+      longitude,
+      agWqMArea,
+      region,
+      regionalSpecialist,
+      regionalSpecialistEmail,
+      regionalSpecialistPhone,
+      adminRulesLink,
+      areaPlanLink,
+      siteName,
+      site,
+      sitePhotos,
+      selectedCommodities,
+      selectedConcerns,
+      selectedQuestions,
+      selectedGoals,
+      //goalData,
+      _selectedPractices,
+      //concernQuestions,
+      //areaRules
+    };
+
+
+    const record = {
+      //id: integer NOT NULL,
+      //report:  // text COLLATE pg_catalog."default" NOT NULL,
+      report_data: JSON.stringify(reportData), // jsonb,
+      created_by: userName,  // text COLLATE pg_catalog."default",
+      //site_id: reportData.site.id,   // integer,
+      latitude: latitude,   // real,
+      longitude: longitude,   // real,
+      keywords: "",   // text COLLATE pg_catalog."default",
+      created_at: now(),   // timestamp with time zone DEFAULT now(),
+      updated_at: now(),   // timestamp with time zone DEFAULT now(),
+    };
+
+    const data = JSON.stringify(record);
+    console.log("Saving report data:", record);
+    console.log("Saving report data:", data);
     
-
-
-  };
-}
+    // "PUT" the record to the server via API call
+    fetch('https://agwater.org:5556/agwqplan/reports', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': secrets.agwater_api_key,
+      },
+      body: data,
+    })
+  }
 
 
   // Create map of question IDs to question objects for lookup
@@ -351,14 +342,13 @@ const record = {
       </div>
 
       <Divider />
-      
+
       {/* save report */}
       <Button type="primary" onClick={handleSaveReport}>
         Save Report
       </Button>
-
       {/* Print/PDF export button */}
-      <Button type="primary" onClick={handlePrint}>
+      <Button type="primary" style={{ marginLeft: '1em' }} onClick={handlePrint}>
         Print / Save as PDF
       </Button>
     </>
@@ -367,6 +357,7 @@ const record = {
 
 Report.propTypes = {
   userType: PropTypes.string,
+  userName: PropTypes.string,
   latitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   longitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   agWqMArea: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),

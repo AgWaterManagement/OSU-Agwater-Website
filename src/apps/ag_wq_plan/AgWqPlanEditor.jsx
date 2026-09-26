@@ -35,7 +35,7 @@ const API_BASE = 'https://agwater.org:5556';
 const AgWqPlanEditor = () => {
   const [activeTab, setActiveTab] = useState('practices');
   const [loggingIn, setLoggingIn] = useState(true);
-  const [loginName, setLoginName] = useState(null);
+  const [userName, setUserName] = useState(null);
   const [userRole, setUserRole] = useState(null);
 
   const items = [
@@ -71,7 +71,7 @@ const AgWqPlanEditor = () => {
     {loggingIn && (
       <AgWqplanLogin
         onLoginSuccess={(result) => {console.log("Login successful:", result);
-          setLoginName(result.user.username);
+          setUserName(result.user.username);
           setUserRole(result.user.role);
           setLoggingIn(false);
         } }
@@ -79,26 +79,26 @@ const AgWqPlanEditor = () => {
           setLoggingIn(false);
         }}
         onLogout={() => {console.log("Logged out");
-          setLoginName(null);
+          setUserName(null);
           setUserRole(null);
           setLoggingIn(false);
         }}
       ></AgWqplanLogin>
     )}
-    {!loginName && !loggingIn && (
+    {!userName && !loggingIn && (
       <div style={{ padding: 4, textAlign: 'right' }} >
         <Button type="text" onClick={() => setLoggingIn(true)}>
           Sign In
         </Button>
       </div>  
     )}
-    { loginName && (
-      <div style={{ padding: 4, textAlign: 'right', color: 'white', fontSize:'small' }} >
-        Signed in as <b>{loginName}</b>
+    { userName && (
+      <div style={{ padding: 4, textAlign: 'right', fontSize:'small' }} >
+        Signed in as <b>{userName}</b>
         {userRole && <span> ({userRole})</span>}
         <Button ghost onClick={() => {
           setLoggingIn(false);
-          setLoginName(null);
+          setUserName(null);
           setUserRole(null);
         }} style={{ marginLeft: 8 }}>
           Sign Out
@@ -106,7 +106,7 @@ const AgWqPlanEditor = () => {
       </div>
     )}
 
-       <Content style={{ padding: '8px 8px', backgroundColor: '#001529', minHeight: '100vh' }}>
+       <Content style={{ padding: '8px 8px',  minHeight: '100vh' }}>
         <Card>
           <Title level={3} style={{ marginTop: 0 }}>
             AG Water Quality Plan Editor
@@ -121,7 +121,7 @@ const AgWqPlanEditor = () => {
             description="Use these tabs to add, edit, or remove planner data."
             type="info"
             showIcon
-            style={{ marginBottom: 16, backgroundColor: '#333' }}
+            style={{ marginBottom: 16,  }}
           />
 
           <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />

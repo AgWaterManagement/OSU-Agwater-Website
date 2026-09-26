@@ -363,8 +363,8 @@ export function SmartTapWorkspace() {
                 <Col xs={24} md={12}>
                   <Title level={2} className="font-display text-xl text-ink">Example Queries</Title>
                   <ul className="mt-3 space-y-2 text-sm text-ink/80">
-                    <li>`Show temperature in Corvallis for July 2024`</li>
-                    <li>`What are the monthly ETa values in Hood River for the year 2022?`</li>
+                    <li>`Show temperature in Corvallis for July 2026`</li>
+                    <li>`What are the monthly ETa values in Hood River for the year 2025?`</li>
                     <li>`What crops are grown in Benton County?`</li>
                   </ul>
                 </Col>
@@ -374,15 +374,15 @@ export function SmartTapWorkspace() {
               <Title level={4} className="font-display text-lg text-ink">Disclaimer</Title>
               <Paragraph className="text-sm text-ink/80">
                 Due to limited data coverage,
-                the available OpenET data only covers up to October 1st, 2022.
+                the available OpenET data only covers up to October 1st, 2025.
                 Queries made to the OpenET dataset after this date may not return accurate results.
               </Paragraph>
               <Paragraph className="text-sm text-ink/80">
                 It should also be noted that, in general, queries to the OpenET dataset are very sensitive to the exact phrasing of the query.
-                For instance, the query "What are the monthly ETa values for Hood River in 2020?" will operate under the assumption that the user
+                For instance, the query "What are the monthly ETa values for Hood River in 2025?" will operate under the assumption that the user
                 wants to gather the monthly ETa values for a reference crop called Hood River. Instead, such a query should specify that these
                 OpenET measurements are coming from in the specified city or county. For example, a better phrasing of the query would be
-                "What are the monthly ETa values in Hood River in 2020?".
+                "What are the monthly ETa values in Hood River in 2025?".
               </Paragraph>
               <Paragraph className="text-sm text-ink/80">
                 Please use the tool with caution and verify the data before making any decisions based on it.

@@ -41,13 +41,6 @@ const StepPractices = ({
 	};
 
 	const carouselContentStyle = {
-		/*
-		margin: 0,
-		height: '160px',
-		color: '#fff',
-		lineHeight: '160px',
-		textAlign: 'center',
-		background: '#364d79',*/
 		width: '100%',
 		height: '100%',
 	};
@@ -78,9 +71,11 @@ const StepPractices = ({
 				<Paragraph>
 					{"Area-specific rules or TMDL requirements may apply in this management area (" + agwqmArea
 						+ "). Please review the information for each practice carefully."}
-					<Button type="primary" style={{ marginLeft: '4em' }} onClick={() => generatePlainLanguageSummary(matchingRules)} >Plain Language Summary</Button>
+					<Button type="primary" style={{ marginTop:'0.5em', marginLeft: '4em' }} 
+						onClick={() => generatePlainLanguageSummary(matchingRules)} >
+							Plain Language Summary (AI generated)
+					</Button>
 				</Paragraph>
-				<br />
 				{showSummary && (
 					{/* <ChatResponse prompt={prompt.current} /> */}
 					

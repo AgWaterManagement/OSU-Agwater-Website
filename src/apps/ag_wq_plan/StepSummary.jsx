@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 //   - concernQuestions: Array of fetched concern question objects from /agwqplan/concernQuestions
 const StepSummary = ({
   userType,
-  userID,
+  userName,
   latitude,
   longitude,
   agWqMArea,
@@ -40,7 +40,7 @@ const StepSummary = ({
 }) => (
   <Report
     userType={userType}
-    userID={userID}
+    userName={userName}
     latitude={latitude}
     longitude={longitude}
     agWqMArea={agWqMArea}
@@ -68,6 +68,7 @@ const StepSummary = ({
 
 StepSummary.propTypes = {
   userType: PropTypes.string,
+  userName: PropTypes.string,
   latitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   longitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   agWqMArea: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -91,6 +92,13 @@ StepSummary.propTypes = {
       })
     ),
   }),
+  sitePhotos: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      url: PropTypes.string,
+      description: PropTypes.string,
+    }),
+  ),
   selectedCommodities: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
   selectedConcerns: PropTypes.arrayOf(PropTypes.string).isRequired,
 
@@ -134,6 +142,7 @@ StepSummary.propTypes = {
       ),
     }),
   ).isRequired,
+  areaRules: PropTypes.array,
 };
 
 export default StepSummary;

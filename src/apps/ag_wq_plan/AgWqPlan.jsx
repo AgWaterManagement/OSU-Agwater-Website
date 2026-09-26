@@ -8,26 +8,16 @@ import { Menu, Layout, Steps, Card, Typography, Divider, Select, Space, Button, 
 //import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 
 import Maps from './Maps';
-
-import StartUp from './StartUp';
-import StepWhoWhere from './StepWhoWhere';
-import StepConditions from './StepConditions';
-import StepGoals from './StepGoals';
-import StepPractices from './StepPractices';
-import StepSummary from './StepSummary';
+import MyPlans from './MyPlans';
+import PlanEditor from './PlanEditor';
 
 //import AgWqplanLogin from "./AgWqplanLogin";
 import PracticesGuide from './PracticesGuide';
 import PageRating from '../../components/page_rating/PageRating';
-
-
 import VFSGuide from './Guides/VFSGuide';
-
-
-
+import WQCalculators from './calculators/WQCalculators';
 
 const { Content, Footer } = Layout;
-const { Step } = Steps;
 const { Title, Text, Paragraph } = Typography;
 const API_BASE = 'https://agwater.org:5556';
 
@@ -42,10 +32,11 @@ const API_BASE = 'https://agwater.org:5556';
 // Loads concern questions and practices from the /agwqplan routes exposed by ag_wqplan.py.
 const AgWqPlan = () => {
   // Current step in the wizard (0-4)
-  const [currentMode, setCurrentMode] = useState('generate_plan');
+  const [currentMode, setCurrentMode] = useState('edit_plan');
   const [currentPracticeGuide, setCurrentPracticeGuide] = useState('vfs');
-  const [current, setCurrent] = useState(-1);
-
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [currentPlan, setCurrentPlan] = useState(null);
+  
   //------------------------------------------------------------------------------------
   // Global state for planner data and user inputs
   //------------------------------------------------------------------------------------
@@ -58,7 +49,6 @@ const AgWqPlan = () => {
   const [areaRules, setAreaRules] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [loggingIn, setLoggingIn] = useState(false);
-  const [showMaps, setShowMaps] = useState(false);
   const [userRole, setUserRole] = useState(null);  // User's role (e.g., 'Landowner', 'Resource Conservationist', 'ODA Water Quality Specialist')
 
   // -----------------------------------------------------------------------------------
@@ -66,9 +56,10 @@ const AgWqPlan = () => {
   // useStates() reflect data that is reactive
   // useRef() for data that doesn't need to trigger re-renders
   // -----------------------------------------------------------------------------------
-  const [loginName, setLoginName] = useState(null);
+  const [userName, setUserName] = useState(null);
   //const userType = useRef('Landowner');
   const userID = useRef(null);
+
   const [selectedCommodities, setSelectedCommodities] = useState([]);
   //const commodity = useRef('Pasture/Hay');
   const [siteName, setSiteName] = useState('');
@@ -106,6 +97,27 @@ const AgWqPlan = () => {
   const [stepGoalsStatus, setStepGoalsStatus] = useState('wait');
   const [stepPracticesStatus, setStepPracticesStatus] = useState('wait');
 
+
+
+
+  const next = () => {
+    //if (!validateInputs())
+    //  return;
+    setCurrentStep((c) => c + 1);
+  };
+
+  const prev = () => {
+    //if (validateInputs())
+    //  return;
+
+    setCurrentStep((c) => c - 1);
+  };
+
+
+
+
+
+
   // Cookie helpers
   function setCookie(name, value, days = 365) {
     const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
@@ -118,7 +130,7 @@ const AgWqPlan = () => {
 
   //const _setUserType = (type) => {
   //  console.log("Setting userType to:", type);
-  //  userType.current = type;
+  //  userType.currentStep = type;
   //}
 
   const _setUserID = (id) => {
@@ -136,10 +148,10 @@ const AgWqPlan = () => {
     setCookie('agwqplan_siteID', id);
   }
 
-  const _setLoginName = (name) => {
-    console.log("Setting loginName to:", name);
-    setLoginName(name);
-    setCookie('agwqplan_loginName', name);
+  const _setUserName = (name) => {
+    console.log("Setting userName to:", name);
+    setUserName(name);
+    setCookie('agwqplan_userName', name);
   }
 
   const _setUserRole = (role) => {
@@ -154,7 +166,7 @@ const AgWqPlan = () => {
 
     getCookie('agwqplan_userID') && _setUserID(getCookie('agwqplan_userID'));
     getCookie('agwqplan_userRole') && setUserRole(getCookie('agwqplan_userRole'));
-    getCookie('agwqplan_loginName') && setLoginName(getCookie('agwqplan_loginName'));
+    getCookie('agwqplan_loginName') && setUserName(getCookie('agwqplan_loginName'));
     getCookie('agwqplan_siteID') && _setSiteID(getCookie('agwqplan_siteID'));
 
     const fetchJson = async (fileName) => {
@@ -268,32 +280,13 @@ const AgWqPlan = () => {
     [selectedPracticeIds, practices],
   );
 
-  const showMapContent = (show) => {
-    console.log("Show maps:", show);
-    setShowMaps(show);
-  }
-
-
-  const next = () => {
-    //if (!validateInputs())
-    //  return;
-    setCurrent((c) => c + 1);
-  };
-
-  const prev = () => {
-    //if (validateInputs())
-    //  return;
-
-    setCurrent((c) => c - 1);
-  };
-
   return (
     <>
-      <Content style={{ padding: '8px 8px', backgroundColor: '#001529' }}>
+      <Content style={{ padding: '8px 8px', }}>
         <Card>
           <PageRating pageID='/apps/ag_wq_plan' />
           <Title level={3}>Water Quality Practices Planner</Title>
-          {current === -1 && (
+          {currentStep === -1 && (
             <Paragraph>
               This tool connects land conditions and goals to agricultural water quality
               practices, technical assistance, and reference materials.
@@ -301,170 +294,93 @@ const AgWqPlan = () => {
           )}
 
           <Menu onClick={({ key }) => setCurrentMode(key)} selectedKeys={[currentMode]} mode="horizontal" items={[
-            { label: 'Generate Plan', key: 'generate_plan' },
-            { label: 'View Plan', key: 'view_plan', },
+            { label: 'My Plans', key: 'my_plans' },
             { label: 'Learn More', key: 'learn_more', }]}            
           />
 
-          {userID.current && loginName ? (
-            <Text style={{ fontSize: '1.0em', color: '#888', marginLeft: 8, float:'right' }}>
-              Logged in as: {loginName}/{userID.current} ({userRole})  
+          {userID.current && userName ? (
+            <Text style={{ fontSize: '1.0em', marginLeft: 8, float:'right' }}>
+              Logged in as: {userName} ({userRole})  
             </Text>
           ) : (
-            <Text style={{ fontSize: '1.0em', color: '#888', marginLeft: 8, float:'right' }}>
+            <Text style={{ fontSize: '1.0em', marginLeft: 8, float:'right' }}>
               Not logged in
             </Text>
           )}
 
           <Spin spinning={loadingData} tip="Loading planner data...">
 
-            {currentMode === 'generate_plan' && (
-              <>
-                {current === -1 && (
-                  <StartUp
-                    userRole={userRole} setUserRole={_setUserRole}
-                    selectedTMDLs={selectedTMDLs}
-                    setSelectedTMDLs={setSelectedTMDLs}
-                    availableTMDLs={availableTMDLs}
-                    setLoginName={_setLoginName}
-                    setUserID={_setUserID}
-                    setLoggingIn={setLoggingIn}
-                    setCurrent={setCurrent}
-                    />
-                )}
-                {current >= 0 && (
-                  <>
-                    <Divider />
-                    <Steps current={current} onChange={setCurrent} style={{ marginBottom: 24 }}>
-                      <Step title="Location" status={stepLocationStatus} />
-                      <Step title="Conditions" status={stepConditionsStatus} />
-                      <Step title="Goals" status={stepGoalsStatus} />
-                      <Step title="Practices" status={stepPracticesStatus} />
-                      <Step title="Plan Summary" />
-                    </Steps>
-                    <Divider />
-                  </>
-                )}
-
-                {current === 0 && (
-                  <StepWhoWhere
-                    userRole={userRole} setUserRole={setUserRole}
-                    userID={userID.current} setUserID={_setUserID}
-                    setLoginName={setLoginName} setLoggingIn={setLoggingIn}
-                    sites={sites}
-                    setSites={setSites}
-                    commoditiesData={commodities}
-                    selectedCommodities={selectedCommodities}
-                    setSelectedCommodities={setSelectedCommodities}
-                    sitePhotos={sitePhotos} setSitePhotos={setSitePhotos}
-                    siteName={siteName} setSiteName={setSiteName}
-                    siteID={siteID.current} setSiteID={_setSiteID }
-                    siteDescription={siteDescription} setSiteDescription={setSiteDescription}
-                    siteLocator={siteLocator} setSiteLocator={setSiteLocator}
-                    _latitude={latitude} setLatitude={setLatitude}
-                    _longitude={longitude} setLongitude={setLongitude}
-                    agwqmArea={agwqmArea} setAgwqmArea={setAgwqmArea}
-                    agwqRegion={agwqRegion} setAgwqRegion={setAgwqRegion}
-                    regionalSpecialist={regionalSpecialist} setRegionalSpecialist={setRegionalSpecialist}
-                    regionalSpecialistEmail={regionalSpecialistEmail} setRegionalSpecialistEmail={setRegionalSpecialistEmail}
-                    regionalSpecialistPhone={regionalSpecialistPhone} setRegionalSpecialistPhone={setRegionalSpecialistPhone}
-                    adminRulesLink={adminRulesLink} setAdminRulesLink={setAdminRulesLink}
-                    areaPlanLink={areaPlanLink} setAreaPlanLink={setAreaPlanLink}
-                    setError={setStepLocationStatus}
-                  />
-                )}
-
-                {current === 1 && (
-                  <StepConditions
-                    concernData={concerns}
-                    selectedConcerns={selectedConcerns}
-                    setSelectedConcerns={setSelectedConcerns}
-                    filteredQuestions={filteredQuestions}
-                    selectedQuestions={selectedQuestions}
-                    setSelectedQuestions={setSelectedQuestions}
-                    setError={setStepConditionsStatus}
-                  />
-                )}
-
-                {current === 2 && (
-                  <StepGoals
-                    selectedGoals={selectedGoals}
-                    setSelectedGoals={setSelectedGoals}
-                    goalData={goals}
-                    setError={setStepGoalsStatus}
-                  />
-                )}
-
-                {current === 3 && (
-                  <StepPractices
-                    userRole={userRole}
-                    areaRules={areaRules}
-                    agwqmArea={agwqmArea}
-                    recommendedPractices={filteredRecommendedPractices}
-                    selectedPracticeIds={selectedPracticeIds}
-                    setSelectedPracticeIds={setSelectedPracticeIds}
-                    setError={setStepPracticesStatus}
-                  />
-                )}
-
-                {current === 4 && (
-                  <StepSummary
-                    userRole={userRole}
-                    userID={userID.current}
-                    latitude={latitude}
-                    longitude={longitude}
-                    agWqMArea={agwqmArea}
-                    region={agwqRegion}
-                    regionalSpecialist={regionalSpecialist}
-                    regionalSpecialistEmail={regionalSpecialistEmail}
-                    regionalSpecialistPhone={regionalSpecialistPhone}
-                    adminRulesLink={adminRulesLink}
-                    areaPlanLink={areaPlanLink}
-                    siteName={siteName}
-                    site={sites.find(s => s.id === siteID.current) || null}
-                    sitePhotos={sitePhotos}
-                    selectedCommodities={selectedCommodities}
-                    selectedConcerns={selectedConcerns}
-                    selectedQuestions={selectedQuestions}
-                    selectedGoals={selectedGoals}
-                    goalData={goals}
-                    selectedPractices={selectedPractices}
-                    concernQuestions={concernQuestions}
-                    areaRules={areaRules}
-                  />
-                )}
-
-                <Divider />
-
-                <Space>
-                  {current > 0 && (
-                    <Button ghost onClick={prev}>
-                      Back
-                    </Button>
-                  )}
-                  {current < 4 && stepLocationStatus !== 'error' && stepConditionsStatus !== 'error' && stepGoalsStatus !== 'error' && stepPracticesStatus !== 'error' && (
-                    <Button type="primary" onClick={next}>
-                      Next
-                    </Button>
-                  )}
-                  {current < 4 && (stepLocationStatus === 'error' || stepConditionsStatus === 'error' || stepGoalsStatus === 'error' || stepPracticesStatus === 'error') && (
-                    <Button type="primary" disabled>
-                      Next
-                    </Button>
-                  )}
-
-                  <span style={{ marginLeft: 8, fontStyle: 'italic', fontSize: 14, color: 'red' }}>
-                    {stepLocationStatus === 'error' && 'Please complete the Location step before proceeding.'}
-                    {stepConditionsStatus === 'error' && 'Please complete the Conditions step before proceeding.'}
-                    {stepGoalsStatus === 'error' && 'Please complete the Goals step before proceeding.'}
-                    {stepPracticesStatus === 'error' && 'Please complete the Practices step before proceeding.'}
-                  </span>
-                </Space>
-              </>
+            {currentMode === 'my_plans' && (
+              <MyPlans
+                setCurrentPlan={setCurrentPlan}
+                userName={userName}
+                userID={userID} setUserID={_setUserID}
+              />
             )}
 
-            {currentMode === 'view_plan' && (
-              <div> View Plan Content </div>
+              {currentMode === 'my_plans' && currentPlan && (
+              
+              <PlanEditor
+                currentPlan={currentPlan}
+                userRole={userRole} setUserRole={_setUserRole}
+                userName={userName} setUserName={_setUserName}
+                userID={userID} setUserID={_setUserID}
+                areaPlanLink={areaPlanLink}
+                siteName={siteName}
+                site={sites.find(s => s.id === siteID.current) || null}
+                sitePhotos={sitePhotos}
+                selectedCommodities={selectedCommodities}
+                selectedConcerns={selectedConcerns}
+                selectedQuestions={selectedQuestions}
+                selectedGoals={selectedGoals}
+                goalData={goals}
+                selectedPractices={selectedPractices}
+                concernQuestions={concernQuestions}
+                areaRules={areaRules}
+                selectedTMDLs={selectedTMDLs}
+                setSelectedTMDLs={setSelectedTMDLs}
+                availableTMDLs={availableTMDLs}
+                setLoggingIn={setLoggingIn}
+                currentStep={currentStep}
+                setCurrentStep={setCurrentStep}
+                setAreaPlanLink={setAreaPlanLink}
+                setStepLocationStatus={setStepLocationStatus}
+                setStepConditionsStatus={setStepConditionsStatus}
+                setStepGoalsStatus={setStepGoalsStatus}
+                setStepPracticesStatus={setStepPracticesStatus}
+                stepLocationStatus={stepLocationStatus}
+                stepConditionsStatus={stepConditionsStatus}
+                stepGoalsStatus={stepGoalsStatus}
+                stepPracticesStatus={stepPracticesStatus}
+                sites={sites}
+                setSites={setSites}
+                commodities={commodities}
+                setSelectedCommodities={setSelectedCommodities}
+                setSitePhotos={setSitePhotos}
+                setSiteName={setSiteName}
+                siteID={siteID}
+                setSiteID={_setSiteID}
+                siteDescription={siteDescription}
+                setSiteDescription={setSiteDescription}
+                siteLocator={siteLocator}
+                setSiteLocator={setSiteLocator}
+                latitude={latitude}
+                setLatitude={setLatitude}
+                longitude={longitude}
+                setLongitude={setLongitude}
+                agwqmArea={agwqmArea}
+                setAgwqmArea={setAgwqmArea}
+                agwqRegion={agwqRegion}
+                setAgwqRegion={setAgwqRegion}
+                regionalSpecialist={regionalSpecialist}
+                setRegionalSpecialist={setRegionalSpecialist}
+                regionalSpecialistEmail={regionalSpecialistEmail}
+                setRegionalSpecialistEmail={setRegionalSpecialistEmail}
+                regionalSpecialistPhone={regionalSpecialistPhone}
+                setRegionalSpecialistPhone={setRegionalSpecialistPhone}
+                adminRulesLink={adminRulesLink}
+                setAdminRulesLink={setAdminRulesLink}
+              />
             )}
 
             {currentMode === 'learn_more' && (
@@ -482,6 +398,14 @@ const AgWqPlan = () => {
                       label: 'Maps',
                       children: <Maps />,
                     },
+                    {
+                      key: 'calculators',
+                      label: 'Calculators',
+                      children: <>
+                        <WQCalculators/>
+                      </>
+                    },
+
                     {
                       key: 'additional_guides',
                       label: 'Additional Guides',
