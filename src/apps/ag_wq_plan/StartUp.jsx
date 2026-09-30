@@ -7,11 +7,10 @@ import ModalLogin from './ModalLogin';
 const { Title, Paragraph, Text } = Typography;
 
 const StartUp = ({
+    userName,
     userRole, setUserRole,
-    selectedTMDLs, setSelectedTMDLs,
-    availableTMDLs,
     setUserName, setUserID, setLoggingIn,
-    setCurrentStep
+
 }) => {
 
     const [loginModalOpen, setLoginModalOpen] = useState(false);
@@ -20,7 +19,7 @@ const StartUp = ({
         <>
             <div style={{ marginBottom: 16, marginTop: 16, textAlign: 'center' }}>
 
-                {userRole === null ? (
+                {userName === null || userName === undefined || userName === 'Guest' ? (
                     <>
                         <Text style={{ fontSize: '1.2em' }}>
                             Please log in to get started
@@ -80,18 +79,14 @@ const StartUp = ({
                                 { label: 'ODA Water Quality Specialist', value: 'ODA Water Quality Specialist' },
                             ]} />
                         <br />
+                        <Button type="primary" style={{ marginTop: 16 }} 
+                            onClick={() => setUserName('Guest')} 
+                            >Continue as Guest</Button>
                         <br />
                         <br />
                     </>
                 ) : (
                     <> 
-                        <Button type="primary" style={{ marginRight: '1em', marginTop: '2em' }} onClick={() => setCurrentStep(0)}>
-                            Tap/Click to Start New Plan
-                        </Button>
-{/*
-                        <Button type="primary" style={{ marginLeft: '1em' }} onClick={() => setCurrentStep(0)}>
-                            Access Existing Plan
-                        </Button> */}
                     </>
                 )}
             </div>
@@ -113,13 +108,11 @@ const StartUp = ({
 StartUp.propTypes = {
     userRole: PropTypes.string,
     setUserRole: PropTypes.func.isRequired,
-    selectedTMDLs: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.object])),
-    setSelectedTMDLs: PropTypes.func.isRequired,
     availableTMDLs: PropTypes.array,
     setUserName: PropTypes.func.isRequired,
     setUserID: PropTypes.func.isRequired,
     setLoggingIn: PropTypes.func.isRequired,
-    setCurrentStep: PropTypes.func.isRequired,
+
 };
 
 export default StartUp;

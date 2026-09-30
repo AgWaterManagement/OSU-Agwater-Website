@@ -2,11 +2,11 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-import { Card, Button, Carousel, Col, Divider, Form, Input, Modal, Popconfirm, Row, Select, Space, Typography, message } from 'antd';
+import { Card, Button, Col, Divider, Form, Input, Modal, Popconfirm, Row, Select, Space, Typography, message } from 'antd';
 import ValidationError from './ValidationError';
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 
-import ModalLogin from './ModalLogin';
+//import ModalLogin from './ModalLogin';
 
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
@@ -60,44 +60,25 @@ const getSearchResultLatLng = (searchResult) => {
 //   - commodity: Current selected commodity/operation type (optional)
 //   - setCommodity: Function to update commodity
 const StepWhoWhere = ({
-
-  userRole, setUserRole,
-  userID, setUserID,
-  setUserName, setLoggingIn,
-  sites, setSites,
-  commoditiesData,
-  selectedCommodities,
-  setSelectedCommodities,
-  sitePhotos, setSitePhotos,
-  siteName, setSiteName,
-  siteID, setSiteID,
-  siteDescription, setSiteDescription,
-  siteLocator, setSiteLocator,
-  _latitude, setLatitude,
-  _longitude, setLongitude,
-  agwqmArea, setAgwqmArea,
-  agwqRegion, setAgwqRegion,
-  regionalSpecialist, setRegionalSpecialist,
-  regionalSpecialistEmail, setRegionalSpecialistEmail,
-  regionalSpecialistPhone, setRegionalSpecialistPhone,
-  adminRulesLink, setAdminRulesLink,
-  areaPlanLink, setAreaPlanLink,
-  setError
+  currentPlan, setCurrentPlan,
+  commoditiesData, // farm/operation types
+  setError,
+  savePlan,  // function to save the current plan/report
+  isDirty, setIsDirty // function to set the dirty state of the plan
 }) => {
   const [photoPickerOpen, setPhotoPickerOpen] = useState(false);
   // each with { name, url, description, uploaded?, serverInfo? }
   const [pendingPhoto, setPendingPhoto] = useState(null);  // photo being uploaded
   // { name: file.name, url: previewUrl, description: '', file }
-  const [selectedExistingSite, setSelectedExistingSite] = useState('new-site');
+  //const [selectedExistingSite, setSelectedExistingSite] = useState('new-site');
 
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [uploadingPhotoUrl, setUploadingPhotoUrl] = useState(null);
+  //const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [photoViewOpen, setPhotoViewOpen] = useState(false);
   const [activePhoto, setActivePhoto] = useState(null);
   const [editingPhotoDescription, setEditingPhotoDescription] = useState('');
   const [savingDescriptionForUrl, setSavingDescriptionForUrl] = useState(null);
 
-  const isSiteDirty = useRef(false);
+  //const isSiteDirty = useRef(false);
 
   const arcgisBasemapToggleRef = useRef(null);
   const arcgisSearchRef = useRef(null);
@@ -112,6 +93,8 @@ const StepWhoWhere = ({
   const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=MA_Index>0&outFields=*&returnGeometry=true&f=geojson'
 
   // Load sites for the current user when component mounts or userID changes
+
+  /*
   useEffect(() => {
     //if (Array.isArray(sites)) return; // already have sites
     if (!userID) {
@@ -145,8 +128,98 @@ const StepWhoWhere = ({
 
     return () => { };
   }, []);
+*/
 
+  const _setSitePhotos = (newPhotos) => {
+    // Update the current plan's site photos
+    isDirty.current = true;
+    setCurrentPlan((prevPlan) => ({
+      ...prevPlan,
+      report_data: {
+        ...prevPlan.report_data,
+        site_photos: newPhotos,   // array of site_image IDs in db
+      },
+    }));
+  };
 
+  const _addSitePhotos = (newPhoto) => {
+    // Update the current plan's site photos
+    isDirty.current = true;
+    setCurrentPlan((prevPlan) => ({
+      ...prevPlan,
+      report_data: {
+        ...prevPlan.report_data,
+        site_photos: [...(prevPlan.report_data.site_photos || []), newPhoto],   // array of site_image IDs in db
+      },
+    }));
+  };
+
+  const _setSiteLocator = (value) => {
+    isDirty.current = true;
+    //setIsDirty(true);
+    setCurrentPlan((prevPlan) => ({
+      ...prevPlan,
+      report_data: {
+        ...prevPlan.report_data,
+        site_locator: value,
+      },
+    }));
+  }
+
+  const _setSiteDescription = (value) => {
+    isDirty.current = true;
+    //setIsDirty(true);
+    setCurrentPlan((prevPlan) => ({
+      ...prevPlan,
+      report_data: {
+        ...prevPlan.report_data,
+        site_description: value,
+      },
+    }));
+  } 
+
+  const _setSelectedCommodities = (v) => {
+    isDirty.current = true;
+    setCurrentPlan((prevPlan) => ({
+      ...prevPlan,
+      report_data: {
+        ...prevPlan.report_data,
+        selected_commodities: v,
+      },
+    }));
+  };
+
+  const _setSiteName = (value) => {
+    isDirty.current = true;
+    setCurrentPlan((prevPlan) => ({
+      ...prevPlan,
+      report_data: {
+        ...prevPlan.report_data,
+         site_name: value,
+      },
+    }));
+  };
+
+  const _setSiteDetails = (attrs) => {
+    isDirty.current = true;
+    setCurrentPlan((prevPlan) => ({
+      ...prevPlan,
+      latitude: attrs.latitude,
+      longitude: attrs.longitude,
+
+      report_data: {
+        ...prevPlan.report_data,
+        site_locator: attrs.site_locator || '',
+        agwqm_region: attrs.agwqm_region || '',
+        agwqm_area: attrs.agwqm_area || '',
+        regional_specialist: attrs.regional_specialist || '',
+        regional_specialist_email: attrs.regional_specialist_email || '',
+        regional_specialist_phone: attrs.regional_specialist_phone || '',
+        admin_rules_link: attrs.admin_rules_link || '',
+        area_plan_link: attrs.area_plan_link || '',
+      },
+    }));
+  };
 
   const handlePhotoFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -165,13 +238,16 @@ const StepWhoWhere = ({
     if (!pendingPhoto) return;
 
     // upload the pending photo to the server
+    // this uploadx the image to the server and adds a record to the site-Images table, but doesn't
+    // update the Plan's report_data.site_photos array yet.
     uploadPhoto(pendingPhoto)
 
     // add the pending photo to the list of site photo previews
-    setSitePhotos((currentPreviews) => [
-      ...currentPreviews,
-      { name: pendingPhoto.name, url: pendingPhoto.url, description: pendingPhoto.description, uploaded: true },//, file: pendingPhoto.file },
-    ]);
+    //_setSitePhotos((currentPreviews) => [
+    //  ...currentPreviews,
+    //  { name: pendingPhoto.name, url: pendingPhoto.url, description: pendingPhoto.description, uploaded: true },//, file: pendingPhoto.file },
+    //]);
+    _addSitePhotos({ name: pendingPhoto.name, url: pendingPhoto.url, description: pendingPhoto.description, uploaded: true });
 
     setPendingPhoto(null);
     setPhotoPickerOpen(false);
@@ -189,7 +265,7 @@ const StepWhoWhere = ({
   };
 
   const handleDeletePhoto = (url) => {
-    setSitePhotos((current) => {
+    _setSitePhotos((current) => {
       const remaining = current.filter((p) => p.url !== url);
       const removed = current.find((p) => p.url === url);
       if (removed) {
@@ -229,12 +305,11 @@ const StepWhoWhere = ({
     //const photoToSave = sitePhotos.find((p) => p.url === url);
     if (photoToSave) {
       try {
-        setUploadingPhotoUrl(photoToSave.url);
         // If the pendingPhoto matches this preview, upload the file
         // { name: file.name, url: previewUrl, description: '', file }
         if (photoToSave && photoToSave.url && photoToSave.file) {
           const form = new FormData();
-          form.append('site_id', siteID);
+          form.append('plan_id', currentPlan?.id);  // FOR NOW...
           form.append('description', pendingPhoto.description || '');
           form.append('file', pendingPhoto.file);
 
@@ -261,8 +336,6 @@ const StepWhoWhere = ({
         }
       } catch (error) {
         message.error(`Error saving site photo: ${error.message}`);
-      } finally {
-        setUploadingPhotoUrl(null);
       }
     }
   }
@@ -272,7 +345,6 @@ const StepWhoWhere = ({
     //const photoToSave = sitePhotos.find((p) => p.url === url);
     if (photoToSave) {
       try {
-        setUploadingPhotoUrl(photoToSave.url);
         // If the pendingPhoto matches this preview, upload the file
         // { name: file.name, url: previewUrl, description: '', file }
         if (photoToSave && photoToSave.serverInfo?.id && photoToSave.description) {
@@ -300,41 +372,50 @@ const StepWhoWhere = ({
         }
       } catch (error) {
         message.error(`Error saving site photo: ${error.message}`);
-      } finally {
-        setUploadingPhotoUrl(null);
       }
     }
   }
 
-  // Handle saving site
-  const handleSaveSite = async () => {
+
+
+  const _handleSavePlan = async () => {
+    
+    const siteName = currentPlan?.report_data?.site_name;
+    const siteID = currentPlan?.report_data?.site_id;
+    const latitude = currentPlan?.latitude;
+    const longitude = currentPlan?.longitude;
+    const agwqmArea = currentPlan?.report_data?.agwqm_area;
+    const agwqmRegion = currentPlan?.report_data?.tmdl_area;  //???
+    const userName = currentPlan?.created_by;
+
     try {
-      if (!siteName || !_latitude || !_longitude || !agwqmArea || !agwqRegion) {
+      if (!siteName || !latitude || !longitude ) {
         message.error('Please provide all required site information (name, location, AWQMA, and region) before saving.');
         return;
       }
 
-      if (userID == null) {
-        message.error('User ID is not set. Please log in before saving a site.');
+      if (userName == null) {
+        message.error('User is not set. Please log in before saving a site.');
         return;
       }
       // is this a new site?  Or are we upadating an existing site?  If siteID is null, it's a new site.  If siteID is set, we are updating an existing site.
       const _site = [
         {
           //id:  // integer NOT NULL DEFAULT nextval('sites_id_seq'::regclass),
-          latitude: _latitude,  // real,
-          longitude: _longitude,  // real,
+          latitude: latitude,  // real,
+          longitude: longitude,  // real,
           name: siteName,  // text COLLATE pg_catalog."default",
-          description: siteDescription,   // text COLLATE pg_catalog."default",
+          description: currentPlan?.report_data?.site_description,   // text COLLATE pg_catalog."default",
           awqma: agwqmArea,   // text COLLATE pg_catalog."default",
-          tmdl_area: agwqRegion,   // text COLLATE pg_catalog."default",
-          locator: siteLocator,    //text COLLATE pg_catalog."default",
-          owner_id: userID,  // integer,
+          tmdl_area: agwqmRegion,   // text COLLATE pg_catalog."default",
+          locator: currentPlan?.report_data?.site_locator,    //text COLLATE pg_catalog."default",
+          owner_id: userName,  // integer,
         },
       ];
       if (siteID !== null)
         _site['id'] = siteID;
 
+      /*
       const response = await fetch(`https://agwater.org:5556/agwqplan/sites`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -345,68 +426,17 @@ const StepWhoWhere = ({
       if (data.success) {
         message.success('Site saved successfully');
 
-        setSites((prevSites => {
-          return [...prevSites, _site[0]];
-        }));
-
-        // fetch the updated list of sites for this user and update the sites state
-        //const resp = await fetch(`https://agwater.org:5556/agwqplan/sites?owner_id=${userID}`, {
-        //  method: 'GET',
-        //  headers: { 'Content-Type': 'application/json' },
-        //});
-        //const updatedData = await resp.json();
-        //if (updatedData && updatedData.sites && Array.isArray(updatedData.sites)) {
-        //  setSites(updatedData.sites);
-        //} else {
-        //  setSites([]);
-        //}
-
         isSiteDirty.current = false;
       } else {
         message.error(`Failed to save site: ${data.error}`);
       }
+        */
     } catch (error) {
       message.error(`Error saving site: ${error.message}`);
     }
-  };
 
-  // Handle deleting the current site
-  const handleDeleteSite = async () => {
-    if (!siteID) {
-      message.info('No site selected to delete');
-      return;
-    }
-
-    try {
-      const response = await fetch(`https://agwater.org:5556/agwqplan/sites`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': secrets.agwater_api_key,
-        },
-        body: JSON.stringify([{ id: siteID }]),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        message.success('Site deleted successfully');
-        // remove from local sites list
-        setSites((prev) => (Array.isArray(prev) ? prev.filter((s) => String(s.id) !== String(siteID)) : []));
-        // clear site fields
-        setSiteID(null);
-        setSiteName('');
-        setSiteDescription('');
-        setSiteLocator('');
-        setLatitude(null);
-        setLongitude(null);
-        isSiteDirty.current = false;
-      } else {
-        message.error(`Failed to delete site: ${data.error}`);
-      }
-    } catch (err) {
-      console.error('Error deleting site:', err);
-      message.error(`Error deleting site: ${err.message}`);
-    }
+    // Next, save the untire plan
+    savePlan();
   };
 
 
@@ -425,15 +455,19 @@ const StepWhoWhere = ({
         const features = result?.features || [];
         if (features.length > 0) {
           const attrs = features[0].attributes || {};
-          setLatitude(latitude);
-          setLongitude(longitude);
-          setAgwqRegion(attrs.AgWQ_Reporting_Area);
-          setAgwqmArea(attrs.MA_Index);
-          setRegionalSpecialist(attrs.Water_quality_specialist);
-          setRegionalSpecialistEmail(attrs.Email);
-          setRegionalSpecialistPhone(attrs.Phone);
-          setAdminRulesLink(attrs.Administrative_rules ? attrs.Administrative_rules : null);
-          setAreaPlanLink(attrs.Area_plan ? attrs.Area_plan : null);
+          
+          _setSiteDetails({
+            latitude: latitude,
+            longitude: longitude,
+            //site_locator: attrs.Site_Locator || '',    // WRONG!!!
+            agwqm_region: attrs.AgWQ_Reporting_Area || '',
+            agwqm_area: attrs.MA_Index || '',
+            regional_specialist: attrs.Water_quality_specialist || '',
+            regional_specialist_email: attrs.Email || '',
+            regional_specialist_phone: attrs.Phone || '',
+            admin_rules_link: attrs.Administrative_rules || '',
+            area_plan_link: attrs.Area_plan || '',
+          });
           setError('process');
         } else {
           console.log('No feature found at clicked location');
@@ -444,17 +478,19 @@ const StepWhoWhere = ({
     }
   }
 
-
   // if sitePhotoPreview, pendingPhoto changes
   useEffect(() => {
     return () => {
-      sitePhotos.forEach((preview) => {
-        try {
-          URL.revokeObjectURL(preview.url);
-        } catch {
-          // ignore
-        }
-      });
+      if (currentPlan?.report_data?.site_photos) {
+        currentPlan.report_data.site_photos.forEach((preview) => {
+          try {
+            URL.revokeObjectURL(preview.url);
+          } catch {
+            // ignore
+          }
+        });
+      }
+
       if (pendingPhoto) {
         try {
           URL.revokeObjectURL(pendingPhoto.url);
@@ -463,7 +499,7 @@ const StepWhoWhere = ({
         }
       }
     };
-  }, [sitePhotos, pendingPhoto]);
+  }, [currentPlan.report_data.site_photos, pendingPhoto]);
 
   // startup
   //  1. stop event propagation
@@ -628,6 +664,30 @@ const StepWhoWhere = ({
       if (basemapToggleElement) {
         basemapToggleElement.view = view;
       }
+
+      if (currentPlan?.latitude != null && currentPlan?.longitude != null) {
+        view.goTo({ center: [currentPlan.longitude, currentPlan.latitude], zoom: 11 });
+
+        // place a marker on the map
+        markerLayerRef.current?.removeAll();
+        markerLayerRef.current?.add({
+          geometry: {
+            type: 'point',
+            x: currentPlan.longitude,
+            y: currentPlan.latitude,
+            //coordinates: [currentPlan.longitude, currentPlan.latitude]
+          },
+          symbol: {
+            type: 'simple-marker',
+            color: '#d7191c',
+            size: 12,
+            outline: {
+            color: '#ffffff',
+            width: 1,
+          },
+        }});
+      };
+
     };
 
     //view.on('pointer-move', updateMousePosition);
@@ -643,6 +703,7 @@ const StepWhoWhere = ({
 
 
   // options for the <Select> component for sites
+  /*
   const siteOptions = useMemo(() => {
     // no sites?
     if (!Array.isArray(sites) || sites.length === 0) {
@@ -671,40 +732,25 @@ const StepWhoWhere = ({
 
     return [{ label: '-- Create a New Site --', value: 'new-site' }, ..._sites];
   }, [sites]);
-
+*/
 
   // options for the <Select> component for commodities
   const commodityOptions = useMemo(() => {
-    if (!Array.isArray(commoditiesData) || commoditiesData.length === 0) {
+    if (!Array.isArray(commoditiesData) || commoditiesData.length === 0)
       return [];
-    }
 
     return commoditiesData.map((item) => {
       if (typeof item === 'string') {
         return { label: item, value: item };
       }
-
-      if (!item || typeof item !== 'object') {
-        return null;
-      }
-
-      const value = item.value ?? item.id ?? item.code ?? item.name ?? item.label;
-      const label = item.label ?? item.name ?? item.displayName ?? value;
-
-      if (value == null || label == null) {
-        return null;
-      }
-
-      return { label: String(label), value: String(value) };
     }).filter(Boolean);
   }, [commoditiesData]);
-
 
 
   function handleDescriptionChange(photoUrl, description) {
     // update the given preview photo's description in the sitePhotos state
     // and indicate that the photo is dirty (needs to be saved)
-    setSitePhotos(prevPhotos =>
+    _setSitePhotos(prevPhotos =>
       prevPhotos.map(photo =>
         photo.url === photoUrl ? { ...photo, description, isDirty: true } : photo
       )
@@ -712,33 +758,15 @@ const StepWhoWhere = ({
   }
 
   // check if the site name, latitude, and longitude are valid
-  if (!siteName || _latitude == null || _longitude == null) {
+  if (!currentPlan.report_data.site_name || currentPlan.latitude == null || currentPlan.longitude == null) {
     setError('error');
   }
 
-  const _setSiteName = (value) => {
-    isSiteDirty.current = true;
-    setSiteName(value);
-    if (value) {
-      setError('process');
-    }
-  };
-
-  if (siteName && _latitude != null && _longitude != null) {
+  if (currentPlan.report_data.site_name && currentPlan.latitude != null && currentPlan.longitude != null) {
     setError('finish');
   }
 
-  function _setSiteLocator(value) {
-    isSiteDirty.current = true;
-    setSiteLocator(value);
-  }
-
-  function _setSiteDescription(value) {
-    isSiteDirty.current = true;
-    setSiteDescription(value);
-  }
-
-
+  /*
   function _setSelectedSite(value) {
     // get this site in the sites
     const site = sites.find((s) => s.id === parseInt(value));
@@ -818,32 +846,33 @@ const StepWhoWhere = ({
 
 
     setSelectedExistingSite(value);
-  }
+  } */
 
   return (
     <>
       {/* Instructions for the user */}
       <Paragraph>
-        Select where the operation is located. This helps tailor practices and resources to your location.
+        Specify below some details about the location for which this plan is being developed.
+        This will help in tailoring the plan to the specific needs of your location.
       </Paragraph>
       <Form layout="vertical">
         <Row gutter={16}>
           <Col sm={24} md={12}>
 
-            <Title level={5}>Site location </Title>
+            <Title level={5}>Site Description</Title>
             <div>
-              {userID && (
+              {/*  userID && (
                 <Select
                   value={selectedExistingSite}
                   onChange={(v) => _setSelectedSite(v)}
                   style={{ width: '30em', maxWidth: '100%', marginBottom: '1em' }}
                   options={siteOptions}
                 />
-              )}
+              ) */}
 
             </div>
             <Card>
-              {!siteName && <ValidationError message="" />}
+              {!currentPlan?.report_data?.site_name && <ValidationError message="" />}
 
               <Row>
                 <Col style={{ width: '12em' }}>
@@ -851,7 +880,7 @@ const StepWhoWhere = ({
                 </Col>
                 <Col>
                   <Input
-                    value={siteName}
+                    value={currentPlan?.report_data?.site_name || ''}
                     onChange={(e) => _setSiteName(e.target.value)}
                     placeholder="Enter a name for this site"
                     style={{ width: '30em', maxWidth: '100%' }}
@@ -865,7 +894,7 @@ const StepWhoWhere = ({
                 </Col>
                 <Col>
                   <Input
-                    value={siteLocator}
+                    value={currentPlan?.report_data?.site_locator || ''}
                     onChange={(e) => _setSiteLocator(e.target.value)}
                     placeholder="Enter the location or address of the site"
                     style={{ width: '30em', maxWidth: '100%' }}
@@ -880,7 +909,7 @@ const StepWhoWhere = ({
                 </Col>
                 <Col>
                   <TextArea
-                    value={siteDescription}
+                    value={currentPlan?.report_data?.site_description || ''}
                     onChange={(e) => _setSiteDescription(e.target.value)}
                     placeholder="Enter a description for this site"
                     style={{ width: '30em', maxWidth: '100%' }}
@@ -899,8 +928,8 @@ const StepWhoWhere = ({
                   <Select
                     mode="multiple"
                     allowClear
-                    value={selectedCommodities || undefined}
-                    onChange={(v) => { isSiteDirty.current = true; setSelectedCommodities(v); }}
+                    value={currentPlan?.report_data?.selected_commodities || undefined}
+                    onChange={(v) => { isDirty.current = true; _setSelectedCommodities(v); }}
                     style={{ width: '30em', maxWidth: '100%' }}
                     options={commodityOptions}
                   />
@@ -909,7 +938,7 @@ const StepWhoWhere = ({
 
               <br />
 
-              {!_latitude && !_longitude && (<><br /><ValidationError message="Below, specify the location of the site." /></>)}
+              {!currentPlan?.latitude && !currentPlan?.longitude && (<><br /><ValidationError message="Below, specify the location of the site." /></>)}
 
               <div style={{ fontSize: '0.9rem', fontStyle: 'italic', marginBottom: 8 }}>
                 Click on the map to set the location of your operation, or search for an address or place using the search box in the top right corner of the map.
@@ -940,82 +969,44 @@ const StepWhoWhere = ({
                   After specifying the site name and selecting the site location on the map below, you can save
                   the site for future reference. <span style={{ fontStyle: 'italic' }}>Note: You must be logged in to save a site.</span>
                 </Paragraph>
-
                 <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }}
-                  onClick={() => { handleSaveSite(); }}
-                  disabled={(!userID || siteName.trim() === '' || !_latitude || !_longitude || isSiteDirty.current === false)}>
-                  Save Site
+                  onClick={() => { _handleSavePlan(); }}
+                  disabled={(currentPlan === null 
+                            || ( currentPlan?.report_data?.site_name !== undefined && currentPlan?.report_data?.site_name.trim() === '') 
+                            || !currentPlan?.latitude || !currentPlan?.longitude || isDirty.current === false)}>
+                  Update Plan
                 </Button>
-                {siteID && (
+                
+                {/*
+                {currentPlan?.id && (
                   <Popconfirm title="Delete this site?" onConfirm={handleDeleteSite} okText="Delete" cancelText="Cancel">
                     <Button type="text" danger icon={<DeleteOutlined />} style={{ marginLeft: 12 }}>Delete Site</Button>
                   </Popconfirm>
                 )}
-
-
-
-
-
-
-
-
-
-
-                {userRole === null && (
-                  <>
-                    <Button type="primary" onClick={() => setLoginModalOpen(true)}>Log in to the Ag water Quality Planner</Button>
-                    <ModalLogin
-                      open={loginModalOpen}
-                      onCancel={() => setLoginModalOpen(false)}
-                      role={userRole}
-                      showCancel={false}
-                      onLoginSuccess={(result) => {
-                        console.log("Login successful:", result);
-                        setUserName(result.user.username);
-                        setUserRole(result.user.role);
-                        setUserID(result.user.id);
-                        setLoggingIn(false);
-                        setLoginModalOpen(false);
-                      }}
-                      onLoginFailure={(error) => {
-                        console.error("Login failed:", error);
-                        setLoggingIn(false);
-                      }}
-                      onLogout={() => {
-                        console.log("Logged out");
-                        setUserName(null);
-                        setUserRole(null);
-                        setLoggingIn(false);
-                      }}
-                    />
-                  </>
-                )}
-
+                  */}
 
               </div>
 
-
-
-              {_latitude && _longitude && (
+              {currentPlan.latitude && currentPlan.longitude && (
                 <>
                   <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Site Details</span>
                   <Paragraph>
-                    <span style={{ fontStyle: 'italic' }}>Lat/Long: </span>({_latitude ? _latitude.toFixed(5) : ''}, {_longitude ? _longitude.toFixed(5) : ''})
+                    <span style={{ fontStyle: 'italic' }}>Lat/Long: </span>({currentPlan.latitude ? currentPlan.latitude.toFixed(5) : ''}, {currentPlan.longitude ? currentPlan.longitude.toFixed(5) : ''})
                     <br />
-                    <span style={{ fontStyle: 'italic' }}>Ag Water Quality Management Area: </span>{agwqmArea ? agwqmArea : ''}
+                    <span style={{ fontStyle: 'italic' }}>Ag Water Quality Management Area: </span>{currentPlan.report_data?.agwqm_area ?? ''}
                     <br />
                     {/*}
-                      <span style={{ fontStyle: 'italic' }}>Region: </span>{agwqRegion ? agwqRegion : ''}
+                      <span style={{ fontStyle: 'italic' }}>Region: </span>{currentPlan.report_data?.agwq_region ?? ''}
                       <br /> */}
-                    <span style={{ fontStyle: 'italic' }}>Regional Specialist: </span>{regionalSpecialist ? regionalSpecialist : ''}
+                    <span style={{ fontStyle: 'italic' }}>Regional Specialist: </span>{currentPlan.report_data?.regional_specialist ?? ''}
                     <br />
-                    <span style={{ fontStyle: 'italic' }}>Email: </span>{regionalSpecialistEmail ? regionalSpecialistEmail : ''}
+                    <span style={{ fontStyle: 'italic' }}>Email: </span>{currentPlan.report_data?.regional_specialist_email ?? ''}
                     <br />
-                    <span style={{ fontStyle: 'italic' }}>Phone: </span>{regionalSpecialistPhone ? regionalSpecialistPhone : ''}
+                    <span style={{ fontStyle: 'italic' }}>Phone: </span>{currentPlan.report_data?.regional_specialist_phone ?? ''}
                     <br />
-                    <span style={{ fontStyle: 'italic' }}>Admin Rules: </span>{adminRulesLink ? <a href={adminRulesLink} target="_blank" rel="noreferrer">Link</a> : ''}
+                    <span style={{ fontStyle: 'italic' }}>Admin Rules: </span>{currentPlan.report_data?.admin_rules_link ? <a href={currentPlan.report_data?.admin_rules_link} target="_blank" rel="noreferrer">Link</a> : ''}
                     <br />
-                    <span style={{ fontStyle: 'italic' }}>Area Plan: </span>{areaPlanLink ? <a href={areaPlanLink} target="_blank" rel="noreferrer">Link</a> : ''}
+                    <span style={{ fontStyle: 'italic' }}>Area Plan: </span>{currentPlan.report_data?.area_plan_link ? <a href={currentPlan.report_data?.area_plan_link} target="_blank" rel="noreferrer">Link</a> : ''}
                   </Paragraph>
                 </>
               )}
@@ -1027,21 +1018,22 @@ const StepWhoWhere = ({
             <Title level={5}>Site Photos</Title>
 
             <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
-              {siteID ? (
+              {currentPlan?.id && (
+                <>
                 <Button type="primary" onClick={() => setPhotoPickerOpen(true)}>
                   Add site photo
                 </Button>
-              ) : (
                 <span style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>
-                  After saving a site, you can add photos of the site, to become part of the site record and
+                  You can add photos of the site, to become part of the site record and
                   to help to identify effective mitigation strategies.</span>
+              </>
               )
-              }
+            }
 
-              {sitePhotos.length > 0 && (
+              {currentPlan.report_data.site_photos && currentPlan.report_data.site_photos.length > 0 && (
                 <>
                 <Row>
-                  {sitePhotos.map((photo) => (
+                  {currentPlan.report_data.site_photos.map((photo) => (
                     <Col xs={24} sm={24} md={12} lg={8} key={photo.url} style={{ padding: 8 }}>
                       <img
                         src={photo.url}
@@ -1122,7 +1114,6 @@ const StepWhoWhere = ({
               onCancel={() => { setPhotoViewOpen(false); setActivePhoto(null); }}
               footer={null}
               width={'90%'}
-              destroyOnClose
             >
         {/* Photo view content
           <Carousel>
@@ -1162,7 +1153,7 @@ const StepWhoWhere = ({
                             try {
                               await navigator.share({ title: activePhoto.name, url });
                               return;
-                            } catch (err) {
+                            } catch {
                               // fallthrough to copy
                             }
                           }
@@ -1184,7 +1175,7 @@ const StepWhoWhere = ({
                           loading={savingDescriptionForUrl === activePhoto.url}
                           onClick={async () => {
                             // save description to server
-                            if (!siteID) {
+                            if (!currentPlan.report_data.site_id) {
                               message.error('Cannot save description: no site selected');
                               return;
                             }
@@ -1193,22 +1184,25 @@ const StepWhoWhere = ({
                               const payload = [
                                 {
                                   id: activePhoto.serverInfo?.id,
-                                  site_id: siteID,
+                                  plan_id: currentPlan.id,
                                   file_path: activePhoto.serverInfo?.file_path || activePhoto.url,
                                   description: editingPhotoDescription || '',
                                 },
-                              ];
+                              ]; 
 
                               const resp = await fetch(`https://agwater.org:5556/agwqplan/site/images`, {
                                 method: 'PUT',
-                                headers: { 'Content-Type': 'application/json', 'X-API-Key': secrets.agwater_api_key },
+                                headers: { 
+                                  'Content-Type': 'application/json', 
+                                  'X-API-Key': secrets.agwater_api_key 
+                                },
                                 body: JSON.stringify(payload),
                               });
                               const data = await resp.json();
                               if (data.success) {
                                 message.success('Photo description saved');
                                 // update local preview
-                                setSitePhotos((prev) => prev.map((p) => (p.url === activePhoto.url ? { ...p, description: editingPhotoDescription } : p)));
+                                _setSitePhotos((prev) => prev.map((p) => (p.url === activePhoto.url ? { ...p, description: editingPhotoDescription } : p)));
                                 setActivePhoto((p) => p ? { ...p, description: editingPhotoDescription } : p);
                               } else {
                                 message.error(`Failed to save description: ${data.error}`);
@@ -1279,51 +1273,34 @@ const StepWhoWhere = ({
   );
 };
 StepWhoWhere.propTypes = {
-  userType: PropTypes.string,
-  userID: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  userRole: PropTypes.string,
-  setUserRole: PropTypes.func,
-  setUserName: PropTypes.func,
-  setLoggingIn: PropTypes.func,
-  setUserID: PropTypes.func,
-  sites: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.object, PropTypes.string])),
-  setSites: PropTypes.func,
+  currentPlan: PropTypes.shape({
+    latitude: PropTypes.number,
+    longitude: PropTypes.number,
+    report_data: PropTypes.shape({
+      site_id: PropTypes.number,
+      site_name: PropTypes.string,
+      site_locator: PropTypes.string,
+      site_description: PropTypes.string,
+      site_photos: PropTypes.arrayOf(PropTypes.shape({
+        url: PropTypes.string,
+        name: PropTypes.string,
+        description: PropTypes.string,
+        uploaded: PropTypes.bool,
+        isDirty: PropTypes.bool,
+        serverInfo: PropTypes.object,
+      })),
+
+      selected_commodities: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+      agwqm_area: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      regional_specialist: PropTypes.string,
+      regional_specialist_email: PropTypes.string,
+      regional_specialist_phone: PropTypes.string,
+      admin_rules_link: PropTypes.string,
+      area_plan_link: PropTypes.string,
+    }),
+  }).isRequired,
+  setCurrentPlan: PropTypes.func.isRequired,
   commoditiesData: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.object, PropTypes.string])),
-  selectedCommodities: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
-  setSelectedCommodities: PropTypes.func.isRequired,
-  setPhotos: PropTypes.func,
-
-  siteName: PropTypes.string,
-  setSiteName: PropTypes.func.isRequired,
-  siteID: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  setSiteID: PropTypes.func.isRequired,
-  siteDescription: PropTypes.string,
-  setSiteDescription: PropTypes.func.isRequired,
-  siteLocator: PropTypes.string,
-  setSiteLocator: PropTypes.func.isRequired,
-
-  _latitude: PropTypes.number,
-  setLatitude: PropTypes.func.isRequired,
-  _longitude: PropTypes.number,
-  setLongitude: PropTypes.func.isRequired,
-
-  agwqmArea: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  setAgwqmArea: PropTypes.func.isRequired,
-  agwqRegion: PropTypes.string,
-  setAgwqRegion: PropTypes.func.isRequired,
-
-  regionalSpecialist: PropTypes.string,
-  setRegionalSpecialist: PropTypes.func.isRequired,
-  regionalSpecialistEmail: PropTypes.string,
-  setRegionalSpecialistEmail: PropTypes.func.isRequired,
-  regionalSpecialistPhone: PropTypes.string,
-  setRegionalSpecialistPhone: PropTypes.func.isRequired,
-
-  adminRulesLink: PropTypes.string,
-  setAdminRulesLink: PropTypes.func.isRequired,
-  areaPlanLink: PropTypes.string,
-  setAreaPlanLink: PropTypes.func.isRequired,
-
   setError: PropTypes.func.isRequired,
 };
 

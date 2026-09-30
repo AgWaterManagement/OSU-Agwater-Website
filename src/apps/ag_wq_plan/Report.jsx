@@ -1,9 +1,10 @@
 import { useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Divider, Typography, Tag, Space, Row, Col } from 'antd';
-import { secrets } from "../../secrets";
+import { Alert, Button, Divider, Typography, Tag, Space, Row, Col } from 'antd';
 
-const { Collapse, Title, Paragraph, Text } = Typography;
+//import ChatResponse from '../../components/chat_response/ChatReponse';
+
+const { Title, Paragraph, Text } = Typography;
 
 // Step 5: Final summary and review of selected plan
 // Creates a printable/exportable summary of the water quality practices plan
@@ -18,31 +19,38 @@ const { Collapse, Title, Paragraph, Text } = Typography;
 //   - selectedPractices: Array of selected Practice objects
 //   - concernQuestions: Array of fetched concern question objects from /agwqplan/concernQuestions
 const Report = ({
-  userType,
-  userName,
-  latitude,
-  longitude,
-  agWqMArea,
-  region,
-  regionalSpecialist,
-  regionalSpecialistEmail,
-  regionalSpecialistPhone,
-  adminRulesLink,
-  areaPlanLink,
-  siteName,
-  site,
-  sitePhotos,
-  selectedCommodities,
-  selectedConcerns,
-  selectedQuestions,
-  selectedGoals,
-  goalData,
-  selectedPractices,
-  concernQuestions,
-  areaRules
+  currentPlan,
+  userRole,
+  goalsData,
+  concernQuestionsData, 
+  areaRulesData,
+  practicesData,
+  savePlan,
+  isDirty
 }) => {
   const printRef = useRef(null);
-
+/*
+  const summaryPrompt = () => {
+    const siteName = currentPlan?.report_data?.site_name || "the site";
+    const concerns = currentPlan?.report_data?.selected_concerns.join(',') || 'no concerns selected';
+    const questions = currentPlan?.report_data?.selected_questions.join(',') || 'no questions selected';
+    const goals = currentPlan?.report_data?.selected_goals || 'no goals selected';
+    const practices = currentPlan?.report_data?.selected_practices || 'no practices selected';
+    const commodities = currentPlan?.report_data?.selected_commodities?.join(', ') || 'Not specified';
+    const areaRules = areaRulesData.filter(rule => rule.MA_Index === currentPlan?.report_data?.agwqm_area).map(rule => rule.CATEGORY).join(', ') || 'No applicable area rules';
+    
+    return `Summarize the water quality plan for ${siteName} based on the following:
+    - Concerns: ${concerns}
+    - Questions: ${questions}
+    - Goals: ${goals}
+    - Practices: ${practices}
+    - Location: ${currentPlan?.latitude}, ${currentPlan?.longitude}
+    - Commodities/Operations: ${commodities}
+    - Role: ${userRole}
+    - Applicable area rules: ${areaRules}
+    Provide a concise summary highlighting the key points and recommendations.`;
+  };
+*/
   // Handle printing/saving as PDF
   const handlePrint = () => {
     if (!printRef.current) return;
@@ -57,77 +65,13 @@ const Report = ({
     win.print();
   };
 
-  // Handle saving the report (e.g., to a server or local storage)
-  const handleSaveReport = () => {
-    // Implement saving logic here (e.g., send data to server or save to local storage)
-    console.log('Saving report...');
-    const now = () => new Date().toISOString(); // Helper function to get current timestamp in ISO format
-
-
-    const _selectedPractices = selectedPractices.map((practice) => practice.id);
-
-    const reportData = {
-      userType,
-      userName,
-      latitude,
-      longitude,
-      agWqMArea,
-      region,
-      regionalSpecialist,
-      regionalSpecialistEmail,
-      regionalSpecialistPhone,
-      adminRulesLink,
-      areaPlanLink,
-      siteName,
-      site,
-      sitePhotos,
-      selectedCommodities,
-      selectedConcerns,
-      selectedQuestions,
-      selectedGoals,
-      //goalData,
-      _selectedPractices,
-      //concernQuestions,
-      //areaRules
-    };
-
-
-    const record = {
-      //id: integer NOT NULL,
-      //report:  // text COLLATE pg_catalog."default" NOT NULL,
-      report_data: JSON.stringify(reportData), // jsonb,
-      created_by: userName,  // text COLLATE pg_catalog."default",
-      //site_id: reportData.site.id,   // integer,
-      latitude: latitude,   // real,
-      longitude: longitude,   // real,
-      keywords: "",   // text COLLATE pg_catalog."default",
-      created_at: now(),   // timestamp with time zone DEFAULT now(),
-      updated_at: now(),   // timestamp with time zone DEFAULT now(),
-    };
-
-    const data = JSON.stringify(record);
-    console.log("Saving report data:", record);
-    console.log("Saving report data:", data);
-    
-    // "PUT" the record to the server via API call
-    fetch('https://agwater.org:5556/agwqplan/reports', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': secrets.agwater_api_key,
-      },
-      body: data,
-    })
-  }
-
-
   // Create map of question IDs to question objects for lookup
   const questionMap = new Map();
-  concernQuestions.forEach((q) => questionMap.set(q.id, q));
+  concernQuestionsData.forEach((q) => questionMap.set(q.id, q));
 
   const goalLabelMap = useMemo(() => {
     const map = new Map();
-    (Array.isArray(goalData) ? goalData : []).forEach((goal) => {
+    (Array.isArray(goalsData) ? goalsData : []).forEach((goal) => {
       const value = goal.id;
       const label = goal.goal;
       if (value != null) {
@@ -135,25 +79,29 @@ const Report = ({
       }
     });
     return map;
-  }, [goalData]);
+  }, [goalsData]);
 
 
-  const matchingRules = areaRules.filter((rule) => {
-    return rule.MA_Index && rule.MA_Index === agWqMArea;
+
+  const matchingRules = areaRulesData.filter((rule) => {
+    return rule.MA_Index && rule.MA_Index === currentPlan?.report_data?.agwqm_area;
   });
 
   return (
     <>
       {/* Printable content container */}
       <div ref={printRef}>
-        <Title level={3}>Water Quality Plan for {siteName}</Title>
+        <Title level={3}>Water Quality Plan for {currentPlan?.report_data?.site_name}</Title>
 
         {/* Summary section: User info and location */}
+
+        {/*
         <Title level={4}>Summary</Title>
         <Row>
           <Col span={12} style={{ paddingRight: '2em' }}>
             <Paragraph>
               <Text strong>Summary goes here...</Text>
+              <ChatResponse prompt={summaryPrompt()} />
             </Paragraph>
           </Col>
           <Col span={12} style={{ paddingLeft: '2em' }}>
@@ -161,27 +109,28 @@ const Report = ({
             </Paragraph>
           </Col>
         </Row>
-
+        */}
         <Title level={4}>Site Information</Title>
         <Row>
           <Col span={12} style={{ paddingRight: '2em' }}>
             <Paragraph>
-              <Text strong>User type:</Text> {userType}
+              <Text strong>User role:</Text> {userRole}
             </Paragraph>
             <Paragraph>
-              <Text strong>Lat/Long:</Text> {latitude}, {longitude}
+              <Text strong>Lat/Long:</Text> {currentPlan?.latitude}, {currentPlan?.longitude}
             </Paragraph>
             <Paragraph>
               <Text strong>Commodities/Operations: </Text>
-              {selectedCommodities.join(', ') || 'Not specified'}
+              {currentPlan?.report_data?.selected_commodities?.join(', ') || 'Not specified'}
             </Paragraph>
             <Paragraph>
-              <Text strong>Admin Rules Link:</Text> <Button type="link" href={adminRulesLink || '#'} target="_blank" rel="noopener noreferrer">
+              <Text strong>Admin Rules Link:</Text>
+              <Button type="link" href={currentPlan?.report_data?.admin_rules_link || '#'} target="_blank" rel="noopener noreferrer">
                 {'Admin Rules'}
               </Button>
             </Paragraph>
             <Paragraph>
-              <Text strong>Area Plan Link:</Text> <Button type="link" href={areaPlanLink || '#'} target="_blank" rel="noopener noreferrer">
+              <Text strong>Area Plan Link:</Text> <Button type="link" href={currentPlan?.report_data?.area_plan_link || '#'} target="_blank" rel="noopener noreferrer">
                 {'Area Plan'}
               </Button>
             </Paragraph>
@@ -189,28 +138,28 @@ const Report = ({
 
           <Col span={12} style={{ paddingLeft: '2em' }}>
             <Paragraph>
-              <Text strong>Ag WQM Area:</Text> {agWqMArea || 'Not specified'}
+              <Text strong>Ag WQM Area:</Text> {currentPlan?.report_data?.agwqm_area || 'Not specified'}
             </Paragraph>
             <Paragraph>
-              <Text strong>Region:</Text> {region || 'Not specified'}
+              <Text strong>Region:</Text> {currentPlan?.report_data?.agwqm_region || 'Not specified'}
             </Paragraph>
             <Paragraph>
-              <Text strong>Regional Specialist:</Text> {regionalSpecialist || 'Not specified'}
+              <Text strong>Regional Specialist:</Text> {currentPlan?.report_data?.regional_specialist || 'Not specified'}
             </Paragraph>
             <Paragraph>
-              <Text strong>Regional Specialist Email:</Text> {regionalSpecialistEmail || 'Not specified'}
+              <Text strong>Regional Specialist Email:</Text> {currentPlan?.report_data?.regional_specialist_email || 'Not specified'}
             </Paragraph>
             <Paragraph>
-              <Text strong>Regional Specialist Phone:</Text> {regionalSpecialistPhone || 'Not specified'}
+              <Text strong>Regional Specialist Phone:</Text> {currentPlan?.report_data?.regional_specialist_phone || 'Not specified'}
             </Paragraph>
           </Col>
         </Row>
 
-        {sitePhotos && (
+        {currentPlan.report_data.site_photos && (
           <>
             <Title level={5}>Site Photos</Title>
             <Row gutter={[16, 16]}>
-              {sitePhotos.map((photo, index) => (
+              {currentPlan.report_data.site_photos.map((photo, index) => (
                 <Col key={index} xs={24} sm={12} lg={8}>
                   <img src={photo.url} alt={photo.description || `Photo ${index + 1}`} style={{ width: '100%', height: 'auto' }} />
                   <Paragraph>{photo.description || `Photo ${index + 1}`}</Paragraph>
@@ -229,7 +178,7 @@ const Report = ({
         ) : (
           <>
             <Paragraph>
-              {"Area-specific rules or TMDL requirements may apply in this management area (" + agWqMArea
+              {"Area-specific rules or TMDL requirements may apply in this management area (" + currentPlan?.report_data?.agwqm_area
                 + "). Please review the information for each practice carefully."}
             </Paragraph>
             {matchingRules.map((rule, index) => (
@@ -243,15 +192,14 @@ const Report = ({
 
         <Divider />
 
-
         {/* Conditions/Concerns section */}
         <Title level={4}>Conditions / Concerns</Title>
-        {selectedConcerns.length === 0 ? (
+        {currentPlan.report_data.selected_concerns?.length === 0 ? (
           <Paragraph>No concerns selected.</Paragraph>
         ) : (
           <Space wrap>
             <ul>
-              {selectedConcerns.map((concern) => (
+              {currentPlan.report_data.selected_concerns.map((concern) => (
                 <li key={concern}>{concern}</li>
               ))}
             </ul>
@@ -260,11 +208,11 @@ const Report = ({
 
         <Divider />
         <Title level={4}>Selected Questions</Title>
-        {selectedQuestions.length === 0 ? (
+        {currentPlan.report_data.selected_questions?.length === 0 ? (
           <Paragraph>No specific conditions selected.</Paragraph>
         ) : (
           <ul>
-            {selectedQuestions.map((id) => {
+            {currentPlan.report_data.selected_questions.map((id) => {
               const q = questionMap.get(id);
               if (!q) return null;
               return (
@@ -280,11 +228,11 @@ const Report = ({
 
         {/* Goals/Benefits section */}
         <Title level={4}>Goals / Desired Benefits</Title>
-        {selectedGoals.length === 0 ? (
+        {currentPlan.report_data.selected_goals?.length === 0 ? (
           <Paragraph>No goals selected.</Paragraph>
         ) : (
           <ul>
-            {selectedGoals.map((g) => (
+            {currentPlan.report_data.selected_goals.map((g) => (
               <li key={g}>
                 {goalLabelMap.get(String(g))}
               </li>
@@ -296,41 +244,45 @@ const Report = ({
 
         {/* Recommended practices section with full details */}
         <Title level={4}>Recommended Practices</Title>
-        {selectedPractices.length === 0 ? (
+
+        {currentPlan.report_data.selected_practices?.length === 0 ? (
           <Paragraph>No practices selected yet. Go back to choose practices to include.</Paragraph>
         ) : (
-          selectedPractices.map((p) => (
-            <div key={p.id} style={{ marginBottom: 16 }}>
-              <Divider />
-              <Paragraph>
-                <Title level={5}>
-                  {p.title}
-                </Title>
-              </Paragraph>
-              <Paragraph>
-                <Text strong>Helps water quality:</Text>{' '}
-                {p.helps.map((h) => (
-                  <Tag key={h}>{h}</Tag>
-                ))}
-              </Paragraph>
-              <Paragraph>
-                <Text strong>How it helps:</Text> {p.ecosystem_benefits}
-              </Paragraph>
-              <Paragraph>
-                <Text strong>Notes:</Text> {p.benefits}
-              </Paragraph>
-              <Paragraph>
-                <Text strong>References: </Text>
-                {p.links.map((l, index) => (
-                  <div key={'reference_' + index} style={{ paddingLeft: '2em', paddingTop: '0.5em' }}>
-                    <a key={l.url} href={l.url} target="_blank" rel="noreferrer">
-                      {l.label}
-                    </a>
-                  </div>
-                ))}
-              </Paragraph>
-            </div>
-          ))
+          currentPlan.report_data.selected_practices.map((index) => {
+            const p = practicesData?.find((practice) => practice.id === index);
+            if (!p) return null;
+            return (
+              <div key={p.id} style={{ marginBottom: 16 }}>
+                <Divider />
+                <Paragraph>
+                  <Title key={'title_' + p.id} level={5}>
+                    {p.title}
+                  </Title>
+                </Paragraph>
+                <Paragraph>
+                  <Text strong>Helps water quality:</Text>{' '}
+                  {p.helps.map((h) => (
+                    <Tag key={p.id + h}>{h}</Tag>
+                  ))}
+                </Paragraph>
+                <Paragraph>
+                  <Text strong>How it helps:</Text> <span key={'how_it_helps_' + p.id}>{p.ecosystem_benefits}</span>
+                </Paragraph>
+                <Paragraph>
+                <Text strong>Benefits:</Text><span key={'notes_' + p.id}>{p.benefits}</span>
+                </Paragraph>
+                <Paragraph>
+                  <Text strong>References: </Text>
+                  {p.links.map((l, index) => (
+                    <div key={'reference_' + index} style={{ paddingLeft: '2em', paddingTop: '0.5em' }}>
+                      <a key={l.url} href={l.url} target="_blank" rel="noreferrer">
+                        {l.label}
+                      </a>
+                    </div>
+                  ))}
+                </Paragraph>
+              </div> 
+            )})
         )}
 
         <Divider />
@@ -344,9 +296,22 @@ const Report = ({
       <Divider />
 
       {/* save report */}
-      <Button type="primary" onClick={handleSaveReport}>
+      {isDirty.current === true && (
+        <>
+        <Alert
+          message="Unsaved changes" 
+          description="You have unsaved changes in this plan. Please save your plan before printing or exporting."
+          type="warning"
+          showIcon
+          style={{ marginBottom: '1em' }}
+        />
+      
+      <Button type="primary" onClick={savePlan}>
         Save Report
       </Button>
+      </>
+      )}
+
       {/* Print/PDF export button */}
       <Button type="primary" style={{ marginLeft: '1em' }} onClick={handlePrint}>
         Print / Save as PDF
@@ -356,26 +321,45 @@ const Report = ({
 };
 
 Report.propTypes = {
-  userType: PropTypes.string,
-  userName: PropTypes.string,
-  latitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  longitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  agWqMArea: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  region: PropTypes.string,
-  regionalSpecialist: PropTypes.string,
-  regionalSpecialistEmail: PropTypes.string,
-  regionalSpecialistPhone: PropTypes.string,
-  adminRulesLink: PropTypes.string,
-  areaPlanLink: PropTypes.string,
-  siteName: PropTypes.string,
-
-  selectedCommodities: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
-  selectedConcerns: PropTypes.arrayOf(PropTypes.string).isRequired,
-
-  selectedQuestions: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
-  selectedGoals: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
-
-  goalData: PropTypes.arrayOf(
+  currentPlan: PropTypes.shape({
+    latitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    longitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    report_data: PropTypes.shape({
+      site_name: PropTypes.string,
+      selected_commodities: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+      agwqm_area: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      agwqm_region: PropTypes.string,
+      admin_rules_link: PropTypes.string,
+      area_plan_link: PropTypes.string,
+      regional_specialist: PropTypes.string,
+      regional_specialist_email: PropTypes.string,
+      regional_specialist_phone: PropTypes.string,
+      site_photos: PropTypes.arrayOf(PropTypes.shape({
+        url: PropTypes.string,
+        description: PropTypes.string,
+      })),
+      selected_concerns: PropTypes.arrayOf(PropTypes.string),
+      selected_questions: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+      selected_goals: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+      selected_practices: PropTypes.arrayOf(PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+        PropTypes.shape({
+          id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+          title: PropTypes.string,
+          helps: PropTypes.arrayOf(PropTypes.string),
+          ecosystem_benefits: PropTypes.string,
+          benefits: PropTypes.string,
+          links: PropTypes.arrayOf(PropTypes.shape({
+            url: PropTypes.string,
+            label: PropTypes.string,
+          })),
+        }),
+      ])),
+    }).isRequired,
+  }).isRequired,
+  userRole: PropTypes.string,
+  goalsData: PropTypes.arrayOf(
     PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.shape({
@@ -387,31 +371,18 @@ Report.propTypes = {
         goal: PropTypes.string,
       }),
     ]),
-  ).isRequired,
-
-  concernQuestions: PropTypes.arrayOf(
+  ),
+  concernQuestionsData: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      concern: PropTypes.string.isRequired,
-      question: PropTypes.string.isRequired,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      concern: PropTypes.string,
+      question: PropTypes.string,
     })
-  ).isRequired,
-
-  selectedPractices: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      title: PropTypes.string.isRequired,
-      helps: PropTypes.arrayOf(PropTypes.string).isRequired,
-      ecosystem_benefits: PropTypes.string,
-      benefits: PropTypes.string,
-      links: PropTypes.arrayOf(
-        PropTypes.shape({
-          url: PropTypes.string.isRequired,
-          label: PropTypes.string,
-        }),
-      ),
-    }),
-  ).isRequired,
+  ),
+  areaRulesData: PropTypes.arrayOf(PropTypes.object),
+  practicesData: PropTypes.arrayOf(PropTypes.object),
+  savePlan: PropTypes.func.isRequired,
+  isDirty: PropTypes.shape({ current: PropTypes.bool }).isRequired,
 };
 
 export default Report;

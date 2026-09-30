@@ -15,97 +15,41 @@ import PropTypes from 'prop-types';
 //   - selectedPractices: Array of selected Practice objects
 //   - concernQuestions: Array of fetched concern question objects from /agwqplan/concernQuestions
 const StepSummary = ({
-  userType,
+  currentPlan,
+  //setCurrentPlan,
+  userRole,
   userName,
-  latitude,
-  longitude,
-  agWqMArea,
-  region,
-  regionalSpecialist,
-  regionalSpecialistEmail,
-  regionalSpecialistPhone,
-  adminRulesLink,
-  areaPlanLink,
-  siteName,
-  site,
-  sitePhotos,
-  selectedCommodities,
-  selectedConcerns,
-  selectedQuestions,
-  selectedGoals,
-  goalData,
-  selectedPractices,
-  concernQuestions,
-  areaRules
+  goalsData,
+  concernQuestionsData,
+  areaRulesData,
+  practicesData,
+  savePlan,
+  isDirty, 
 }) => (
-  <Report
-    userType={userType}
-    userName={userName}
-    latitude={latitude}
-    longitude={longitude}
-    agWqMArea={agWqMArea}
-    region={region}
-    regionalSpecialist={regionalSpecialist}
-    regionalSpecialistEmail={regionalSpecialistEmail}
-    regionalSpecialistPhone={regionalSpecialistPhone}
-    adminRulesLink={adminRulesLink}
-    areaPlanLink={areaPlanLink}
-    siteName={siteName}
-    site={site}
-    sitePhotos={sitePhotos}
-    selectedCommodities={selectedCommodities}
-    selectedConcerns={selectedConcerns}
-    selectedQuestions={selectedQuestions}
-    selectedGoals={selectedGoals}
-    goalData={goalData}
-    selectedPractices={selectedPractices}
-    concernQuestions={concernQuestions}
-    areaRules={areaRules}
-  />
+  <>
+    <Report
+      currentPlan={currentPlan}
+      userRole={userRole}
+      userName={userName}
+      goalsData={goalsData}
+      concernQuestionsData={concernQuestionsData}
+      areaRulesData={areaRulesData}
+      practicesData={practicesData}
+      savePlan={savePlan}
+      isDirty={isDirty}
+    />
+
+  </>
+
 );
 
 
 
 StepSummary.propTypes = {
-  userType: PropTypes.string,
+  userRole: PropTypes.string,
   userName: PropTypes.string,
-  latitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  longitude: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  agWqMArea: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  region: PropTypes.string,
-  regionalSpecialist: PropTypes.string,
-  regionalSpecialistEmail: PropTypes.string,
-  regionalSpecialistPhone: PropTypes.string,
-  adminRulesLink: PropTypes.string,
-  areaPlanLink: PropTypes.string,
-  siteName: PropTypes.string,
-  site: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
-    latitude: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    longitude: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    photos: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        url: PropTypes.string,
-        description: PropTypes.string,
-      })
-    ),
-  }),
-  sitePhotos: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      url: PropTypes.string,
-      description: PropTypes.string,
-    }),
-  ),
-  selectedCommodities: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
-  selectedConcerns: PropTypes.arrayOf(PropTypes.string).isRequired,
-
-  selectedQuestions: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
-  selectedGoals: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
-
-  goalData: PropTypes.arrayOf(
+  
+  goalsData: PropTypes.arrayOf(
     PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.shape({
@@ -119,7 +63,7 @@ StepSummary.propTypes = {
     ]),
   ).isRequired,
 
-  concernQuestions: PropTypes.arrayOf(
+  concernQuestionsData: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       concern: PropTypes.string.isRequired,
@@ -127,22 +71,21 @@ StepSummary.propTypes = {
     })
   ).isRequired,
 
-  selectedPractices: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      title: PropTypes.string.isRequired,
-      helps: PropTypes.arrayOf(PropTypes.string).isRequired,
-      ecosystem_benefits: PropTypes.string,
-      benefits: PropTypes.string,
-      links: PropTypes.arrayOf(
-        PropTypes.shape({
-          url: PropTypes.string.isRequired,
-          label: PropTypes.string,
-        }),
-      ),
-    }),
-  ).isRequired,
+  currentPlan: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    report_data: PropTypes.shape({
+      selected_concerns: PropTypes.arrayOf(PropTypes.string).isRequired,
+      selected_questions: PropTypes.arrayOf(
+        PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      ).isRequired,
+    }).isRequired,
+  }),
   areaRules: PropTypes.array,
+  setCurrentPlan: PropTypes.func.isRequired,
+  savePlan: PropTypes.func.isRequired,
+  isDirty: PropTypes.shape({
+    current: PropTypes.bool,
+  }).isRequired,
 };
 
 export default StepSummary;

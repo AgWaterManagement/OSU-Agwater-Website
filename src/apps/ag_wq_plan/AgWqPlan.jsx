@@ -1,11 +1,6 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 
-import { Menu, Layout, Steps, Card, Typography, Divider, Select, Space, Button, Spin, Tabs } from 'antd';
-//import Map from '@arcgis/core/Map';
-//import MapView from '@arcgis/core/views/MapView';
-//import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
-//import Graphic from '@arcgis/core/Graphic';
-//import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
+import { Menu, Layout, Card, message, Typography, Divider, Select, Button, Spin, Tabs } from 'antd';
 
 import Maps from './Maps';
 import MyPlans from './MyPlans';
@@ -20,6 +15,9 @@ import WQCalculators from './calculators/WQCalculators';
 const { Content, Footer } = Layout;
 const { Title, Text, Paragraph } = Typography;
 const API_BASE = 'https://agwater.org:5556';
+import { secrets } from '../../secrets.js';
+
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 /*
   "Create a 'living' repository of suggested agricultural/environmental practices
@@ -27,20 +25,30 @@ const API_BASE = 'https://agwater.org:5556';
   "Ability for landowner to identify/search for Ag Practices related to their land."
 */
 
+/*
+a "Plan" is a collection of user inputs and selections that can be saved, shared, and exported as a PDF report. The plan includes:
+- Site information
+   (name, description, location, photos)
+- Selected commodities
+- Selected concerns and concern questions
+- Selected goals
+- Recommended practices based on the selected concerns and questions
+
+*/
+
 
 // Main AgWqPlan component for the Water Quality Practices Planner.
 // Loads concern questions and practices from the /agwqplan routes exposed by ag_wqplan.py.
 const AgWqPlan = () => {
   // Current step in the wizard (0-4)
-  const [currentMode, setCurrentMode] = useState('edit_plan');
+  const [currentMode, setCurrentMode] = useState('');
   const [currentPracticeGuide, setCurrentPracticeGuide] = useState('vfs');
-  const [currentStep, setCurrentStep] = useState(-1);
   const [currentPlan, setCurrentPlan] = useState(null);
-  
+
   //------------------------------------------------------------------------------------
   // Global state for planner data and user inputs
   //------------------------------------------------------------------------------------
-  const [sites, setSites] = useState([]);  // these are filtered based on the user ID
+  //const [sites, setSites] = useState([]);  // these are filtered based on the user ID
   const [commodities, setCommodities] = useState([]);
   const [concerns, setConcerns] = useState([]);
   const [concernQuestions, setConcernQuestions] = useState([]);
@@ -60,34 +68,18 @@ const AgWqPlan = () => {
   //const userType = useRef('Landowner');
   const userID = useRef(null);
 
-  const [selectedCommodities, setSelectedCommodities] = useState([]);
-  //const commodity = useRef('Pasture/Hay');
-  const [siteName, setSiteName] = useState('');
-  const siteID = useRef(null);
-  const [siteDescription, setSiteDescription] = useState('');
-  const [siteLocator, setSiteLocator] = useState('');
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
-  const [agwqmArea, setAgwqmArea] = useState(null);   // MA_Index from ODA AWQMA dataset
-  const [agwqRegion, setAgwqRegion] = useState(null);
-  const [regionalSpecialist, setRegionalSpecialist] = useState(null);
-  const [regionalSpecialistEmail, setRegionalSpecialistEmail] = useState(null);
-  const [regionalSpecialistPhone, setRegionalSpecialistPhone] = useState(null);
-  const [adminRulesLink, setAdminRulesLink] = useState(null);
-  const [areaPlanLink, setAreaPlanLink] = useState(null);
-  const [sitePhotos, setSitePhotos] = useState([]);
 
   // -----------------------------------------------------------------------------------
   // Step-specific state
   // Each step component receives relevant pieces of state and setters as props
   // to manage user inputs and selections for that step
   //------------------------------------------------------------------------------------
-  const [selectedConcerns, setSelectedConcerns] = useState([]);
-  const [selectedQuestions, setSelectedQuestions] = useState([]);
-  const [selectedGoals, setSelectedGoals] = useState([]);
-  const [selectedPracticeIds, setSelectedPracticeIds] = useState([]);
-  const [selectedTMDLs, setSelectedTMDLs] = useState([]);
- 
+  //const [selectedConcerns, setSelectedConcerns] = useState([]);
+  //const [selectedQuestions, setSelectedQuestions] = useState([]);
+  //const [selectedGoals, setSelectedGoals] = useState([]);
+  //const [selectedPracticeIds, setSelectedPracticeIds] = useState([]);
+  //const [selectedTMDLs, setSelectedTMDLs] = useState([]);
+
   // ------------------------------------------------------------------------------------
   // Success/Error status of each Step for validation and user feedback
   // possible values are wait process finish error
@@ -96,26 +88,6 @@ const AgWqPlan = () => {
   const [stepConditionsStatus, setStepConditionsStatus] = useState('wait');
   const [stepGoalsStatus, setStepGoalsStatus] = useState('wait');
   const [stepPracticesStatus, setStepPracticesStatus] = useState('wait');
-
-
-
-
-  const next = () => {
-    //if (!validateInputs())
-    //  return;
-    setCurrentStep((c) => c + 1);
-  };
-
-  const prev = () => {
-    //if (validateInputs())
-    //  return;
-
-    setCurrentStep((c) => c - 1);
-  };
-
-
-
-
 
 
   // Cookie helpers
@@ -130,7 +102,7 @@ const AgWqPlan = () => {
 
   //const _setUserType = (type) => {
   //  console.log("Setting userType to:", type);
-  //  userType.currentStep = type;
+  //  userType.current = type;
   //}
 
   const _setUserID = (id) => {
@@ -139,14 +111,14 @@ const AgWqPlan = () => {
     setCookie('agwqplan_userID', id);
   }
 
-  const _setSiteID = (id) => {
-    console.log("Setting siteID to:", id);
-    if (id == 'null')
-      id = null;
-
-    siteID.current = id;
-    setCookie('agwqplan_siteID', id);
-  }
+  //  const _setSiteID = (id) => {
+  //    console.log("Setting siteID to:", id);
+  //    if (id == 'null')
+  //      id = null;
+  //
+  //    siteID.current = id;
+  //    setCookie('agwqplan_siteID', id);
+  //  }
 
   const _setUserName = (name) => {
     console.log("Setting userName to:", name);
@@ -167,7 +139,7 @@ const AgWqPlan = () => {
     getCookie('agwqplan_userID') && _setUserID(getCookie('agwqplan_userID'));
     getCookie('agwqplan_userRole') && setUserRole(getCookie('agwqplan_userRole'));
     getCookie('agwqplan_loginName') && setUserName(getCookie('agwqplan_loginName'));
-    getCookie('agwqplan_siteID') && _setSiteID(getCookie('agwqplan_siteID'));
+    //getCookie('agwqplan_siteID') && _setSiteID(getCookie('agwqplan_siteID'));
 
     const fetchJson = async (fileName) => {
       const response = await fetch(`${API_BASE}${fileName}`);
@@ -232,6 +204,112 @@ const AgWqPlan = () => {
     };
   }, []);
 
+
+
+  // Handle saving the report (e.g., to a server or local storage)
+  const SavePlan = async () => {
+    if (currentPlan === null || userName === null || userName === undefined || userName === 'Guest') {
+      message.error('Cannot save plan: User is not logged in.');
+      return false;
+    }
+
+    // Implement saving logic here (e.g., send data to server or save to local storage)
+    console.log('Saving report...');
+    const now = () => new Date().toISOString(); // Helper function to get current timestamp in ISO format
+
+    // only save the ID's of the selected practices, goals, etc
+    const _selectedPractices = currentPlan?.report_data?.selected_practices || [];
+    const _selectedGoals = currentPlan?.report_data?.selected_goals || [];
+    const _selectedConcerns = currentPlan?.report_data?.selected_concerns || [];
+    const _selectedQuestions = currentPlan?.report_data?.selected_questions || [];
+    const _selectedCommodities = currentPlan?.report_data?.selected_commodities || [];
+
+    const isNewPlan = currentPlan?.id === null || currentPlan?.id === undefined;
+
+    const reportData = {
+      site_id: currentPlan?.report_data?.site_id,
+      site_name: currentPlan?.report_data?.site_name,
+      site_description: currentPlan?.report_data?.site_description,
+      site_locator: currentPlan?.report_data?.site_locator,
+      site_photos: currentPlan?.report_data?.site_photos,
+
+      agwqm_region: currentPlan?.report_data?.agwqm_region,
+      agwqm_area: currentPlan?.report_data?.agwqm_area,
+      tmdl_area: currentPlan?.report_data?.tmdl_area,
+      regional_specialist: currentPlan?.report_data?.regional_specialist,
+      regional_specialist_email: currentPlan?.report_data?.regional_specialist_email,
+      regional_specialist_phone: currentPlan?.report_data?.regional_specialist_phone,
+      area_plan_link: currentPlan?.report_data?.area_plan_link,
+      admin_rules_link: currentPlan?.report_data?.admin_rules_link,
+
+      selected_commodities: _selectedCommodities?.toString() || '',
+      selected_goals: _selectedGoals?.toString() || '',
+      selected_concerns: _selectedConcerns?.toString() || '',
+      selected_questions: _selectedQuestions?.toString() || '',
+      selected_practices: _selectedPractices?.toString() || '',
+    };
+
+    const record = {
+      report_data: JSON.stringify(reportData), // jsonb,
+      created_by: userName,  // text COLLATE pg_catalog."default",
+      latitude: currentPlan?.latitude,
+      longitude: currentPlan?.longitude,
+      keywords: "",   // text COLLATE pg_catalog."default",
+      created_at: now(),   // timestamp with time zone DEFAULT now(),
+      updated_at: now(),   // timestamp with time zone DEFAULT now(),
+      shared_with: currentPlan?.shared_with?.toString(),  // convert to string
+    };
+    if (isNewPlan === false) {
+      record.id = currentPlan?.id;
+    }
+
+    const data = JSON.stringify(record);
+    console.log("Saving report data:", record);
+    console.log("Saving report data:", data);
+
+    // "PUT" the record to the server via API call
+    try {
+      const response = await fetch(`${API_BASE}/agwqplan/plans`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': secrets.agwater_api_key,
+        },
+        body: data,
+      });
+      const responseText = await response.text();
+      let responseBody = {};
+
+      try {
+        responseBody = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        responseBody = { error: responseText };
+      }
+
+      if (!response.ok || responseBody.success === false) {
+        throw new Error(responseBody.error || `Unable to save plan (${response.status}).`);
+      }
+
+      if (isNewPlan) {
+        // Update the current plan with the new ID returned from the server
+        const newPlanId = responseBody?.inserted_record_ids[0];
+        setCurrentPlan((prevPlan) => ({
+          ...prevPlan,
+          id: newPlanId,
+        }));
+        console.log(`New plan created with ID: ${newPlanId}`);
+      }
+      message.success('Plan saved successfully');
+      return responseBody;
+    } catch (error) {
+      message.error(error.message || 'Unable to save plan.');
+      throw error;
+    }
+  }
+
+
+
+  /*
   // Filter questions based on selected concerns
   const filteredQuestions = useMemo(
     () =>
@@ -240,7 +318,7 @@ const AgWqPlan = () => {
       ),
     [selectedConcerns, concernQuestions],
   );
-
+*/
   // Get all available TMDLs from practices
   const availableTMDLs = useMemo(() => {
     const tmdlSet = new Set();
@@ -251,34 +329,36 @@ const AgWqPlan = () => {
     });
     return Array.from(tmdlSet).sort();
   }, [practices]);
-
-  // Recommend practices based on selected questions
-  const recommendedPractices = useMemo(() => {
-    const questionTags = new Set(
-      concernQuestions
-        .filter((q) => selectedQuestions.includes(q.id))
-        .map((q) => q.concern),
-    );
-    return practices.filter((p) =>
-      p.tags.some((t) =>
-        questionTags.has(t)));
-  }, [selectedQuestions, concernQuestions, practices]);
-
-  const filteredRecommendedPractices = useMemo(() => {
-    if (userRole === 'Board/TMDL' && selectedTMDLs.length > 0) {   ///  ROLE NO LONGER EXISTS
-      return recommendedPractices.filter((p) =>
-        p.tmdls && p.tmdls.some((t) => selectedTMDLs.includes(t)),
+  /*
+    // Recommend practices based on selected questions
+    const recommendedPractices = useMemo(() => {
+      const questionTags = new Set(
+        concernQuestions
+          .filter((q) => selectedQuestions.includes(q.id))
+          .map((q) => q.concern),
       );
-    }
+      return practices.filter((p) =>
+        p.tags.some((t) =>
+          questionTags.has(t)));
+    }, [selectedQuestions, concernQuestions, practices]);
+  
+    const filteredRecommendedPractices = useMemo(() => {
+      if (userRole === 'Board/TMDL' && selectedTMDLs.length > 0) {   ///  ROLE NO LONGER EXISTS
+        return recommendedPractices.filter((p) =>
+          p.tmdls && p.tmdls.some((t) => selectedTMDLs.includes(t)),
+        );
+      }
+  
+      return recommendedPractices;
+    }, [recommendedPractices, selectedTMDLs]);
+  
+    // Get full practice objects for selected practice IDs
+    const selectedPractices = useMemo(
+      () => practices.filter((p) => selectedPracticeIds.includes(p.id)),
+      [selectedPracticeIds, practices],
+    );
+  */
 
-    return recommendedPractices;
-  }, [recommendedPractices, selectedTMDLs]);
-
-  // Get full practice objects for selected practice IDs
-  const selectedPractices = useMemo(
-    () => practices.filter((p) => selectedPracticeIds.includes(p.id)),
-    [selectedPracticeIds, practices],
-  );
 
   return (
     <>
@@ -286,7 +366,7 @@ const AgWqPlan = () => {
         <Card>
           <PageRating pageID='/apps/ag_wq_plan' />
           <Title level={3}>Water Quality Practices Planner</Title>
-          {currentStep === -1 && (
+          {currentMode === '' && (
             <Paragraph>
               This tool connects land conditions and goals to agricultural water quality
               practices, technical assistance, and reference materials.
@@ -295,92 +375,69 @@ const AgWqPlan = () => {
 
           <Menu onClick={({ key }) => setCurrentMode(key)} selectedKeys={[currentMode]} mode="horizontal" items={[
             { label: 'My Plans', key: 'my_plans' },
-            { label: 'Learn More', key: 'learn_more', }]}            
+            { label: 'Learn More', key: 'learn_more', }]}
           />
 
           {userID.current && userName ? (
-            <Text style={{ fontSize: '1.0em', marginLeft: 8, float:'right' }}>
-              Logged in as: {userName} ({userRole})  
+            <Text style={{ fontSize: '1.0em', marginLeft: 8, float: 'right' }}>
+              Logged in as: {userName} ({userRole})
             </Text>
           ) : (
-            <Text style={{ fontSize: '1.0em', marginLeft: 8, float:'right' }}>
+            <Text style={{ fontSize: '1.0em', marginLeft: 8, float: 'right' }}>
               Not logged in
             </Text>
           )}
 
           <Spin spinning={loadingData} tip="Loading planner data...">
 
-            {currentMode === 'my_plans' && (
+            {currentMode === 'my_plans' && currentPlan === null && (
               <MyPlans
                 setCurrentPlan={setCurrentPlan}
-                userName={userName}
-                userID={userID} setUserID={_setUserID}
+                userName={userName} setUserName={_setUserName}
+                userRole={userRole} setUserRole={_setUserRole}
+
+                availableTMDLs={availableTMDLs}
+                setUserID={_setUserID}
+                setLoggingIn={setLoggingIn}
+
+                savePlan={SavePlan}
+
               />
             )}
 
-              {currentMode === 'my_plans' && currentPlan && (
-              
-              <PlanEditor
-                currentPlan={currentPlan}
-                userRole={userRole} setUserRole={_setUserRole}
-                userName={userName} setUserName={_setUserName}
-                userID={userID} setUserID={_setUserID}
-                areaPlanLink={areaPlanLink}
-                siteName={siteName}
-                site={sites.find(s => s.id === siteID.current) || null}
-                sitePhotos={sitePhotos}
-                selectedCommodities={selectedCommodities}
-                selectedConcerns={selectedConcerns}
-                selectedQuestions={selectedQuestions}
-                selectedGoals={selectedGoals}
-                goalData={goals}
-                selectedPractices={selectedPractices}
-                concernQuestions={concernQuestions}
-                areaRules={areaRules}
-                selectedTMDLs={selectedTMDLs}
-                setSelectedTMDLs={setSelectedTMDLs}
-                availableTMDLs={availableTMDLs}
-                setLoggingIn={setLoggingIn}
-                currentStep={currentStep}
-                setCurrentStep={setCurrentStep}
-                setAreaPlanLink={setAreaPlanLink}
-                setStepLocationStatus={setStepLocationStatus}
-                setStepConditionsStatus={setStepConditionsStatus}
-                setStepGoalsStatus={setStepGoalsStatus}
-                setStepPracticesStatus={setStepPracticesStatus}
-                stepLocationStatus={stepLocationStatus}
-                stepConditionsStatus={stepConditionsStatus}
-                stepGoalsStatus={stepGoalsStatus}
-                stepPracticesStatus={stepPracticesStatus}
-                sites={sites}
-                setSites={setSites}
-                commodities={commodities}
-                setSelectedCommodities={setSelectedCommodities}
-                setSitePhotos={setSitePhotos}
-                setSiteName={setSiteName}
-                siteID={siteID}
-                setSiteID={_setSiteID}
-                siteDescription={siteDescription}
-                setSiteDescription={setSiteDescription}
-                siteLocator={siteLocator}
-                setSiteLocator={setSiteLocator}
-                latitude={latitude}
-                setLatitude={setLatitude}
-                longitude={longitude}
-                setLongitude={setLongitude}
-                agwqmArea={agwqmArea}
-                setAgwqmArea={setAgwqmArea}
-                agwqRegion={agwqRegion}
-                setAgwqRegion={setAgwqRegion}
-                regionalSpecialist={regionalSpecialist}
-                setRegionalSpecialist={setRegionalSpecialist}
-                regionalSpecialistEmail={regionalSpecialistEmail}
-                setRegionalSpecialistEmail={setRegionalSpecialistEmail}
-                regionalSpecialistPhone={regionalSpecialistPhone}
-                setRegionalSpecialistPhone={setRegionalSpecialistPhone}
-                adminRulesLink={adminRulesLink}
-                setAdminRulesLink={setAdminRulesLink}
-              />
+            {currentMode === 'my_plans' && currentPlan !== null && (
+              <>
+                <Button type="primary" icon={<ArrowLeftOutlined />}
+                  onClick={() => setCurrentPlan(null)}
+                  style={{ marginBottom: '1em', marginTop: '2em' }}>
+                  Back to My Plans
+                </Button>
+
+                <PlanEditor
+                  currentPlan={currentPlan} setCurrentPlan={setCurrentPlan}
+                  userRole={userRole} setUserRole={_setUserRole}
+                  userName={userName} setUserName={_setUserName}
+                  userID={userID} setUserID={_setUserID}
+
+                  concernsData={concerns}
+                  goalsData={goals}
+                  commoditiesData={commodities}
+                  concernQuestionsData={concernQuestions}
+                  areaRulesData={areaRules}
+                  practicesData={practices}
+
+                  setStepLocationStatus={setStepLocationStatus}
+                  setStepConditionsStatus={setStepConditionsStatus}
+                  setStepGoalsStatus={setStepGoalsStatus}
+                  setStepPracticesStatus={setStepPracticesStatus}
+                  stepLocationStatus={stepLocationStatus}
+                  stepConditionsStatus={stepConditionsStatus}
+                  stepGoalsStatus={stepGoalsStatus}
+                  stepPracticesStatus={stepPracticesStatus}
+
+                  savePlan={SavePlan}
+                />
+              </>
             )}
 
             {currentMode === 'learn_more' && (
@@ -402,7 +459,7 @@ const AgWqPlan = () => {
                       key: 'calculators',
                       label: 'Calculators',
                       children: <>
-                        <WQCalculators/>
+                        <WQCalculators />
                       </>
                     },
 
@@ -410,19 +467,19 @@ const AgWqPlan = () => {
                       key: 'additional_guides',
                       label: 'Additional Guides',
                       children: <>
-                      Select a guide from the dropdown below to view additional information and guidance for implementing water quality practices.
-                      <br />
-                      <br />
-                      <Select defaultValue="vfs" style={{ width: 200 }} onChange={(value) => setCurrentPracticeGuide(value)} options={[
-                        { label: 'Vegetative Filter Strip (VFS) Guide', value: 'vfs' },
-                        { label: 'Other Guide 1', value: 'other1' }, 
-                        { label: 'Other Guide 2', value: 'other2' }
-                      ]} />,
-                      <div>
-                        {currentPracticeGuide === 'vfs' && <VFSGuide />}
-                        {currentPracticeGuide === 'other1' && <div>Other Guide 1 content goes here...</div>}
-                        {currentPracticeGuide === 'other2' && <div>Other Guide 2 content goes here...</div>}
-                      </div>
+                        Select a guide from the dropdown below to view additional information and guidance for implementing water quality practices.
+                        <br />
+                        <br />
+                        <Select defaultValue="vfs" style={{ width: 200 }} onChange={(value) => setCurrentPracticeGuide(value)} options={[
+                          { label: 'Vegetative Filter Strip (VFS) Guide', value: 'vfs' },
+                          { label: 'Other Guide 1', value: 'other1' },
+                          { label: 'Other Guide 2', value: 'other2' }
+                        ]} />,
+                        <div>
+                          {currentPracticeGuide === 'vfs' && <VFSGuide />}
+                          {currentPracticeGuide === 'other1' && <div>Other Guide 1 content goes here...</div>}
+                          {currentPracticeGuide === 'other2' && <div>Other Guide 2 content goes here...</div>}
+                        </div>
                       </>
                     },
                     {

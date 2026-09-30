@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
-import { Checkbox, Typography } from 'antd';
+import { Button, Checkbox, Divider, Typography } from 'antd';
 
 import ValidationError from './ValidationError';
 
@@ -11,7 +11,14 @@ const { Paragraph } = Typography;
 //   - selectedGoals: Array of selected goal strings
 //   - setSelectedGoals: Function to update selected goals
 //   - goalData: Array of goal records fetched by AgWqPlan
-const StepGoals = ({ selectedGoals, setSelectedGoals, goalData, setError }) => {
+const StepGoals = ({
+  currentPlan, 
+  setCurrentPlan,
+  goalData, 
+  setError,
+  savePlan,
+  isDirty,
+ }) => {
   const goalOptions = useMemo(
     () =>
       (Array.isArray(goalData) ? goalData : []).map((goal) => {
@@ -27,10 +34,10 @@ const StepGoals = ({ selectedGoals, setSelectedGoals, goalData, setError }) => {
     [goalData],
   );
 
-  if ( selectedGoals.length === 0) {
+  if ( currentPlan?.report_data?.selected_goals?.length === 0) {
     setError('error');
   }
-  if (selectedGoals.length > 0) {
+  if (currentPlan?.report_data?.selected_goals?.length > 0) {
     setError('finish');
   }
 
@@ -42,26 +49,51 @@ const StepGoals = ({ selectedGoals, setSelectedGoals, goalData, setError }) => {
       </Paragraph>
       {/* Checkbox group for water quality goals */}
 
-      {selectedGoals.length === 0 && (
+      {currentPlan?.report_data?.selected_goals?.length === 0 && (
         <ValidationError message="Please select at least one goal to help us recommend the most relevant practices for your operation." />
       )}
 
       <Checkbox.Group
         options={goalOptions}
-        value={selectedGoals}
+        value={currentPlan?.report_data?.selected_goals}
         style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}
-        onChange={(vals) => setSelectedGoals(vals)}
+        onChange={(vals) => {
+          const updatedPlan = {
+            ...currentPlan,
+            report_data: {
+              ...currentPlan.report_data,
+              selected_goals: vals,
+            },
+          };
+          isDirty.current = true;
+          setCurrentPlan(updatedPlan);
+        }}
       />
       <Paragraph style={{ marginTop: 16 }}>
         These goals will be used to prioritize practices that provide the most relevant benefits to your operation.
       </Paragraph>
+
+      <Divider />
+      <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }}
+              onClick={() => { savePlan(); }}
+              disabled={(currentPlan === null 
+                        || ( currentPlan?.report_data?.selected_goals.length === 0 )
+                        || isDirty.current === false)}
+            >
+              Save Plan Updates
+            </Button>
     </>
   );
 };
 
 StepGoals.propTypes = {
-  selectedGoals: PropTypes.arrayOf(PropTypes.number).isRequired,
-  setSelectedGoals: PropTypes.func.isRequired,
+  currentPlan: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    report_data: PropTypes.shape({
+      selected_goals: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+    }),
+  }).isRequired,
+  setCurrentPlan: PropTypes.func.isRequired,
   goalData: PropTypes.arrayOf(
     PropTypes.oneOfType([
       PropTypes.string,
@@ -76,6 +108,10 @@ StepGoals.propTypes = {
     ]),
   ).isRequired,
   setError: PropTypes.func.isRequired,
+  savePlan: PropTypes.func.isRequired,
+  isDirty: PropTypes.shape({
+    current: PropTypes.bool,
+  }).isRequired,
 };
 
 export default StepGoals;

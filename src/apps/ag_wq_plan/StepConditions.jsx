@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
-import { Checkbox, Divider, Typography } from 'antd';
+import { Button, Checkbox, Divider, Typography } from 'antd';
 import ValidationError from './ValidationError';
 
 const { Title, Paragraph } = Typography;
@@ -10,21 +10,20 @@ const { Title, Paragraph } = Typography;
 //   - concernData: Array of concern records fetched by AgWqPlan
 //   - selectedConcerns: Array of selected concerns
 //   - setSelectedConcerns: Function to update selected concerns
-//   - filteredQuestions: Array of questions filtered by selected concerns
 //   - selectedQuestions: Array of selected question IDs
 //   - setSelectedQuestions: Function to update selected questions
 const StepConditions = ({
-  concernData,
-  selectedConcerns,
-  setSelectedConcerns,
-  filteredQuestions,
-  selectedQuestions,
-  setSelectedQuestions,
-  setError
+  currentPlan,
+  setCurrentPlan,
+  concernsData,
+  concernQuestionsData,
+  setError,
+  savePlan,
+  isDirty,
 }) => {
   const concernOptions = useMemo(
     () =>
-      (Array.isArray(concernData) ? concernData : [])
+      (Array.isArray(concernsData) ? concernsData : [])
         .map((concern) => {
           if (typeof concern === 'string') {
             return { label: concern, value: concern };
@@ -36,17 +35,29 @@ const StepConditions = ({
           return { label, value };
         })
         .filter((option) => option.value != null),
-    [concernData],
+    [concernsData],
   );
 
-  if ( selectedConcerns.length === 0 || selectedQuestions.length === 0) {
-    setError('error');
+  if (currentPlan && currentPlan.report_data && currentPlan.report_data.selected_concerns && currentPlan.report_data.selected_questions) {
+    if (currentPlan.report_data.selected_concerns.length === 0 || currentPlan.report_data.selected_questions.length === 0) {
+      setError('error');
+    }
   }
 
-  if (selectedConcerns.length > 0 && selectedQuestions.length > 0) {
-    setError('finish');
+  if (currentPlan && currentPlan.report_data && currentPlan.report_data.selected_concerns && currentPlan.report_data.selected_questions) {
+    if (currentPlan.report_data.selected_concerns.length > 0 && currentPlan.report_data.selected_questions.length > 0) {
+      setError('finish');
+    }
   }
 
+  // Filter questions based on selected concerns
+  const filteredQuestions = useMemo(
+    () =>
+      concernQuestionsData.filter((q) =>
+        currentPlan.report_data.selected_concerns.length ? currentPlan.report_data.selected_concerns.includes(q.concern) : true,
+      ),
+    [currentPlan, concernQuestionsData],
+  );
 
 
   return (
@@ -58,43 +69,74 @@ const StepConditions = ({
       {/* Concern  checkboxes to filter available questions */}
       <Checkbox.Group
         options={concernOptions}
-        value={selectedConcerns}
-        onChange={(vals) => setSelectedConcerns(vals)}
+        value={currentPlan.report_data.selected_concerns}
+        onChange={(vals) => {
+          const updatedPlan = {
+            ...currentPlan,
+            report_data: {
+              ...currentPlan.report_data,
+              selected_concerns: vals,
+            },
+          };
+          isDirty.current = true;
+          setCurrentPlan(updatedPlan);
+        }}
       />
 
-      {selectedConcerns.length === 0 && (
+      {currentPlan.report_data.selected_concerns.length === 0 && (
         <Paragraph style={{ marginTop: 16 }}>
           <ValidationError message="Please select at least one concern to proceed." />
         </Paragraph>
       )}
 
       <Divider />
-      {selectedConcerns.length > 0 && (
+      {currentPlan.report_data.selected_concerns.length > 0 && (
         <>
 
-      <Title level={4}>Questions</Title>
-      <Paragraph>
-        Select any questions below that apply to the selected conditions or concerns.
-      </Paragraph>
+          <Title level={4}>Questions</Title>
+          <Paragraph>
+            Select any questions below that apply to the selected conditions or concerns.
+          </Paragraph>
 
-      {selectedQuestions.length === 0 && (
-        <Paragraph style={{ marginTop: 16 }}>
-          <ValidationError message="Please select at least one question to proceed." />
-        </Paragraph>
-      )}
+          {currentPlan.report_data.selected_questions.length === 0 && (
+            <Paragraph style={{ marginTop: 16 }}>
+              <ValidationError message="Please select at least one question to proceed." />
+            </Paragraph>
+          )}
 
-      {/* Detailed questions matching selected concerns */}
-      <Checkbox.Group
-        style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-        value={selectedQuestions}
-        onChange={(vals) => setSelectedQuestions(vals)}
-      >
-        {filteredQuestions.map((q) => (
-          <Checkbox key={q.id} value={q.id}>
-            {q.question} <span style={{ color: '#999' }}>({q.concern})</span>
-          </Checkbox>
-        ))}
-      </Checkbox.Group>
+          {/* Detailed questions matching selected concerns */}
+          <Checkbox.Group
+            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+            value={currentPlan.report_data.selected_questions}
+            onChange={(vals) => {
+              const updatedPlan = {
+                ...currentPlan,
+                report_data: {
+                  ...currentPlan.report_data,
+                  selected_questions: vals,
+                },
+              };
+              setCurrentPlan(updatedPlan);
+            }}
+          >
+            {filteredQuestions.map((q) => (
+              <Checkbox key={q.id} value={q.id}>
+                {q.question} <span style={{ color: '#999' }}>({q.concern})</span>
+              </Checkbox>
+            ))}
+          </Checkbox.Group>
+          
+          <Divider />
+          <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }}
+                  onClick={() => { savePlan(); }}
+                  disabled={(currentPlan === null 
+                            || ( currentPlan?.report_data?.selected_concerns.length === 0 )
+                            || ( currentPlan?.report_data?.selected_questions.length === 0 )
+                            || isDirty.current === false)}
+                >
+                  Save Concerns/Question
+                </Button>
+                
         </>
       )}
     </>
@@ -102,32 +144,26 @@ const StepConditions = ({
 };
 
 StepConditions.propTypes = {
-  concernData: PropTypes.arrayOf(
-    PropTypes.oneOfType([
-      PropTypes.string,
+  currentPlan: PropTypes.shape({
+    report_data: PropTypes.shape({
+      selected_concerns: PropTypes.arrayOf(PropTypes.string).isRequired,
+      selected_questions: PropTypes.arrayOf(
+        PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      ).isRequired,
+    }).isRequired,
+  }).isRequired,
+  concernsData: PropTypes.arrayOf(
       PropTypes.shape({
-        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        label: PropTypes.string,
-        name: PropTypes.string,
-        text: PropTypes.string,
+        id: PropTypes.number,
         concern: PropTypes.string,
-      }),
-    ]),
-  ).isRequired,
-  selectedConcerns: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setSelectedConcerns: PropTypes.func.isRequired,
-  filteredQuestions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      question: PropTypes.string.isRequired,
-      concern: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  selectedQuestions: PropTypes.arrayOf(
-    PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-  ).isRequired,
-  setSelectedQuestions: PropTypes.func.isRequired,
+        question: PropTypes.string,
+        concern_id: PropTypes.number,
+  })).isRequired,
+  concernQuestionsData: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number,
+        concern: PropTypes.string,
+      })).isRequired,
 };
 
 export default StepConditions;

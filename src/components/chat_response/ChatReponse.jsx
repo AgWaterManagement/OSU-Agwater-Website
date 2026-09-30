@@ -14,7 +14,7 @@ import remarkGfm from 'remark-gfm'
 
 const CHAT_API_URL = "https://agwater.org:5556/llm/chat";
 
-const ChatResponse = (prompt) => {
+const ChatResponse = ({prompt}) => {
     //const input = useRef("");
     //const promptCtrl = useRef(null);
     const currentAnswer = useRef("")
