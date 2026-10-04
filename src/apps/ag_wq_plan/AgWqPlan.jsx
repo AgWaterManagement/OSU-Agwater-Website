@@ -41,7 +41,7 @@ a "Plan" is a collection of user inputs and selections that can be saved, shared
 // Loads concern questions and practices from the /agwqplan routes exposed by ag_wqplan.py.
 const AgWqPlan = () => {
   // Current step in the wizard (0-4)
-  const [currentMode, setCurrentMode] = useState('');
+  const [currentMode, setCurrentMode] = useState('my_plans');
   const [currentPracticeGuide, setCurrentPracticeGuide] = useState('vfs');
   const [currentPlan, setCurrentPlan] = useState(null);
 
@@ -390,7 +390,7 @@ const AgWqPlan = () => {
 
           <Spin spinning={loadingData} tip="Loading planner data...">
 
-            {currentMode === 'my_plans' && currentPlan === null && (
+            {currentMode === 'my_plans' && userName && currentPlan === null && (
               <MyPlans
                 setCurrentPlan={setCurrentPlan}
                 userName={userName} setUserName={_setUserName}

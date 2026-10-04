@@ -91,6 +91,7 @@ const StepWhoWhere = ({
   const awqmaLayer = useRef(null);
 
   const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=MA_Index>0&outFields=*&returnGeometry=true&f=geojson'
+  const SITE_IMAGES_URL = 'https://agwater.org:5556/image?path=ag_wqplan/site_photos&file='
 
   // Load sites for the current user when component mounts or userID changes
 
@@ -142,7 +143,7 @@ const StepWhoWhere = ({
     }));
   };
 
-  const _addSitePhotos = (newPhoto) => {
+  const _addSitePhoto = (newPhoto) => {
     // Update the current plan's site photos
     isDirty.current = true;
     setCurrentPlan((prevPlan) => ({
@@ -169,6 +170,8 @@ const StepWhoWhere = ({
   const _setSiteDescription = (value) => {
     isDirty.current = true;
     //setIsDirty(true);
+
+
     setCurrentPlan((prevPlan) => ({
       ...prevPlan,
       report_data: {
@@ -176,7 +179,7 @@ const StepWhoWhere = ({
         site_description: value,
       },
     }));
-  } 
+  }
 
   const _setSelectedCommodities = (v) => {
     isDirty.current = true;
@@ -195,7 +198,7 @@ const StepWhoWhere = ({
       ...prevPlan,
       report_data: {
         ...prevPlan.report_data,
-         site_name: value,
+        site_name: value,
       },
     }));
   };
@@ -232,22 +235,17 @@ const StepWhoWhere = ({
     event.target.value = '';
   };
 
-  // handle confirmation of adding a pending photo by adding to the 
-  // list of site photo previews (currentPreviews)
-  const confirmAddPendingPhoto = () => {
+  const confirmAddPendingPhoto = async () => {
+    // handle confirmation of adding a pending photo by adding to the 
+    // list of site photo previews (currentPreviews)
     if (!pendingPhoto) return;
 
     // upload the pending photo to the server
     // this uploadx the image to the server and adds a record to the site-Images table, but doesn't
     // update the Plan's report_data.site_photos array yet.
-    uploadPhoto(pendingPhoto)
+    const filename = await uploadPhoto(pendingPhoto)
 
-    // add the pending photo to the list of site photo previews
-    //_setSitePhotos((currentPreviews) => [
-    //  ...currentPreviews,
-    //  { name: pendingPhoto.name, url: pendingPhoto.url, description: pendingPhoto.description, uploaded: true },//, file: pendingPhoto.file },
-    //]);
-    _addSitePhotos({ name: pendingPhoto.name, url: pendingPhoto.url, description: pendingPhoto.description, uploaded: true });
+    _addSitePhoto({ filename: filename, label: filename, description: "" });
 
     setPendingPhoto(null);
     setPhotoPickerOpen(false);
@@ -264,18 +262,19 @@ const StepWhoWhere = ({
     }
   };
 
-  const handleDeletePhoto = (url) => {
+  const handleDeletePhoto = (filename) => {
     _setSitePhotos((current) => {
-      const remaining = current.filter((p) => p.url !== url);
-      const removed = current.find((p) => p.url === url);
+      const remaining = current.filter((p) => p.filename !== filename);
+      const removed = current.find((p) => p.filename === filename);
       if (removed) {
         try {
-          URL.revokeObjectURL(removed.url);
+          URL.revokeObjectURL(SITE_IMAGES_URL + removed.filename);
           // ?? REMOVE FROM DATABASE ??
         } catch {
           // ignore
         }
 
+        /*
         try {   // remove from server if uploaded
           if (removed.uploaded && removed.serverInfo && removed.serverInfo.id) {
             fetch(`https://agwater.org:5556/agwqplan/site/images?&id=${removed.serverInfo.id}&file_name=${removed.serverInfo.file_name}`, {
@@ -294,11 +293,11 @@ const StepWhoWhere = ({
         } catch {
           // ignore
         }
+        */
       }
       return remaining;
     });
   };
-
 
   const uploadPhoto = async (photoToSave) => {
     // sitePhotos is the array of photo previews for this site
@@ -309,10 +308,10 @@ const StepWhoWhere = ({
         // { name: file.name, url: previewUrl, description: '', file }
         if (photoToSave && photoToSave.url && photoToSave.file) {
           const form = new FormData();
-          form.append('plan_id', currentPlan?.id);  // FOR NOW...
-          form.append('description', pendingPhoto.description || '');
-          form.append('file', pendingPhoto.file);
-
+          //form.append('plan_id', currentPlan?.id);  // FOR NOW...
+          //form.append('description', pendingPhoto.description || '');
+          form.append('file', photoToSave.file);
+          ``
           const response = await fetch(`https://agwater.org:5556/agwqplan/site/images`, {
             method: 'PUT',
             headers: {
@@ -324,11 +323,11 @@ const StepWhoWhere = ({
           const data = await response.json();
           if (data.success) {
             message.success('Site Photo uploaded successfully');
-            // mark preview as uploaded (keep url for display) and clear pending
-            //setSitePhotos((prev) => prev.map((p) => (p.url === photoToSave.url ? { ...p, uploaded: true, serverInfo: data } : p)));
-            setPendingPhoto(null);
+
+            return data.file_name;
           } else {
             message.error(`Failed to upload site photo: ${data.error}`);
+            return null;
           }
         } else {
           // No file available to upload for this preview
@@ -338,16 +337,19 @@ const StepWhoWhere = ({
         message.error(`Error saving site photo: ${error.message}`);
       }
     }
+    return null;
   }
 
-  const uploadPhotoDescription = async (photoToSave) => {
+
+  const _updatePhotoDescription = (photoToSave, ) => {
     // sitePhotos is the array of photo previews for this site
     //const photoToSave = sitePhotos.find((p) => p.url === url);
     if (photoToSave) {
       try {
         // If the pendingPhoto matches this preview, upload the file
         // { name: file.name, url: previewUrl, description: '', file }
-        if (photoToSave && photoToSave.serverInfo?.id && photoToSave.description) {
+        /*
+        if (photoToSave.serverInfo?.id && photoToSave.description) {
           const form = new FormData();
           form.append('id', photoToSave.serverInfo?.id);
           form.append('description', photoToSave.description || '');
@@ -359,7 +361,7 @@ const StepWhoWhere = ({
             },
             body: form,
           });
-
+          
           const data = await response.json();
           if (data.success) {
             message.success('Site Photo Description successfully updated');
@@ -369,17 +371,15 @@ const StepWhoWhere = ({
           } else {
             message.error(`Failed to upload site photo: ${data.error}`);
           }
-        }
+        } */
       } catch (error) {
         message.error(`Error saving site photo: ${error.message}`);
       }
     }
   }
 
-
-
   const _handleSavePlan = async () => {
-    
+
     const siteName = currentPlan?.report_data?.site_name;
     const siteID = currentPlan?.report_data?.site_id;
     const latitude = currentPlan?.latitude;
@@ -389,7 +389,7 @@ const StepWhoWhere = ({
     const userName = currentPlan?.created_by;
 
     try {
-      if (!siteName || !latitude || !longitude ) {
+      if (!siteName || !latitude || !longitude) {
         message.error('Please provide all required site information (name, location, AWQMA, and region) before saving.');
         return;
       }
@@ -439,7 +439,6 @@ const StepWhoWhere = ({
     savePlan();
   };
 
-
   function queryLayer(layer, latitude, longitude) {
     // Query the AWQMA GeoJSON layer for attributes at the clicked point
     if (layer && typeof layer.queryFeatures === 'function') {
@@ -455,7 +454,7 @@ const StepWhoWhere = ({
         const features = result?.features || [];
         if (features.length > 0) {
           const attrs = features[0].attributes || {};
-          
+
           _setSiteDetails({
             latitude: latitude,
             longitude: longitude,
@@ -682,10 +681,11 @@ const StepWhoWhere = ({
             color: '#d7191c',
             size: 12,
             outline: {
-            color: '#ffffff',
-            width: 1,
-          },
-        }});
+              color: '#ffffff',
+              width: 1,
+            },
+          }
+        });
       };
 
     };
@@ -747,15 +747,26 @@ const StepWhoWhere = ({
   }, [commoditiesData]);
 
 
-  function handleDescriptionChange(photoUrl, description) {
-    // update the given preview photo's description in the sitePhotos state
+  function handleDescriptionChange(photo, description) {
+    // update the given preview photo's description in the site_photos state
     // and indicate that the photo is dirty (needs to be saved)
-    _setSitePhotos(prevPhotos =>
-      prevPhotos.map(photo =>
-        photo.url === photoUrl ? { ...photo, description, isDirty: true } : photo
-      )
+     const newSitePhotos = currentPlan.report_data.site_photos.map(_photo =>
+      _photo.filename === photo.filename ? { ...photo, description } : _photo
     );
+
+    _setSitePhotos(newSitePhotos);
   }
+
+  function handleLabelChange(photo, label) {
+    // update the given preview photo's description in the site_photos state
+    // and indicate that the photo is dirty (needs to be saved)
+    const newSitePhotos = currentPlan.report_data.site_photos.map(_photo =>
+      _photo.filename === photo.filename ? { ...photo, label } : _photo
+    );
+
+    _setSitePhotos(newSitePhotos);
+  }
+
 
   // check if the site name, latitude, and longitude are valid
   if (!currentPlan.report_data.site_name || currentPlan.latitude == null || currentPlan.longitude == null) {
@@ -971,12 +982,12 @@ const StepWhoWhere = ({
                 </Paragraph>
                 <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }}
                   onClick={() => { _handleSavePlan(); }}
-                  disabled={(currentPlan === null 
-                            || ( currentPlan?.report_data?.site_name !== undefined && currentPlan?.report_data?.site_name.trim() === '') 
-                            || !currentPlan?.latitude || !currentPlan?.longitude || isDirty.current === false)}>
+                  disabled={(currentPlan === null
+                    || (currentPlan?.report_data?.site_name !== undefined && currentPlan?.report_data?.site_name.trim() === '')
+                    || !currentPlan?.latitude || !currentPlan?.longitude || isDirty.current === false)}>
                   Update Plan
                 </Button>
-                
+
                 {/*
                 {currentPlan?.id && (
                   <Popconfirm title="Delete this site?" onConfirm={handleDeleteSite} okText="Delete" cancelText="Cancel">
@@ -1020,61 +1031,75 @@ const StepWhoWhere = ({
             <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
               {currentPlan?.id && (
                 <>
-                <Button type="primary" onClick={() => setPhotoPickerOpen(true)}>
-                  Add site photo
-                </Button>
-                <span style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>
-                  You can add photos of the site, to become part of the site record and
-                  to help to identify effective mitigation strategies.</span>
-              </>
+                  <Button type="primary" onClick={() => setPhotoPickerOpen(true)}>
+                    Add site photo
+                  </Button>
+                  {currentPlan.report_data.site_photos && currentPlan.report_data.site_photos.length === 0 && (
+                  <span style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>
+                      You can add photos of the site, to become part of the site record and
+                      to help to identify effective mitigation strategies.</span>
+                  )}
+                </>
               )
-            }
+              }
 
               {currentPlan.report_data.site_photos && currentPlan.report_data.site_photos.length > 0 && (
                 <>
-                <Row>
-                  {currentPlan.report_data.site_photos.map((photo) => (
-                    <Col xs={24} sm={24} md={12} lg={8} key={photo.url} style={{ padding: 8 }}>
-                      <img
-                        src={photo.url}
-                        alt={photo.name}
-                        style={{ width: '100%', objectFit: 'cover', borderRadius: 8, display: 'block', cursor: 'pointer' }}
-                        onClick={() => {
-                          setActivePhoto(photo);
-                          setEditingPhotoDescription(photo.description || '');
-                          setPhotoViewOpen(true);
-                        }}
-                      />
-                      <br/>
+                  <Row>
+                    {currentPlan.report_data.site_photos.map((photo) => (
+                      <Col xs={24} sm={24} md={12} lg={8} key={photo.filename} style={{ padding: 8 }}>
+                        <img
+                          src={SITE_IMAGES_URL + photo.filename}
+                          alt={photo.label || photo.filename}
+                          style={{ width: '100%', objectFit: 'cover', borderRadius: 8, display: 'block', cursor: 'pointer' }}
+                          onClick={() => {
+                            setActivePhoto(photo);
+                            setEditingPhotoDescription(photo.description || '');
+                            setPhotoViewOpen(true);
+                          }}
+                        />
+                        <br />
 
-                        <TextArea id={`description-${photo.url}`} rows={4} style={{ border: '1px solid #444444', width: '100%' }}
-                          value={photo.description}
-                          placeholder="Add a description for this photo"
-                          onChange={(e) => handleDescriptionChange(photo.url, e.target.value)}
+                        <Input
+                          id={`label-${photo.filename}`}
+                          value={photo.label}
+                          placeholder="Add a label for this photo"
+                          onChange={(e) => handleLabelChange(photo, e.target.value)}
+                          style={{ marginTop: 6, width: '100%', fontWeight: 'bold', }}
                         />
 
-                      <div style={{ display: 'block', justifyContent: 'center', marginTop: 6, width: '100%' }}>
-                        <Popconfirm title="Delete this photo?" onConfirm={() => handleDeletePhoto(photo.url)} okText="Delete" cancelText="Cancel">
-                          <Button type="text" size="x-large" danger icon={<DeleteOutlined />} >
-                            Delete Photo
-                          </Button>
-                        </Popconfirm>
+                        <TextArea id={`description-${photo.filename}`} rows={4} style={{ border: '1px solid #444444', width: '100%' }}
+                          value={photo.description}
+                          placeholder="Add a description for this photo"
+                          onChange={(e) => handleDescriptionChange(photo, e.target.value)}
+                        />
 
-                        {photo.isDirty && ( <>
-                          <br/>
-                          <Popconfirm title="Save this photo/description?" onConfirm={() => uploadPhotoDescription(photo)} okText="Save" cancelText="Cancel">
-                            <Button type="text" size="x-large" icon={<SaveOutlined />} >
-                              Save Description
+                        <div style={{ display: 'block', justifyContent: 'center', marginTop: 6, width: '100%' }}>
+                          <Popconfirm title="Delete this photo?" onConfirm={() => handleDeletePhoto(photo.filename)} okText="Delete" cancelText="Cancel">
+                            <Button type="text" size="x-large" danger icon={<DeleteOutlined />} >
+                              Delete Photo
                             </Button>
                           </Popconfirm>
-                          </>
-                        )}
 
-                      </div>
-                      <Divider />
-                    </Col>
-                  ))}
-                </Row>
+                          {/*
+
+                          {photo.isDirty && (<>
+                            <br />
+                            <Popconfirm title="Save this photo/description?" onConfirm={() => _savePhotoDescription(photo)} okText="Save" cancelText="Cancel">
+                              <Button type="text" size="x-large" icon={<SaveOutlined />} >
+                                Save Description
+                              </Button>
+                            </Popconfirm>
+                          </>
+                          )}
+
+                          */}
+
+                        </div>
+                        <Divider />
+                      </Col>
+                    ))}
+                  </Row>
                 </>
               )}
             </Space>
@@ -1115,7 +1140,7 @@ const StepWhoWhere = ({
               footer={null}
               width={'90%'}
             >
-        {/* Photo view content
+              {/* Photo view content
           <Carousel>
             {sitePhotos && sitePhotos.length > 0 && sitePhotos.map((photo) => (
               <div key={photo.url} style={{ textAlign: 'center' }}>
@@ -1188,13 +1213,13 @@ const StepWhoWhere = ({
                                   file_path: activePhoto.serverInfo?.file_path || activePhoto.url,
                                   description: editingPhotoDescription || '',
                                 },
-                              ]; 
+                              ];
 
                               const resp = await fetch(`https://agwater.org:5556/agwqplan/site/images`, {
                                 method: 'PUT',
-                                headers: { 
-                                  'Content-Type': 'application/json', 
-                                  'X-API-Key': secrets.agwater_api_key 
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'X-API-Key': secrets.agwater_api_key
                                 },
                                 body: JSON.stringify(payload),
                               });
@@ -1238,7 +1263,7 @@ const StepWhoWhere = ({
                         </Button>
                       </Popconfirm>
 
-                      <Button onClick={async () => {setPhotoViewOpen(false);setActivePhoto(null);}} >
+                      <Button onClick={async () => { setPhotoViewOpen(false); setActivePhoto(null); }} >
                         Close
                       </Button>
 

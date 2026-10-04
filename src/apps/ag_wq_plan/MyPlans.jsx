@@ -113,7 +113,7 @@ const MyPlans = ({
                 site_name: "",
                 site_description: "",
                 site_locator: "",
-                site_photos: [],
+                site_photos: [],  //  [{ filename: name, label: label, description: description}]
                 agwqm_region: null,
                 agwqm_area: null,
                 tmdl_area: null,

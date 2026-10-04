@@ -29,6 +29,8 @@ const Report = ({
   isDirty
 }) => {
   const printRef = useRef(null);
+
+  const SITE_IMAGES_URL = 'https://agwater.org:5556/image?path=ag_wqplan/site_photos&file='
 /*
   const summaryPrompt = () => {
     const siteName = currentPlan?.report_data?.site_name || "the site";
@@ -155,13 +157,14 @@ const Report = ({
           </Col>
         </Row>
 
-        {currentPlan.report_data.site_photos && (
+        {currentPlan.report_data.site_photos && currentPlan.report_data.site_photos.length > 0 && (
           <>
             <Title level={5}>Site Photos</Title>
             <Row gutter={[16, 16]}>
               {currentPlan.report_data.site_photos.map((photo, index) => (
                 <Col key={index} xs={24} sm={12} lg={8}>
-                  <img src={photo.url} alt={photo.description || `Photo ${index + 1}`} style={{ width: '100%', height: 'auto' }} />
+                  <img src={SITE_IMAGES_URL + photo.filename} alt={photo.description || `Photo ${index + 1}`} style={{ width: '100%', height: 'auto' }} />
+                  <Text strong>{photo.label || `Photo ${index + 1}`}</Text>
                   <Paragraph>{photo.description || `Photo ${index + 1}`}</Paragraph>
                 </Col>
               ))}
