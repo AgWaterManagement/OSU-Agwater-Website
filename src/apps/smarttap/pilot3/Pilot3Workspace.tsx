@@ -18,11 +18,14 @@ import {
   Space,
   Tag,
   Typography,
+  message,
 } from "antd";
 
 import { pilot3Api } from "./api.ts";
 import type { ConfigResponse, HealthResponse, Job, JobOptions, ReadyResponse, ResultsResponse } from "./types.ts";
 import { formatDate, hasArtifacts, isJobRunning, paperKey, paperLink, paperMeta, statusColor } from "./utils.ts";
+import Pilot3Login from "./Pilot3Login.tsx";
+import type { Pilot3User } from "./auth.ts";
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -37,6 +40,7 @@ type FormValues = {
   summarize: boolean;
   scholar: boolean;
   map: boolean;
+  emailCopy: boolean;
 };
 
 const DEFAULT_FORM_VALUES: FormValues = {
@@ -48,10 +52,12 @@ const DEFAULT_FORM_VALUES: FormValues = {
   summarize: false,
   scholar: false,
   map: false,
+  emailCopy: false,
 };
 
 export function SmartTapPilot3Workspace() {
   const [form] = Form.useForm<FormValues>();
+  const [authUser, setAuthUser] = useState<Pilot3User | null>(null);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [ready, setReady] = useState<ReadyResponse | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
@@ -64,6 +70,7 @@ export function SmartTapPilot3Workspace() {
   const [resultsData, setResultsData] = useState<ResultsResponse | null>(null);
   const [resultsError, setResultsError] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
+  const pendingEmailRef = useRef<{ jobId: string; subject: string } | null>(null);
 
   const refreshLatest = useCallback(async () => {
     try {
@@ -136,6 +143,35 @@ export function SmartTapPilot3Workspace() {
     };
   }, [job, refreshLatest]);
 
+  useEffect(() => {
+    const pending = pendingEmailRef.current;
+    if (!job || !pending || job.id !== pending.jobId) {
+      return;
+    }
+    if (job.status !== "completed" || !job.artifacts?.digest) {
+      return;
+    }
+    pendingEmailRef.current = null;
+
+    if (!authUser?.email) {
+      return;
+    }
+
+    (async () => {
+      try {
+        const digestContent = await pilot3Api.digest(job.id);
+        await pilot3Api.sendEmail({
+          email: authUser.email!,
+          subject: pending.subject,
+          pilot3_digest: digestContent,
+        });
+        message.success(`Digest emailed to ${authUser.email}`);
+      } catch (error) {
+        message.error(error instanceof Error ? error.message : "Failed to email digest.");
+      }
+    })();
+  }, [job, authUser]);
+
   async function handleSubmit(values: FormValues) {
     setSubmitting(true);
     setFormMessage({ text: "Submitting the run…", type: "info" });
@@ -157,6 +193,9 @@ export function SmartTapPilot3Workspace() {
     try {
       const newJob = await pilot3Api.startJob(payload);
       setJob(newJob);
+      pendingEmailRef.current = values.emailCopy && authUser?.email
+        ? { jobId: newJob.id, subject: values.subject ?? "" }
+        : null;
       setFormMessage({ text: "Run accepted. Status will refresh automatically.", type: "info" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error.";
@@ -207,8 +246,26 @@ export function SmartTapPilot3Workspace() {
   const running = job ? isJobRunning(job.status) : false;
   const artifactsReady = hasArtifacts(job);
 
+  if (!authUser) {
+    return (
+      <div className="space-y-6">
+        <Card title={<Title level={2} className="m-0 font-display text-xl">Sign in required</Title>}>
+          <Pilot3Login onLoginSuccess={(user) => setAuthUser(user)} />
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-end gap-2 text-xs text-ink/60">
+        <span>
+          Signed in as <b>{authUser.username}</b>
+        </span>
+        <Button type="link" size="small" onClick={() => setAuthUser(null)}>
+          Sign Out
+        </Button>
+      </div>
       <div className="rounded-2xl bg-[linear-gradient(135deg,#0e3c36_0%,#1b614e_70%,#2f785b_100%)] px-6 py-5 text-sand shadow-soft">
         <Row justify="space-between" align="bottom" gutter={[24, 16]}>
           <Col xs={24} md={16}>
@@ -311,6 +368,17 @@ export function SmartTapPilot3Workspace() {
                     <br />
                     <Text type="secondary" className="text-xs">
                       Creates transparent keyword-based regional tags.
+                    </Text>
+                  </Checkbox>
+                </Form.Item>
+                <Form.Item name="emailCopy" valuePropName="checked" className="m-0">
+                  <Checkbox disabled={!authUser?.email}>
+                    <Text strong>Email me a copy</Text>
+                    <br />
+                    <Text type="secondary" className="text-xs">
+                      {authUser?.email
+                        ? `Sends the finished digest to ${authUser.email} once the run completes.`
+                        : "Add an email address to your account to enable this option."}
                     </Text>
                   </Checkbox>
                 </Form.Item>

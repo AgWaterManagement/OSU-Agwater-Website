@@ -38,6 +38,7 @@
     "recharts": "^2.15.4",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
+    "shpjs": "^6.2.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@ import { useMemo, useEffect, useState, useRef } from 'react';
 
 import { Menu, Layout, Card, message, Typography, Divider, Select, Button, Spin, Tabs } from 'antd';
 
-import Maps from './Maps';
+import Maps from './maps/Maps';
 import MyPlans from './MyPlans';
 import PlanEditor from './PlanEditor';
 

@@ -3,6 +3,7 @@ import { Card, Tabs, Typography } from 'antd';
 const { Paragraph, Title, Text } = Typography;
 
 import WqMap from './WqMap'
+import WqDataMap from './WqDataMap'
 
 const TMDL_GEOJSON_URL = 'https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services/TMDLs_DEQ_by_parameter_Feb2026/FeatureServer/4/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson';
 const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=MA_Index>0&outFields=*&returnGeometry=true&f=geojson'
@@ -31,6 +32,19 @@ const Maps = () => {
                         <Title level={4}>TMDL Areas</Title>
                         <Text>Oregon DEQ TMDL areas by parameter. Source: <a href="https://www.oregon.gov/deq/wq/Pages/TMDLs.aspx">DEQ TMDL Mapper</a></Text>
                         <WqMap feature_url={TMDL_GEOJSON_URL}></WqMap>
+                    </Card>
+               )
+		},
+		{
+			key: '3',
+			label: 'Data',
+			children: 
+                (
+                    <Card>
+                        <Title level={4}>Related Data</Title>
+                        <Text>Access spatial data related to water quality in Oregon.
+                             Source: <a href="https://www.oregon.gov/deq/wq/Pages/TMDLs.aspx">DEQ TMDL Mapper</a></Text>
+                        <WqDataMap feature_url={TMDL_GEOJSON_URL}></WqDataMap>
                     </Card>
                )
 		},

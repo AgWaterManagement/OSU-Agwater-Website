@@ -44,9 +44,6 @@ const defaultValues = {
 };
 
 
-
-
-
 const fieldGroups = [
 	{
 		title: 'Flow/Channel',
@@ -249,6 +246,9 @@ WaterwayGeometry.propTypes = {
 	channelType: PropTypes.string,
 };
 
+//--------------------------------------------------------------------------------
+// component for displaying a section of results in a card with a description list
+//--------------------------------------------------------------------------------
 function ResultSection({ title, values, digits = 3 }) {
 	return (
 		<Card size="small" title={title}>

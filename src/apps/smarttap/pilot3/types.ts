@@ -59,3 +59,14 @@ export type ResultsResponse = {
   global_highlights: Paper[];
   google_scholar_top5: Paper[];
 };
+
+export type EmailPayload = {
+  email: string;
+  subject: string;
+  pilot3_digest: string;
+};
+
+export type EmailResponse = {
+  success?: boolean;
+  message?: string;
+};

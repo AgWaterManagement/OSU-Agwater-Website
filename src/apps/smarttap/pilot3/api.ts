@@ -1,5 +1,5 @@
 import { secrets } from "../../../secrets.js";
-import type { ConfigResponse, HealthResponse, Job, JobOptions, ReadyResponse, ResultsResponse } from "./types";
+import type { ConfigResponse, EmailPayload, EmailResponse, HealthResponse, Job, JobOptions, ReadyResponse, ResultsResponse } from "./types";
 
 const apiBaseUrl = (
   // import.meta.env.VITE_SMARTTAP_PILOT3_API_BASE ?? "http://127.0.0.1:8001"   // Local development
@@ -49,4 +49,9 @@ export const pilot3Api = {
   digest: (jobId: string) =>
     request<string>(`/jobs/${jobId}/digest`, { headers: { Accept: "text/plain" } }),
   results: (jobId: string) => request<ResultsResponse>(`/jobs/${jobId}/results`),
+  sendEmail: (payload: EmailPayload) =>
+    request<EmailResponse>("/email", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };
