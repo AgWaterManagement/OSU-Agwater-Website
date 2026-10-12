@@ -43,7 +43,8 @@ export const darkTheme = {
             colorTextHeading: '#1c1c1c',
         },
         Descriptions: {
-            //labelColor: '#adc01f',
+            labelColor: '#adc01f',
+            colorTextSecondary: '#dddddd',
             colorSecondary: '#eeeeee',
             contentColor: '#FBEC5D',
         },

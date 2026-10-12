@@ -1,18 +1,32 @@
 import { Card, Tabs, Typography } from 'antd';
+import PropTypes from 'prop-types';
 
 const { Paragraph, Title, Text } = Typography;
 
 import WqMap from './WqMap'
-import WqDataMap from './WqDataMap'
+import WqDataMapPanel from './WqDataMapPanel'
 
 const TMDL_GEOJSON_URL = 'https://services.arcgis.com/uUvqNMGPm7axC2dD/arcgis/rest/services/TMDLs_DEQ_by_parameter_Feb2026/FeatureServer/4/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson';
 const ODA_AWQMA_WMS_URL = 'https://maps.oda.oregon.gov/arcgis/rest/services/Water_Quality/WQ_Auth_Datasets/FeatureServer/3/query?where=MA_Index>0&outFields=*&returnGeometry=true&f=geojson'
 
 
-const Maps = () => {
+const Maps = ({ currentPlan }) => {
 	const items = [
 		{
 			key: '1',
+			label: 'Soils Data',
+			children: 
+                (
+                    <Card>
+                        <Title level={4}>Soils Data</Title>
+                        <Text>Access spatial data related to soils in Oregon.
+                             Source: <a href="https://www.nrcs.usda.gov/resources/data-and-reports/soil-survey-geographic-database-ssurgo">SSURGO</a></Text>
+                        <WqDataMapPanel currentPlan={currentPlan} feature_url={TMDL_GEOJSON_URL}></WqDataMapPanel>
+                    </Card>
+               )
+		},
+		{
+			key: '2',
 			label: 'ODA Ag Water Quality Management Areas',
 			children: 
                 (
@@ -24,7 +38,7 @@ const Maps = () => {
                 )
         },
 		{
-			key: '2',
+			key: '3',
 			label: 'Oregon TMDL Areas',
 			children: 
                 (
@@ -35,22 +49,13 @@ const Maps = () => {
                     </Card>
                )
 		},
-		{
-			key: '3',
-			label: 'Data',
-			children: 
-                (
-                    <Card>
-                        <Title level={4}>Related Data</Title>
-                        <Text>Access spatial data related to water quality in Oregon.
-                             Source: <a href="https://www.oregon.gov/deq/wq/Pages/TMDLs.aspx">DEQ TMDL Mapper</a></Text>
-                        <WqDataMap feature_url={TMDL_GEOJSON_URL}></WqDataMap>
-                    </Card>
-               )
-		},
 	];
 
 	return <Tabs defaultActiveKey="1" items={items} />;
+};
+
+Maps.propTypes = {
+    currentPlan: PropTypes.object,
 };
 
 export default Maps;

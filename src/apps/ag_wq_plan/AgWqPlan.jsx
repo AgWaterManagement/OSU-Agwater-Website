@@ -41,7 +41,7 @@ a "Plan" is a collection of user inputs and selections that can be saved, shared
 // Loads concern questions and practices from the /agwqplan routes exposed by ag_wqplan.py.
 const AgWqPlan = () => {
   // Current step in the wizard (0-4)
-  const [currentMode, setCurrentMode] = useState('my_plans');
+  const [currentMode, setCurrentMode] = useState(''); // modes: '', 'my_plans', 'guides', 'maps', 'calculators', 'learn_more'
   const [currentPracticeGuide, setCurrentPracticeGuide] = useState('vfs');
   const [currentPlan, setCurrentPlan] = useState(null);
 
@@ -365,28 +365,35 @@ const AgWqPlan = () => {
       <Content style={{ padding: '8px 8px', }}>
         <Card>
           <PageRating pageID='/apps/ag_wq_plan' />
-          <Title level={3}>Water Quality Practices Planner</Title>
+          <br />
+          <Title level={3}>Water Quality Practices Planner
+            {userID.current && userName ? (
+              <Text style={{ fontSize: 'small', marginTop: '1.0em', float: 'right' }}>
+                Logged in as: {userName} ({userRole})
+              </Text>
+            ) : (
+              <Text style={{ fontSize: 'small', marginTop: '1.0em',  float: 'right' }}>
+                Not logged in
+              </Text>
+            )}
+          </Title>
+
           {currentMode === '' && (
             <Paragraph>
               This tool connects land conditions and goals to agricultural water quality
               practices, technical assistance, and reference materials.
             </Paragraph>
           )}
+          <br/>
 
           <Menu onClick={({ key }) => setCurrentMode(key)} selectedKeys={[currentMode]} mode="horizontal" items={[
             { label: 'My Plans', key: 'my_plans' },
-            { label: 'Learn More', key: 'learn_more', }]}
+            { label: 'Guides', key: 'guides' },
+            { label: 'Maps', key: 'maps' },
+            { label: 'Calculators', key: 'calculators' },
+            { label: '...', key: 'learn_more', }]}
           />
 
-          {userID.current && userName ? (
-            <Text style={{ fontSize: '1.0em', marginLeft: 8, float: 'right' }}>
-              Logged in as: {userName} ({userRole})
-            </Text>
-          ) : (
-            <Text style={{ fontSize: '1.0em', marginLeft: 8, float: 'right' }}>
-              Not logged in
-            </Text>
-          )}
 
           <Spin spinning={loadingData} tip="Loading planner data...">
 
@@ -440,6 +447,21 @@ const AgWqPlan = () => {
               </>
             )}
 
+            { currentMode === 'guides' && (
+              <PracticesGuide practicesData={practices} />
+            )}
+
+            {currentMode == 'maps' && (
+              <Maps currentPlan={currentPlan} />
+            )}
+
+
+
+
+
+
+
+
             {currentMode === 'learn_more' && (
               <>
                 <Divider />
@@ -453,7 +475,7 @@ const AgWqPlan = () => {
                     {
                       key: 'maps',
                       label: 'Maps',
-                      children: <Maps />,
+                      children: <Maps currentPlan={currentPlan} />,
                     },
                     {
                       key: 'calculators',
