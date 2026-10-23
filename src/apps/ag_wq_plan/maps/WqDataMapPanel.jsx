@@ -461,6 +461,7 @@ export default function WqDataMapPanel({currentPlan}) {
 }
 
 WqDataMapPanel.propTypes = {
+    currentPlan: PropTypes.object,
 };
 
 
@@ -486,3 +487,7 @@ WqDataDisplay.propTypes = {
     polygonEdges: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
     soilData: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
+
+
+
+

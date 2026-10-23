@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Space, Spin, Table, Typography, message } from 'antd';
+import { Alert, Button, Input, Modal, Space, Spin, Table, Typography, message } from 'antd';
 import { useEffect, useState } from 'react';
 
 import PropTypes from 'prop-types';
@@ -175,17 +175,86 @@ const MyPlans = ({
     };
 
     const sharePlan = (plan) => {
+        let recipientEmails = '';
+
         Modal.confirm({
             title: 'Share plan',
-            content: `Are you sure you want to share the plan for "${plan.report_data?.site_name || 'this site'}"?`,
+            content: (
+                <Space direction="vertical" style={{ display: 'flex' }}>
+                    <span>To share this plan with others, enter their email addresses below:</span>
+                    <Input.TextArea
+                        aria-label="Recipient email addresses"
+                        placeholder="Enter email addresses separated by commas or new lines"
+                        rows={3}
+                        onChange={(event) => {
+                            recipientEmails = event.target.value;
+                        }}
+                    />
+                </Space>
+            ),
             okText: 'Share',
             okType: 'primary',
             cancelText: 'Cancel',
             onOk: async () => {
-                // Implement the share plan logic here
-                //setPlans((currentPlans) => currentPlans.filter(({ id }) => id !== plan.id));
-                //setCurrentPlan((currentPlan) => currentPlan?.id === plan.id ? null : currentPlan);
-                //message.success('Plan shared successfully');
+                if (!recipientEmails.trim()) {
+                    message.error('Enter at least one email address.');
+                    return;
+                }
+
+                const newRecipients = recipientEmails
+                    .split(/[\s,;]+/)
+                    .map((email) => email.trim())
+                    .filter(Boolean);
+                const existingRecipients = Array.isArray(plan.shared_with)
+                    ? plan.shared_with
+                    : String(plan.shared_with || '').split(/[\s,;]+/).filter(Boolean);
+                const sharedWith = [...new Set([...existingRecipients, ...newRecipients])];
+                const updatedPlan = { ...plan, shared_with: sharedWith };
+                const record = {
+                    id: plan.id,
+                    report_data: JSON.stringify(plan.report_data || {}),
+                    created_by: plan.created_by,
+                    latitude: plan.latitude,
+                    longitude: plan.longitude,
+                    keywords: plan.keywords || '',
+                    created_at: plan.created_at,
+                    updated_at: new Date().toISOString(),
+                    shared_with: sharedWith.join(','),
+                };
+
+                try {
+                    const response = await fetch(`${API_BASE}/agwqplan/plans`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-Key': secrets.agwater_api_key,
+                        },
+                        body: JSON.stringify(record),
+                    });
+                    const responseText = await response.text();
+                    let responseBody = {};
+
+                    try {
+                        responseBody = responseText ? JSON.parse(responseText) : {};
+                    } catch {
+                        responseBody = { error: responseText };
+                    }
+
+                    if (!response.ok || responseBody.success === false) {
+                        throw new Error(responseBody.error || `Unable to share plan (${response.status}).`);
+                    }
+
+                    setPlans((currentPlans) => currentPlans.map((currentPlan) => (
+                        currentPlan.id === plan.id ? updatedPlan : currentPlan
+                    )));
+                    setCurrentPlan((currentPlan) => (
+                        currentPlan?.id === plan.id ? updatedPlan : currentPlan
+                    ));
+                    message.success('Plan shared successfully');
+                } catch (error) {
+                    message.error(error.message || 'Unable to share plan.');
+                    throw error;
+                }
             },
         });
     };
@@ -309,7 +378,6 @@ const MyPlans = ({
                 </>
             ) : (
                 <>
-                <span> Please log in to view your plans.</span>
                 <StartUp
                     userName={userName}
                     userRole={userRole} setUserRole={setUserRole}

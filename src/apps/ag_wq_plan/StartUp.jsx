@@ -21,12 +21,12 @@ const StartUp = ({
 
                 {userName === null || userName === undefined || userName === 'Guest' ? (
                     <>
-                        <Text style={{ fontSize: '1.2em' }}>
-                            Please log in to get started
+                        <Text style={{ fontSize: '1.0em' }}>
+                            Please Log In to review your plans.  Users with accounts can log in to save their plans and access saved or shared plans.  Note: We do not sell or share your data.  <Button type="link" href="/privacy_policy">See our Privacy Policy</Button>
                         </Text>
                         <br />
                         <Text style={{ fontSize: '1.0em' }}>
-                            Users with accounts can log in to save their plans and access saved or shared plans
+                            If you do not have an account, you can continue as a guest, but you will not be able to save your plan. 
                         </Text>
                         <br />
                         <br />

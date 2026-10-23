@@ -372,9 +372,14 @@ const AgWqPlan = () => {
                 Logged in as: {userName} ({userRole})
               </Text>
             ) : (
+              <>
               <Text style={{ fontSize: 'small', marginTop: '1.0em',  float: 'right' }}>
-                Not logged in
+                Not logged in: 
+              <Button type='secondary' style={{ fontSize: 'small' }}>
+                Log in
+              </Button>
               </Text>
+              </>
             )}
           </Title>
 
@@ -391,13 +396,13 @@ const AgWqPlan = () => {
             { label: 'Guides', key: 'guides' },
             { label: 'Maps', key: 'maps' },
             { label: 'Calculators', key: 'calculators' },
-            { label: '...', key: 'learn_more', }]}
+            ]}
           />
 
 
           <Spin spinning={loadingData} tip="Loading planner data...">
 
-            {currentMode === 'my_plans' && userName && currentPlan === null && (
+            {currentMode === 'my_plans' && currentPlan === null && (
               <MyPlans
                 setCurrentPlan={setCurrentPlan}
                 userName={userName} setUserName={_setUserName}
