@@ -69,8 +69,42 @@ const PlanEditor = ({
                 </>
             )}
 
+
+            <Space style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                <span style={{width: '100%', textAlign: 'right'}}>
+                {currentStep > 0 && (
+                    <Button ghost onClick={prev}>
+                        Back
+                    </Button>
+                )}
+                &nbsp;
+                &nbsp;
+                {currentStep < 4 && stepLocationStatus !== 'error' && stepConditionsStatus !== 'error' && stepGoalsStatus !== 'error' && stepPracticesStatus !== 'error' && (
+                    <Button type="primary" onClick={next}>
+                        Next
+                    </Button>
+                )}
+                {currentStep < 4 && (stepLocationStatus === 'error' || stepConditionsStatus === 'error' || stepGoalsStatus === 'error' || stepPracticesStatus === 'error') && (
+                    <Button type="primary" disabled>
+                        Next
+                    </Button>
+                )}
+
+                <span style={{ marginLeft: 8, fontStyle: 'italic', fontSize: 14, color: 'red' }}>
+                    {stepLocationStatus === 'error' && 'Please complete the Location step before proceeding.'}
+                    {stepConditionsStatus === 'error' && 'Please complete the Conditions step before proceeding.'}
+                    {stepGoalsStatus === 'error' && 'Please complete the Goals step before proceeding.'}
+                    {stepPracticesStatus === 'error' && 'Please complete the Practices step before proceeding.'}
+                </span>
+                </span>
+            </Space>
+
+            <br/>
+            <br/>
+
             {currentStep === 0 && (
                 <StepWhoWhere
+                    userName={userName}
                     currentPlan={currentPlan} setCurrentPlan={setCurrentPlan}
                     userID={userID.current}
                     commoditiesData={commoditiesData}
@@ -82,6 +116,7 @@ const PlanEditor = ({
 
             {currentStep === 1 && (
                 <StepConditions
+                    userName={userName}
                     currentPlan={currentPlan} setCurrentPlan={setCurrentPlan}
                     concernsData={concernsData}
                     concernQuestionsData={concernQuestionsData}
@@ -93,6 +128,7 @@ const PlanEditor = ({
 
             {currentStep === 2 && (
                 <StepGoals
+                    userName={userName}
                     currentPlan={currentPlan} setCurrentPlan={setCurrentPlan}
                     goalData={goalsData}
                     setError={setStepGoalsStatus}
@@ -103,6 +139,7 @@ const PlanEditor = ({
 
             {currentStep === 3 && (
                 <StepPractices
+                    userName={userName}
                     currentPlan={currentPlan} setCurrentPlan={setCurrentPlan}
                     areaRulesData={areaRulesData}
                     userRole={userRole}

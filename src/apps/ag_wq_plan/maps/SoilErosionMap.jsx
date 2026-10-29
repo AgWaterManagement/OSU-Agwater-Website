@@ -50,12 +50,8 @@ function polygonToGeoJSON(polygonEdges) {
 		&& firstCoordinate[1] === lastCoordinate[1];
 
 	return {
-        type: 'Feature',
-		geometry: {
-			type: 'Polygon',
-			coordinates: [ringIsClosed ? coordinates : [...coordinates, firstCoordinate]],
-		},
-        properties: {},
+		type: 'Polygon',
+		coordinates: [ringIsClosed ? coordinates : [...coordinates, firstCoordinate]],
 	};
 }
 

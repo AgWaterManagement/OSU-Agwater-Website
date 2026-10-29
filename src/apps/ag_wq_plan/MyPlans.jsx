@@ -40,15 +40,15 @@ const MyPlans = ({
             setPlansError('');
 
             try {
-                const response = await fetch(`${API_BASE}/agwqplan/plans?user_name=${encodeURIComponent(userName)}`, 
-                {
-                    signal: controller.signal,
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': secrets.agwater_api_key,
-                    },
-                });
+                const response = await fetch(`${API_BASE}/agwqplan/plans?user_name=${encodeURIComponent(userName)}`,
+                    {
+                        signal: controller.signal,
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-Key': secrets.agwater_api_key,
+                        },
+                    });
 
 
                 const body = await response.json();
@@ -62,20 +62,20 @@ const MyPlans = ({
                 // fix up the commodities and goals to be arrays of strings instead of a single string             planList.forEach((plan) => {
                 planList.forEach((plan) => {
                     if (plan.report_data) {
-                        if ( plan.report_data.selected_commodities) {
-                            plan.report_data.selected_commodities = plan.report_data.selected_commodities.split(",");   
+                        if (plan.report_data.selected_commodities) {
+                            plan.report_data.selected_commodities = plan.report_data.selected_commodities.split(",");
                         }
-                        if ( plan.report_data.selected_goals) {
-                            plan.report_data.selected_goals = plan.report_data.selected_goals.split(",").map((goal) => parseInt(goal.trim()));   
+                        if (plan.report_data.selected_goals) {
+                            plan.report_data.selected_goals = plan.report_data.selected_goals.split(",").map((goal) => parseInt(goal.trim()));
                         }
-                        if ( plan.report_data.selected_concerns) {
-                            plan.report_data.selected_concerns = plan.report_data.selected_concerns.split(",");   
+                        if (plan.report_data.selected_concerns) {
+                            plan.report_data.selected_concerns = plan.report_data.selected_concerns.split(",");
                         }
-                        if ( plan.report_data.selected_questions) {
-                            plan.report_data.selected_questions = plan.report_data.selected_questions.split(",").map((q) => parseInt(q.trim()));   
+                        if (plan.report_data.selected_questions) {
+                            plan.report_data.selected_questions = plan.report_data.selected_questions.split(",").map((q) => parseInt(q.trim()));
                         }
-                        if ( plan.report_data.selected_practices) {
-                            plan.report_data.selected_practices = plan.report_data.selected_practices.split(",").map((p) => parseInt(p.trim()));   
+                        if (plan.report_data.selected_practices) {
+                            plan.report_data.selected_practices = plan.report_data.selected_practices.split(",").map((p) => parseInt(p.trim()));
                         }
                     }
                 });
@@ -341,7 +341,7 @@ const MyPlans = ({
                     onClick={() => deletePlan(plan)}
                 />
 
-                
+
             </Space>
         ),
     }));
@@ -351,7 +351,33 @@ const MyPlans = ({
             <br />
 
             {/* display login prompt if userName is null */}
-            {userName !== null && userName !== undefined ? (
+            {userName === null ? (
+                <>
+                    <StartUp
+                        userName={userName}
+                        userRole={userRole} setUserRole={setUserRole}
+                        setUserName={setUserName}
+                        setUserID={setUserID}
+                        setLoggingIn={setLoggingIn}
+                    />
+                </>
+            ) : userName === 'Guest' ? (
+                <>
+                    <Text>
+                        You are currently logged in as a guest.  You will be able to create a new plan 
+                        and print a local copy, but you will not be able to save your plan to your account
+                        or access saved plans unless you log in.
+                    </Text>
+                    <br/>
+                    <br/>
+
+                    <span style={{ textAlign: 'center' }}>
+                        <Button type="primary" onClick={() => startNewPlan()}>
+                            Start New Plan
+                        </Button>
+                    </span>
+                </>
+            ) : (
                 <>
                     <Title level={4}>My Plans
                         <span style={{ float: 'right' }}>
@@ -360,11 +386,11 @@ const MyPlans = ({
                             </Button>
                         </span>
                     </Title>
-                    
+
                     {plansError && <Alert type="error" showIcon message="Plans could not be loaded" description={plansError} />}
 
                     <Spin spinning={plansLoading} tip="Loading plans...">
-                        
+
                         {!plansError && (
                             plans.length === 0 ? <Text type="secondary">No plans found for this user.</Text>
                                 :
@@ -376,17 +402,9 @@ const MyPlans = ({
                         )}
                     </Spin>
                 </>
-            ) : (
-                <>
-                <StartUp
-                    userName={userName}
-                    userRole={userRole} setUserRole={setUserRole}
-                    setUserName={setUserName}
-                    setUserID={setUserID}
-                    setLoggingIn={setLoggingIn}
-                />
-                </>
             )}
+
+        
         </>
 
     )

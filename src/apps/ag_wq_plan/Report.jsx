@@ -18,7 +18,10 @@ const { Title, Paragraph, Text } = Typography;
 //   - goalData: Array of fetched goal records from /agwqplan/goals
 //   - selectedPractices: Array of selected Practice objects
 //   - concernQuestions: Array of fetched concern question objects from /agwqplan/concernQuestions
+
+
 const Report = ({
+  userName,
   currentPlan,
   userRole,
   goalsData,
@@ -291,7 +294,7 @@ const Report = ({
         <Divider />
 
         <Paragraph>
-          This summary can be shared with landowners, SWCD staff, or ODA as a starting
+          This summary can be shared with landowners, SWCD staff, or ODA Water Quality Staff as a starting
           point for a conservation plan or compliance follow‑up.
         </Paragraph>
       </div>
@@ -309,7 +312,8 @@ const Report = ({
           style={{ marginBottom: '1em' }}
         />
       
-      <Button type="primary" onClick={savePlan}>
+      <Button type="primary" onClick={savePlan}
+        disabled={(currentPlan === null || userName === null || userName === 'Guest')}>
         Save Report
       </Button>
       </>

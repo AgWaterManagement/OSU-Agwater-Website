@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import { Alert, Button, Form, Input, Space, Typography, message } from "antd";
+import { Alert, Button, Form, Input, Row, Col, QRCode, Select, Space, Typography, message } from "antd";
 import PropTypes from "prop-types";
 
 import { secrets } from "../../secrets";
-
-const { Title, Text, Paragraph, Link } = Typography;
+const { Title, Paragraph } = Typography;
 
 function normalizeBaseUrl(baseUrl) {
   if (!baseUrl) return "";
@@ -24,6 +23,7 @@ export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role
   const [loading, setLoading] = useState(false);
   const [authState, setAuthState] = useState({ isAuthenticated: false, user: null });
   const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [registrationResult, setRegistrationResult] = useState(null);
 
   const apiBaseUrl = useMemo(() => normalizeBaseUrl("https://agwater.org:5556"), []);
   const apiKey = secrets.agwater_api_key;
@@ -76,13 +76,14 @@ export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role
         username: values.username,
         email: values.email,
         password: values.password,
-        role: role,
+        role: values.role,
       });
 
       if (!response.ok || !body.success) {
         throw new Error(body.error || body.message || "Registration failed");
       }
 
+      setRegistrationResult(body.result || body);
       message.success(body.message || "Account registered successfully. You can sign in now.");
       setShowRegisterForm(false);
     } catch (err) {
@@ -97,9 +98,32 @@ export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role
       <>
         <div style={{ padding: 4, textAlign: 'center' }} >
           <Title level={4}>Sign In to the Ag Water Quality Planner</Title>
-          <Text style={{ width: '100%', maxWidth: 600, display: 'inline-block' }}>
-            Log in to the Ag Water Quality Planner below.
-          </Text>
+          <Paragraph style={{ width: '100%'}}>
+            Log in to the Ag Water Quality Planner below.  
+          </Paragraph>
+          {registrationResult?.otpauth_uri && (
+            <Row>
+              <Col span={12}>
+                <Paragraph style={{ width: '100%' }}>
+                  Scan this QR code with your Authenticator app to set up two-factor authentication (2FA) for your account. After scanning, your app will generate the one-time code used when signing in.
+                </Paragraph>
+              </Col>
+              <Col span={12}>
+                <QRCode value={registrationResult.otpauth_uri} size={128} />
+              </Col>
+            </Row>
+          )}
+          <Paragraph style={{ width: '100%'}}>
+            You will need an Authenticator app (like Google Authenticator or Microsoft Authenticator, 
+            available in your app store) to generate a one-time code for signing in.
+          </Paragraph>
+          {!showRegisterForm && (
+            <Paragraph style={{ width: '100%'}}>
+              If you do not have an account, you can create one using the &quot;Register here&quot; link below.  If you do not want to create an account, you can continue as a guest, but you will not be able to save your plan.
+
+              {/*<Link onClick={() => setShowRegisterForm(true)}>create one</Link>. */}
+            </Paragraph>
+          )}
           <br />
           <br />
 
@@ -175,6 +199,21 @@ export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role
                 >
                   <Input.Password autoComplete="new-password" placeholder="Confirm your password" />
                 </Form.Item>
+                <Form.Item
+                  name="role"
+                  label="User Role"
+                  initialValue={role}
+                  rules={[{ required: true, message: "Select a user role" }]}
+                >
+                  <Select
+                    placeholder="Select a user role"
+                    options={[
+                      { label: "Landowner", value: "Landowner" },
+                      { label: "Resource Conservationist", value: "Resource Conservationist" },
+                      { label: "ODA Water Quality Specialist", value: "ODA Water Quality Specialist" },
+                    ]}
+                  />
+                </Form.Item>
                 
                 <Button htmlType="submit" type="primary" loading={loading} style={{ marginRight: 8 }}>
                   Create Account
@@ -203,4 +242,5 @@ export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role
 AgWqplanLogin.propTypes = {
   onLoginSuccess: PropTypes.func,
   showCancel: PropTypes.bool,
+  role: PropTypes.string,
 };

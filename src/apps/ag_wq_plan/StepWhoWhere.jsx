@@ -60,6 +60,7 @@ const getSearchResultLatLng = (searchResult) => {
 //   - commodity: Current selected commodity/operation type (optional)
 //   - setCommodity: Function to update commodity
 const StepWhoWhere = ({
+  userName,
   currentPlan, setCurrentPlan,
   commoditiesData, // farm/operation types
   setError,
@@ -378,6 +379,8 @@ const StepWhoWhere = ({
     }
   }
 
+
+  /*
   const _handleSavePlan = async () => {
 
     const siteName = currentPlan?.report_data?.site_name;
@@ -415,7 +418,7 @@ const StepWhoWhere = ({
       if (siteID !== null)
         _site['id'] = siteID;
 
-      /*
+      
       const response = await fetch(`https://agwater.org:5556/agwqplan/sites`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -430,14 +433,15 @@ const StepWhoWhere = ({
       } else {
         message.error(`Failed to save site: ${data.error}`);
       }
-        */
+      
     } catch (error) {
       message.error(`Error saving site: ${error.message}`);
     }
 
-    // Next, save the untire plan
+    // Next, save the entire plan
     savePlan();
   };
+  */
 
   function queryLayer(layer, latitude, longitude) {
     // Query the AWQMA GeoJSON layer for attributes at the clicked point
@@ -445,7 +449,12 @@ const StepWhoWhere = ({
       console.log('Querying layer for clicked location...');
 
       layer.queryFeatures({
-        geometry: { latitude: latitude, longitude: longitude },
+        geometry: {
+          type: 'point',
+          x: longitude,
+          y: latitude,
+          spatialReference: { wkid: 4326 },
+        },
         spatialRelationship: 'intersects',
         outFields: '*', // ['MA_Index'], //, 'AgWQ_Reporting_Area','Administrative_rules','Area_plan','Phone','Email'],
         returnGeometry: false,
@@ -975,6 +984,7 @@ const StepWhoWhere = ({
 
 
               </div>
+              {/*}
               <div>
                 <Paragraph>
                   After specifying the site name and selecting the site location on the map below, you can save
@@ -988,15 +998,9 @@ const StepWhoWhere = ({
                   Update Plan
                 </Button>
 
-                {/*
-                {currentPlan?.id && (
-                  <Popconfirm title="Delete this site?" onConfirm={handleDeleteSite} okText="Delete" cancelText="Cancel">
-                    <Button type="text" danger icon={<DeleteOutlined />} style={{ marginLeft: 12 }}>Delete Site</Button>
-                  </Popconfirm>
-                )}
-                  */}
 
               </div>
+              */}
 
               {currentPlan.latitude && currentPlan.longitude && (
                 <>
@@ -1029,7 +1033,7 @@ const StepWhoWhere = ({
             <Title level={5}>Site Photos</Title>
 
             <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
-              {currentPlan?.id && (
+              {currentPlan && (
                 <>
                   <Button type="primary" onClick={() => setPhotoPickerOpen(true)}>
                     Add site photo

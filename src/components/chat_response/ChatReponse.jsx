@@ -162,7 +162,7 @@ const ChatResponse = ({prompt}) => {
     return (
         <div>
                 <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
-                    {currentMarkdown || "Waiting for response..."}
+                    {currentMarkdown || "Give me a minute, I'm thinking... "}
                 </Markdown>
             {error && <div style={{ color: 'red' }}>Error: {error}</div>}
         </div>

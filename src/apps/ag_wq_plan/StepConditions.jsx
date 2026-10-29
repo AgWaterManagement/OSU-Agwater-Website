@@ -13,6 +13,7 @@ const { Title, Paragraph } = Typography;
 //   - selectedQuestions: Array of selected question IDs
 //   - setSelectedQuestions: Function to update selected questions
 const StepConditions = ({
+  userName,
   currentPlan,
   setCurrentPlan,
   concernsData,
@@ -129,12 +130,12 @@ const StepConditions = ({
           <Divider />
           <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }}
                   onClick={() => { savePlan(); }}
-                  disabled={(currentPlan === null 
+                  disabled={(currentPlan === null || userName === null || userName === 'Guest' 
                             || ( currentPlan?.report_data?.selected_concerns.length === 0 )
                             || ( currentPlan?.report_data?.selected_questions.length === 0 )
                             || isDirty.current === false)}
                 >
-                  Save Concerns/Question
+                  Save Plan Updates
                 </Button>
                 
         </>

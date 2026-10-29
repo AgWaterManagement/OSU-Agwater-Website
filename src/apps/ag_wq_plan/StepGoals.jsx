@@ -12,6 +12,7 @@ const { Paragraph } = Typography;
 //   - setSelectedGoals: Function to update selected goals
 //   - goalData: Array of goal records fetched by AgWqPlan
 const StepGoals = ({
+  userName,
   currentPlan, 
   setCurrentPlan,
   goalData, 
@@ -76,7 +77,7 @@ const StepGoals = ({
       <Divider />
       <Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }}
               onClick={() => { savePlan(); }}
-              disabled={(currentPlan === null 
+              disabled={(currentPlan === null || userName === null || userName === 'Guest'
                         || ( currentPlan?.report_data?.selected_goals.length === 0 )
                         || isDirty.current === false)}
             >

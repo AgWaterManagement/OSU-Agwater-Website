@@ -23,6 +23,7 @@ const displayValue = (value, fallback = 'Not provided') => {
 //   - selectedPracticeIds: Array of selected practice IDs
 //   - setSelectedPracticeIds: Function to update selected practice IDs
 const StepPractices = ({
+	userName,
 	currentPlan,
 	setCurrentPlan,
 	userRole,
@@ -82,6 +83,7 @@ const StepPractices = ({
 			_prompt += ': ';
 			_prompt += displayValue(rule['Oregon Administrative Rules (OAR)']);
 			_prompt += '\n';
+			_prompt += 'Do not include any additional information or commentary.  Only summarize the rules in plain language.  Do not pose any followup questions.';
 		}
 
 		prompt.current = _prompt;
@@ -240,7 +242,7 @@ const StepPractices = ({
 			<Divider />
 			<Button type="primary" style={{ marginBottom: 16, marginLeft: 16 }}
 				onClick={() => { savePlan(); }}
-				disabled={(currentPlan === null
+				disabled={(currentPlan === null || userName === null || userName === 'Guest'
 					|| (currentPlan?.report_data?.selected_practices.length === 0)
 					|| isDirty.current === false)}
 			>

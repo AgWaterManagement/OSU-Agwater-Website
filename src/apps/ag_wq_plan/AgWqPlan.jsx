@@ -1,10 +1,11 @@
 import { useMemo, useEffect, useState, useRef } from 'react';
 
-import { Menu, Layout, Card, message, Typography, Divider, Select, Button, Spin, Tabs } from 'antd';
+import {Menu, Layout, Card, message, Typography, Divider, Select, Button, Spin, Tabs } from 'antd';
 
 import Maps from './maps/Maps';
 import MyPlans from './MyPlans';
 import PlanEditor from './PlanEditor';
+import ModalLogin from './ModalLogin';
 
 //import AgWqplanLogin from "./AgWqplanLogin";
 import PracticesGuide from './PracticesGuide';
@@ -58,7 +59,7 @@ const AgWqPlan = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [loggingIn, setLoggingIn] = useState(false);
   const [userRole, setUserRole] = useState(null);  // User's role (e.g., 'Landowner', 'Resource Conservationist', 'ODA Water Quality Specialist')
-
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   // -----------------------------------------------------------------------------------
   // global report data state that gets passed to summary and used for PDF generation
   // useStates() reflect data that is reactive
@@ -373,12 +374,36 @@ const AgWqPlan = () => {
               </Text>
             ) : (
               <>
-              <Text style={{ fontSize: 'small', marginTop: '1.0em',  float: 'right' }}>
-                Not logged in: 
-              <Button type='secondary' style={{ fontSize: 'small' }}>
+              <Button type='primary' style={{ fontSize: 'small', float:'right' }}
+                   onClick={() => setLoginModalOpen(true)}>
                 Log in
               </Button>
-              </Text>
+
+                 <ModalLogin
+                            open={loginModalOpen}
+                            onCancel={() => setLoginModalOpen(false)}
+                            role={userRole}
+                            showCancel={false}
+                            onLoginSuccess={(result) => {
+                                console.log("Login successful:", result);
+                                setUserName(result.user.username);
+                                setUserRole(result.user.role);
+                                _setUserID(result.user.id);
+                                setLoggingIn(false);
+                                setLoginModalOpen(false);
+                            }}
+                            onLoginFailure={(error) => {
+                                console.error("Login failed:", error);
+                                setLoggingIn(false);
+                            }}
+                            onLogout={() => {
+                                console.log("Logged out");
+                                setUserName(null);
+                                setUserRole(null);
+                                setLoggingIn(false);
+                            }}
+                        />
+                    
               </>
             )}
           </Title>
