@@ -14,7 +14,7 @@ import VFSGuide from './Guides/VFSGuide';
 import WQCalculators from './calculators/WQCalculators';
 
 const { Content, Footer } = Layout;
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text, Paragraph, Link } = Typography;
 const API_BASE = 'https://agwater.org:5556';
 import { secrets } from '../../secrets.js';
 
@@ -411,7 +411,8 @@ const AgWqPlan = () => {
           {currentMode === '' && (
             <Paragraph>
               This tool connects land conditions and goals to agricultural water quality
-              practices, technical assistance, and reference materials.
+              practices, technical assistance, and reference materials. It is the result of collaboration
+              between the Oregon Department of Agriculture (<Link href="https://www.oregon.gov/oda" target="_blank" rel="noreferrer">ODA</Link>) and Oregon State University&apos;s Agricultural Technical Assistance Program (AgTAP).
             </Paragraph>
           )}
           <br/>
@@ -550,7 +551,11 @@ const AgWqPlan = () => {
         </Card>
       </Content >
       <Footer style={{ textAlign: 'center' }}>
-        Oregon Ag Water Quality Practices – prototype planner
+{/*      <Title level={5}>Oregon Ag Water Quality Practices Planner</Title>  */}
+      <Divider />
+      <Paragraph>
+        This project has been funded wholly or in part by the U.S. Environmental Protection Agency under assistance agreement 44-02J54901 to Oregon Department of Agriculture. The contents of this document do not necessarily reflect the views and policies of the EPA, nor does the EPA endorse trade names or recommend the use of commercial products mentioned in this document, as well as any images, video, text, or other content created by generative artificial intelligence tools, nor does any such content necessarily reflect the views and policies of the EPA.
+      </Paragraph>
       </Footer>
     </>
   );

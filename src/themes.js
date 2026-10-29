@@ -62,6 +62,9 @@ export const darkTheme = {
             colorText: '#1c1c1c',
             addonBg: 'lightgrey',
         },
+        Layout: {
+            footerBg: '#1c1c1c',
+        },
         Message: {
             colorText: 'blue',
             colorTextSuccess: 'green',
