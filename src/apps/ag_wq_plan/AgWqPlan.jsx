@@ -412,7 +412,7 @@ const AgWqPlan = () => {
             <Paragraph>
               This tool connects land conditions and goals to agricultural water quality
               practices, technical assistance, and reference materials. It is the result of collaboration
-              between the Oregon Department of Agriculture (<Link href="https://www.oregon.gov/oda" target="_blank" rel="noreferrer">ODA</Link>) and Oregon State University&apos;s Agricultural Technical Assistance Program (AgTAP).
+              between the Oregon Department of Agriculture (<Link href="https://www.oregon.gov/oda" target="_blank" rel="noreferrer">ODA</Link>) and Oregon State University&apos;s Agricultural Technical Assistance Program (<Link href="https://agwater.oregonstate.edu/agtap" target="_blank" rel="noreferrer">AgTAP</Link>).
             </Paragraph>
           )}
           <br/>
