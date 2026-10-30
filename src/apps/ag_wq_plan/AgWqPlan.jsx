@@ -425,7 +425,6 @@ const AgWqPlan = () => {
             ]}
           />
 
-
           <Spin spinning={loadingData} tip="Loading planner data...">
 
             {currentMode === 'my_plans' && currentPlan === null && (
