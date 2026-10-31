@@ -60,6 +60,9 @@ import DroughtSurvey1 from '../../pages/survey/DroughtSurvey1';
 import SurveyResults from '../../pages/survey/SurveyResults';
 import Contact from '../../pages/contact_form/Contact';
 
+// Wotus MapServer test page
+import WotusMapServer from '../../pages/wotus_mapserver_test/WotusMapServer';
+
 const AppRoutes = () => (
     <Routes>
         <Route path="/" element={<Home />} />
@@ -85,6 +88,7 @@ const AppRoutes = () => (
 
         <Route path="/apps/agSNA" element={<AgSNA />} />        
         <Route path="/apps/wotus" element={<Wotus />} />
+        <Route path="/apps/wotusMapServer" element={<WotusMapServer />} />
         <Route path="/apps/drought" element={<Drought />} />
         <Route path="/apps/droughtIndexViewer" element={<DroughtIndexViewer />} />
         <Route path="/apps/agWaterChat" element={<AgWaterChat />} />
