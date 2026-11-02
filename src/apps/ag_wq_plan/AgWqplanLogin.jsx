@@ -19,7 +19,7 @@ async function parseJsonResponse(response) {
   }
 }
 
-export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role}) {
+export default function AgWqplanLogin({ onLoginSuccess, showCancel = true, role }) {
   const [loading, setLoading] = useState(false);
   const [authState, setAuthState] = useState({ isAuthenticated: false, user: null });
   const [showRegisterForm, setShowRegisterForm] = useState(false);
@@ -97,11 +97,23 @@ export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role
     {authState.isAuthenticated === false && (
       <>
         <div style={{ padding: 4, textAlign: 'center' }} >
-          <Title level={4}>Sign In to the Ag Water Quality Planner</Title>
-          <Paragraph style={{ width: '100%'}}>
-            Log in to the Ag Water Quality Planner below.  
-          </Paragraph>
-          {registrationResult?.otpauth_uri && (
+          {showRegisterForm ? (
+            <>
+              <Title level={4}>Register for the Ag Water Quality Planner</Title>
+              <Paragraph style={{ width: '100%' }}>
+                Register for the Ag Water Quality Planner below.
+              </Paragraph>
+            </>) : (
+            <>
+              <Title level={4}>Sign In to the Ag Water Quality Planner</Title>
+              <Paragraph style={{ width: '100%' }}>
+                Log in to the Ag Water Quality Planner below.
+              </Paragraph>
+            </>)
+          }
+
+
+          {registrationResult?.otpauth_uri ? (
             <Row>
               <Col span={12}>
                 <Paragraph style={{ width: '100%' }}>
@@ -112,13 +124,15 @@ export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role
                 <QRCode value={registrationResult.otpauth_uri} size={128} />
               </Col>
             </Row>
+          ) : (
+            <Paragraph style={{ width: '100%' }}>
+              You will need an Authenticator app (like Google Authenticator or Microsoft Authenticator,
+              available in your app store) to generate a one-time code for signing in.
+            </Paragraph>
           )}
-          <Paragraph style={{ width: '100%'}}>
-            You will need an Authenticator app (like Google Authenticator or Microsoft Authenticator, 
-            available in your app store) to generate a one-time code for signing in.
-          </Paragraph>
+
           {!showRegisterForm && (
-            <Paragraph style={{ width: '100%'}}>
+            <Paragraph style={{ width: '100%' }}>
               If you do not have an account, you can create one using the &quot;Register here&quot; link below.  If you do not want to create an account, you can continue as a guest, but you will not be able to save your plan.
 
               {/*<Link onClick={() => setShowRegisterForm(true)}>create one</Link>. */}
@@ -214,7 +228,7 @@ export default function AgWqplanLogin({ onLoginSuccess, showCancel = true , role
                     ]}
                   />
                 </Form.Item>
-                
+
                 <Button htmlType="submit" type="primary" loading={loading} style={{ marginRight: 8 }}>
                   Create Account
                 </Button>

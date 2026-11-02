@@ -63,7 +63,7 @@ export const darkTheme = {
             addonBg: 'lightgrey',
         },
         Layout: {
-            footerBg: '#1c1c1c',
+            footerBgr: '#1c1c1c',
         },
         Message: {
             colorText: 'blue',
@@ -74,7 +74,7 @@ export const darkTheme = {
         },
         Modal: {
             titleColor: '#F2F2F2',
-            contentBg: '#565656',
+            contentBg: '#2c2b2b',
             headerBg: '#565656',
             colorBgElevated: 'darkslategray',
         },
@@ -87,14 +87,8 @@ export const darkTheme = {
 
         Radio: {
             buttonColor: 'grey',
-            //buttonBg: '#262626',
-            //buttonBorderColor: '#1677ff',
-            //buttonHoverColor: 'white',
-            //buttonHoverBorderColor: '#4096ff',
             buttonCheckedBg: '#0051C2',
             buttonSolidCheckedBg: '#0051C2',
-            //buttonSolidCheckedColor: 'white',
-            //colorBgContainer: '#ECECEC',
         },
 
         Rate: { starBg: 'rgba(245,242,242,0.2)', starColor: 'gold' },
