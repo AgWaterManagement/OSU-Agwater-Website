@@ -11,6 +11,7 @@ import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import 'leaflet/dist/leaflet.css';
 import { secrets } from "../../secrets";
 import './OregonCropWaterUse.css';
+import { Link } from 'react-router-dom';
 
 /* DEPENDENCIES:
 
@@ -440,10 +441,13 @@ const CropWaterUse = () => {
                 <h3 style={{ marginLeft: '0.4em' }}>Crop Water Use in Oregon</h3>
 
                 <p>
-                    This tool provides insights into the water use of various crops across different Water Master districts in Oregon.
-                    By selecting a district and crop of interest, users can visualize localized average monthly crop water use data,
+                    This tool provides insights into the water use of various crops across different reporting units 
+                    (Water Master districts, Counties, and HUC 8 Watersheds) in Oregon.
+                    By selecting an area and crop of interest, users can visualize localized average monthly crop water use data,
                     including actual and reference evapotranspiration (ET, ET0), precipitation, and net irrigation water
-                    requirement (NIWR) for the selected crop. This information can help farmers and water managers make informed
+                    requirement (NIWR) for the selected crop.  Based on data provided in the report 
+                    <Link to="https://www.dri.edu/project/owrd-et/"> Crop Evapotranspiration, Consumptive Use, and Open Water Evaporation for Oregon</Link> developed by the 
+                    Oregon Water Resources Department (OWRD) and the Desert Research Institute (DRI), this information can help farmers and water managers make informed
                     decisions about irrigation scheduling and water resource management based on the expected water use of crops
                     throughout the growing season.
                 </p>

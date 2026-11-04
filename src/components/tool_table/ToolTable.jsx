@@ -27,16 +27,14 @@ const imagePath = 'https://agwater.org/images/'
 
 const toolsData = [
       {
-        title: 'Ag Water Chatbot',
-        description: (<><img src={imagePath + 'Farmer_Talking_To_AI.png'} alt='Ag Water Chatbot' width={360} />This tool provides access to a
-                  large language model (AI) trained specifically to answer questions about agricultural water managment in the 
-                  Pacific Northwest.  Ask it, in plain English, anything you want to know about agricultural water 
-                  management in the region. <br/><br/>
-                  <strong>A caveat:</strong> this is an experimental tool and may not always provide accurate information.
-                  Your feedback is welcomed!</>),
-        keywords: ['AI', 'water', 'agriculture', 'chatbot', 'large language model'],
-        link: '/chat',
-        status: 'experimental',
+        title: 'Managing Drought In Oregon',
+        description: (<><img src={imagePath + 'OIP-1495046469.jpg'} alt='Managing Drought' width={360} />This tool provides information on drought
+         management strategies in Oregon, including data on precipitation, soil moisture, and water availability.
+          It allows users to explore the data by region and time period, and provides visualizations
+          and summaries of the drought conditions and impacts.</>),
+        keywords: ['drought', 'Oregon', 'precipitation', 'soil moisture', 'water availability'],
+        link: '/apps/drought',
+        status: 'live'
       },
       {
         title: 'Agricultural Financial Program Directory',
@@ -50,6 +48,28 @@ const toolsData = [
         status: 'live'
       },
       {
+        title: 'Ag Water Chatbot',
+        description: (<><img src={imagePath + 'Farmer_Talking_To_AI.png'} alt='Ag Water Chatbot' width={360} />This tool provides access to a
+                  large language model (AI) trained specifically to answer questions about agricultural water managment in the 
+                  Pacific Northwest.  Ask it, in plain English, anything you want to know about agricultural water 
+                  management in the region. <br/><br/>
+                  <strong>A caveat:</strong> this is an experimental tool and may not always provide accurate information.
+                  Your feedback is welcomed!</>),
+        keywords: ['AI', 'water', 'agriculture', 'chatbot', 'large language model'],
+        link: '/chat',
+        status: 'experimental',
+      },
+      {
+        title: 'Irrigation Measurement Calculators',
+        description: (<><img src={imagePath + 'IrrigMeasurement.png'} alt='Irrigation Measurement Calculators' width={360} />
+        Access a set of interactive calculators for
+         measuring and analyzing irrigation systems, including pump discharge, applied depth, catch-can uniformity, 
+         and root-zone soil-water deficit. </>),
+        keywords: ['irrigation', 'measurement', 'pumping', 'soil water', 'performance'],
+        link: '/apps/irrigationMeasurement',
+        status: 'live'
+      }, 
+           {
         title: 'Protected Waters of the US',
         description: (<><img src={imagePath + 'Tidal-Creek-in-Salt-Marsh-688.jpg'} alt='Protected Waters' width={360}/>
                     This tool provides information on the extent of protected waters in the United States, 
@@ -69,27 +89,6 @@ const toolsData = [
         status: 'live'
       },
       {
-        title: 'Irrigation Measurement Calculators',
-        description: (<><img src={imagePath + 'IrrigMeasurement.png'} alt='Irrigation Measurement Calculators' width={360} />
-        Access a set of interactive calculators for
-         measuring and analyzing irrigation systems, including pump discharge, applied depth, catch-can uniformity, 
-         and root-zone soil-water deficit. </>),
-        keywords: ['irrigation', 'measurement', 'pumping', 'soil water', 'performance'],
-        link: '/apps/irrigationMeasurement',
-        status: 'live'
-      },
-      {
-        title: 'Crop Water Use in Oregon',
-        description: (<><img src={imagePath + 'OIP-2795785401.jpg'} alt='Crop Water Use' width={360} />This tool provides information on crop water
-                     use in Oregon, including data on irrigation practices and water
-                     consumption patterns. It summarizes crop water use information from over 250 thousand fields in Oregon,
-                     from the period 1983 to 2022. The summarized data include crop-specific and location-specific crop water use patterns, 
-                     precipitation, monthly crop coefficient (Kc) values, and seasonal crop water use estimates for 95 crops grown in Oregon.</>),
-        keywords: ['crop water use', 'Oregon', 'irrigation', 'water consumption'],
-        link: '/apps/oregonCropWaterUse',
-        status: 'under_development'
-      },
-      {
         title: 'Agrimet Portal',
         description: (<><img src={imagePath + 'drpw1.jpg'} alt='Agrimet Portal' width={360} />
               This tool provides access to the Bureau of Land Management&apos;s (BLM) Agrimet data.  Agrimet is 
@@ -99,16 +98,6 @@ const toolsData = [
         </>),
         keywords: ['Agrimet', 'BLM', 'weather', 'crop water use', 'Oregon', 'irrigation', 'water consumption'],
         link: '/apps/agrimet',
-        status: 'under_development'
-      },
-      {
-        title: 'Managing Drought In Oregon',
-        description: (<><img src={imagePath + 'OIP-1495046469.jpg'} alt='Managing Drought' width={360} />This tool provides information on drought
-         management strategies in Oregon, including data on precipitation, soil moisture, and water availability.
-          It allows users to explore the data by region and time period, and provides visualizations
-          and summaries of the drought conditions and impacts.</>),
-        keywords: ['drought', 'Oregon', 'precipitation', 'soil moisture', 'water availability'],
-        link: '/apps/drought',
         status: 'under_development'
       },
       {

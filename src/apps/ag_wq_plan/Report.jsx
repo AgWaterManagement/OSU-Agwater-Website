@@ -62,10 +62,10 @@ const Report = ({
     const printContents = printRef.current.innerHTML;
     const win = window.open('', '_blank');
     if (!win) return;
-    win.document.write(
-      `<html><head><title>Ag WQ Plan</title></head><body>${printContents}</body></html>`,
-    );
-    win.document.close();
+    win.document.title = 'Ag WQ Plan';
+    const printContainer = win.document.createElement('div');
+    printContainer.innerHTML = printContents;
+    win.document.body.appendChild(printContainer);
     win.focus();
     win.print();
   };
