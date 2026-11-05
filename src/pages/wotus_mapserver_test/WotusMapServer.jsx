@@ -3,7 +3,8 @@ import { MapContainer, TileLayer, WMSTileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 const MAPSERVER_URL = "https://localhost:6001/mapserver/mapserv";
-const MAP_FILE = "D:/MapServer/apps/tutorial/htdocs/example4.map";
+// const MAP_FILE = "D:/MapServer/apps/tutorial/htdocs/example4.map";
+const MAP_FILE = "D:/MapServer/apps/WOTUS/WOTUS_test.map"
 
 export default function WotusMapServer() {
   return (
@@ -21,7 +22,9 @@ export default function WotusMapServer() {
             ?map=...&layer=states&layer=hydro&mode=map */}
         <WMSTileLayer
           url={`${MAPSERVER_URL}?map=${MAP_FILE}`}
-          layers="states,hydro"
+          // layers="continents"
+          service="WFS"
+          mode="map"
           format="image/png"
           transparent={true}
           version="1.1.1"

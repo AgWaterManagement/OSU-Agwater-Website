@@ -12,6 +12,8 @@ import Manuel from '../../assets/images/Jamarillo-150X150.jpg';
 import Derek from '../../assets/images/DerekGodwin-150x150.jpg';
 import Yu from '../../assets/images/YuLu-150X150.jpg';
 import Sean from '../../assets/images/sean-higgens-150x150.jpg';
+import Arshdeep from '../../assets/images/Arshdeep.png';
+
 import PropTypes from 'prop-types';
 
 const AWTeam = ({ team }) => {
@@ -101,6 +103,19 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
+                <Card title="Arshdeep Singh" style={{ height: '100%' }}>
+                    <img src={Arshdeep} alt="Arshdeep Singh" />
+                    <Link href="https://cropandsoil.oregonstate.edu/directory/people/arshdeep-singh" target="_blank">Dr. Arshdeep Singh</Link>’s
+                     research and extension group focuses on balancing crop production and sustainability goals in
+                     agriculture (specifically improving soil water quality). He conducts integrated assessments of 
+                     agroecosystem performance to optimize resource use efficiencies and crop yields while mitigating 
+                     negative environmental impacts. He is particularly interested in identifying cropping systems,
+                      crop varieties, and management practices that improve resource (nitrogen & water) use efficiencies
+                       and soil water quality while reducing carbon footprint. 
+                </Card>
+            </div>
+
+            <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
                 <Card title="Troy Peters, Ph.D" style={{ height: '100%' }}>
                     <img src='https://s3.wp.wsu.edu/uploads/sites/888/2023/03/Troy-Peters-1-396x436.jpg' />
                     <Link href="https://bsyse.wsu.edu/people/faculty/peters/" target="_blank">Dr. Troy Peters</Link> works in the Land, Air, Water Resources, and Environmental Engineering (LAWREE) emphasis area within
@@ -111,6 +126,19 @@ const AWTeam = ({ team }) => {
                     and is also affiliated with the <Link href="https://cpaas.wsu.edu/" target="_blank">Center for Precision and Automated Agricultural Systems</Link>.
                 </Card>
             </div>
+
+            <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
+                <Card title="Yu Lu" style={{ height: '100%' }}>
+                    <img src={Yu} alt="Yu Lu" />
+                    <Link href="https://bee.oregonstate.edu/users/yu-lu" target="_blank">Dr. Yu Lu</Link> is an Assistant Professor of Practice
+                    in Human Dimensions of Agricultural Water Management in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
+                    She is an interdisciplinary environmental social scientist studying how people, institutions, and ecosystems interact
+                    under climate and market risks and emerging technologies, and how policy and governance can better support resilient livelihoods and landscapes.
+                    Using quantitative and qualitative methods, including surveys, interviews, social network analysis, and machine learning, Dr. Lu's work aims to
+                    inform agricultural and conservation policy and governance in support of sustainable and resilient agricultural systems in Oregon and beyond.
+                </Card>
+            </div>
+
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
                 <Card title="Yu Lu" style={{ height: '100%' }}>
