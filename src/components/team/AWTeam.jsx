@@ -2,7 +2,7 @@ import { Card, Typography} from 'antd';
 
 const { Link } = Typography;
 
-
+/*
 import Maria from '../../assets/images/maria-150X150.jpg';
 import Bolte from '../../assets/images/bolte-150X150.jpg';
 import Malena from '../../assets/images/malena-150X150.jpg';
@@ -13,17 +13,23 @@ import Derek from '../../assets/images/DerekGodwin-150x150.jpg';
 import Yu from '../../assets/images/YuLu-150X150.jpg';
 import Sean from '../../assets/images/sean-higgens-150x150.jpg';
 import Arshdeep from '../../assets/images/Arshdeep.png';
+*/
+
+
+
 
 import PropTypes from 'prop-types';
 
+
 const AWTeam = ({ team }) => {
+    const IMAGE_PATH = '/images/team/';
     return (
 
         <div className="flex-container" style={{ textAlign: 'left'}}>
             <div className="flex-item" style={{ minWidth: 400 }}>
                 <Card title="Maria Zamora, Ph.D" style={{ height: '100%' }}>
 
-                    <img src={Maria} />
+                    <img src={IMAGE_PATH + 'maria-150X150.jpg'} />
                     <Link href="https://bee.oregonstate.edu/users/maria-zamora-re" target="_blank">Dr. Maria Zamora Re</Link> is an Agricultural Water Management and Irrigation Engineering Extension
                     specialist in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
                     Her research is focused on irrigation scheduling and water allocation, evaluating evapotranspiration-based methods and Smart-irrigation tools
@@ -35,7 +41,7 @@ const AWTeam = ({ team }) => {
 
             <div className="flex-item" style={{ minWidth: 400 }}>
                 <Card title="Malena Orduna Alegria, Ph.D" style={{ height: '100%' }}>
-                    <img src={Malena} />
+                    <img src={IMAGE_PATH + 'malena-150X150.jpg'} />
                     <Link href="https://bee.oregonstate.edu/users/malena-orduna-alegria" target="_blank">Dr. Malena Orduna Alegria </Link>
                     is an Assistant Professor in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
                     She specializes in examining the interelation in sociological and water resources systems, exploring factors and
@@ -46,7 +52,7 @@ const AWTeam = ({ team }) => {
 
             <div className="flex-item" style={{ minWidth: 400 }}>
                 <Card title="Salini Sasidharan, Ph.D" style={{ height: '100%' }}>
-                    <img src={Salini} />
+                    <img src={IMAGE_PATH + 'salini-150X150.jpg'} />
                     <Link href="https://bee.oregonstate.edu/users/salini-sasidharan" target="_blank">Dr. Salini Sasidhran </Link>
                     is an Assistant Professor in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
                     She specializes in examining groundwater issues in Oregon and beyond. Her research includes understanding groundwater
@@ -57,7 +63,7 @@ const AWTeam = ({ team }) => {
 
             <div className="flex-item" style={{ minWidth: 400 }}>
                 <Card title="Manuel Garcia-Jamarillo, Ph.D" style={{ height: '100%' }}>
-                    <img src={Manuel} />
+                    <img src={IMAGE_PATH + 'Jamarillo-150X150.jpg'} />
                     <Link href="https://emt.oregonstate.edu/users/manuel-garcia-jaramillo" target="_blank">Dr. Manuel Garcia-Jamarillo </Link>
                     is an Assistant Professor in the <Link href="https://emt.oregonstate.edu/" target="_blank">Environmental and Molecular Toxicology department</Link> at Oregon State University.
                     He and his team use state-of-the-art tools and techniques to monitor a wide variety of water sources for potential contaminents.
@@ -68,7 +74,7 @@ const AWTeam = ({ team }) => {
 
             <div className="flex-item" style={{ minWidth: 400 }}>
                 <Card title="Floyid Nicolas, Ph.D" style={{ height: '100%' }}>
-                    <img src={Floyid} />
+                    <img src={IMAGE_PATH + 'Floyid-150X150.jpg'} />
                     <Link href="https://bee.oregonstate.edu/users/floyid-nicolas" target="_blank">Dr. Floyid Nicolas </Link>
                     is an Assistant Professor in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
                     He specializes in irrigation management, crop water use, crop production modeling, and associate decision support tools.
@@ -78,8 +84,8 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400 }}>
-                <Card title="Derek Godwin" style={{ height: '100%' }}>
-                    <img src={Derek} />
+                <Card title="Derek Godwin, Ph.D" style={{ height: '100%' }}>
+                    <img src={IMAGE_PATH + 'Derek-150x150.jpg'} />
                     <Link href="https://bee.oregonstate.edu/users/derek-godwin" target="_blank">Derek Godwin</Link> is an Extension statewide Watershed Management faculty in the <Link href="https://bee.oregonstate.edu" target="_blank">Department of 
                     Biological and Ecological Engineering</Link>. He is a Professor and has been working for OSU&apos;s Extension Service 
                     since 1994 in both program and administration positions. He specializes in education and research related to 
@@ -94,7 +100,7 @@ const AWTeam = ({ team }) => {
 
             <div className="flex-item" style={{ minWidth: 400 }}>
                 <Card title="John Bolte, Ph.D" style={{ height: '100%' }}>
-                    <img src={Bolte} />
+                    <img src={IMAGE_PATH + 'bolte-150X150.jpg'} alt="John Bolte" />
                     <Link href="https://bee.oregonstate.edu/users/john-bolte" target="_blank">Dr. John Bolte </Link>
                     is a Professor in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
                     He specializes in modeling a variety of coupled human/natural systems, including exploring the effects of a changing climate,
@@ -103,8 +109,20 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
-                <Card title="Arshdeep Singh" style={{ height: '100%' }}>
-                    <img src={Arshdeep} alt="Arshdeep Singh" />
+                <Card title="Yu Lu, Ph.D" style={{ height: '100%' }}>
+                    <img src={IMAGE_PATH + 'YuLu-150X150.jpg'} alt="Yu Lu" />
+                    <Link href="https://bee.oregonstate.edu/users/yu-lu" target="_blank">Dr. Yu Lu</Link> is an Assistant Professor of Practice
+                    in Human Dimensions of Agricultural Water Management in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
+                    She is an interdisciplinary environmental social scientist studying how people, institutions, and ecosystems interact
+                    under climate and market risks and emerging technologies, and how policy and governance can better support resilient livelihoods and landscapes.
+                    Using quantitative and qualitative methods, including surveys, interviews, social network analysis, and machine learning, Dr. Lu's work aims to
+                    inform agricultural and conservation policy and governance in support of sustainable and resilient agricultural systems in Oregon and beyond.
+                </Card>
+            </div>
+
+            <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
+                <Card title="Arshdeep Singh, Ph.D" style={{ height: '100%' }}>
+                    <img src={IMAGE_PATH + 'arshdeep-150x150.png'} alt="Arshdeep Singh" />
                     <Link href="https://cropandsoil.oregonstate.edu/directory/people/arshdeep-singh" target="_blank">Dr. Arshdeep Singh</Link>’s
                      research and extension group focuses on balancing crop production and sustainability goals in
                      agriculture (specifically improving soil water quality). He conducts integrated assessments of 
@@ -117,7 +135,7 @@ const AWTeam = ({ team }) => {
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
                 <Card title="Troy Peters, Ph.D" style={{ height: '100%' }}>
-                    <img src='https://s3.wp.wsu.edu/uploads/sites/888/2023/03/Troy-Peters-1-396x436.jpg' />
+                    <img src={'https://s3.wp.wsu.edu/uploads/sites/888/2023/03/Troy-Peters-1-396x436.jpg'} alt="Troy Peters" />
                     <Link href="https://bsyse.wsu.edu/people/faculty/peters/" target="_blank">Dr. Troy Peters</Link> works in the Land, Air, Water Resources, and Environmental Engineering (LAWREE) emphasis area within
                     the <Link href="https://bsyse.wsu.edu/" target="_blank">Biological Systems Engineering department at Washington State University</Link>. His primary focus is on agricultural irrigation.
                     This includes deficit irrigation, irrigation water hydraulics, irrigation scheduling and management, irrigation automation,
@@ -128,33 +146,8 @@ const AWTeam = ({ team }) => {
             </div>
 
             <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
-                <Card title="Yu Lu" style={{ height: '100%' }}>
-                    <img src={Yu} alt="Yu Lu" />
-                    <Link href="https://bee.oregonstate.edu/users/yu-lu" target="_blank">Dr. Yu Lu</Link> is an Assistant Professor of Practice
-                    in Human Dimensions of Agricultural Water Management in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
-                    She is an interdisciplinary environmental social scientist studying how people, institutions, and ecosystems interact
-                    under climate and market risks and emerging technologies, and how policy and governance can better support resilient livelihoods and landscapes.
-                    Using quantitative and qualitative methods, including surveys, interviews, social network analysis, and machine learning, Dr. Lu's work aims to
-                    inform agricultural and conservation policy and governance in support of sustainable and resilient agricultural systems in Oregon and beyond.
-                </Card>
-            </div>
-
-
-            <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
-                <Card title="Yu Lu" style={{ height: '100%' }}>
-                    <img src={Yu} alt="Yu Lu" />
-                    <Link href="https://bee.oregonstate.edu/users/yu-lu" target="_blank">Dr. Yu Lu</Link> is an Assistant Professor of Practice
-                    in Human Dimensions of Agricultural Water Management in the <Link href="https://bee.oregonstate.edu" target="_blank">Biological & Ecological Engineering department</Link> at Oregon State University.
-                    She is an interdisciplinary environmental social scientist studying how people, institutions, and ecosystems interact
-                    under climate and market risks and emerging technologies, and how policy and governance can better support resilient livelihoods and landscapes.
-                    Using quantitative and qualitative methods, including surveys, interviews, social network analysis, and machine learning, Dr. Lu's work aims to
-                    inform agricultural and conservation policy and governance in support of sustainable and resilient agricultural systems in Oregon and beyond.
-                </Card>
-            </div>
-
-            <div className="flex-item" style={{ minWidth: 400, display: team == 'website' ? 'block':'none' }}>
                 <Card title="Sean Higgins" style={{ height: '100%' }}>
-                    <img src={Sean} alt="Sean Higgins" />
+                    <img src={IMAGE_PATH + 'sean-higgens-150x150.jpg'} alt="Sean Higgins" />
                     Sean Higgins has recently received his Bachelor of Science in Computer Science at Oregon State University, 
                     and he is delighted to begin utilizing his education towards the development of a Retrieval-Augmented Generation 
                     Large-Language Model (RAG-LLM), an AI system that uses extra documents and resources to provide answers related to 

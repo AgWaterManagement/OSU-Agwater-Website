@@ -14,4 +14,17 @@ export default defineConfig({
         // }),
     ],
 
+    // server: {
+    //     proxy: {
+    //         // Proxies the local MapServer WFS test instance so the browser can fetch it
+    //         // same-origin (avoids CORS and the self-signed https://localhost:6001 cert).
+    //         "/wotus-mapserver": {
+    //             target: "https://localhost:6001",
+    //             changeOrigin: true,
+    //             secure: false,
+    //             rewrite: (path) => path.replace(/^\/wotus-mapserver/, "/mapserver/mapserv"),
+    //         },
+    //     },
+    // },
+
 })

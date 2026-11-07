@@ -9,7 +9,7 @@ import ToolTable from '../../components/tool_table/ToolTable';
 
 const HomePage = () => (
     <div>
-       <Title level={2} style={{ marginLeft: '0.25em' }}>Agricultural Water Management in the Pacific Northwest</Title>
+       <Title level={2} style={{ marginLeft: '0.25em' }}>Agricultural Water Management in Oregon and the Pacific Northwest</Title>
 
         <Paragraph style={{ marginLeft: '0.5em' }}>
             Water is essential to agriculture, and efficient use of water is increasingly important in the face of water scarcity and increasing

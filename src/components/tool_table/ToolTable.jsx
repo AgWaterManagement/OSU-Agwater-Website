@@ -60,6 +60,19 @@ const toolsData = [
         status: 'experimental',
       },
       {
+        title: 'Oregon Crop Water Use',
+        description: (<><img src={imagePath + 'OIP-2795785401.jpg'} alt='Oregon Crop Water Use' width={360} />
+        This tool provides insights into the water use of various crops across different 
+        reporting units (Water Master districts, Counties, and HUC 8 Watersheds) in Oregon.
+         By selecting an area and crop of interest, users can visualize localized 
+         average monthly crop water use data, including actual and reference evapotranspiration 
+         (ET, ET0), precipitation, and net irrigation water requirement (NIWR) for the selected crop.
+        </>),
+        keywords: ['irrigation', 'measurement', 'pumping', 'soil water', 'performance'],
+        link: '/apps/oregoncropwateruset',
+        status: 'live'
+      }, 
+      {
         title: 'Irrigation Measurement Calculators',
         description: (<><img src={imagePath + 'IrrigMeasurement.png'} alt='Irrigation Measurement Calculators' width={360} />
         Access a set of interactive calculators for
@@ -98,7 +111,7 @@ const toolsData = [
         </>),
         keywords: ['Agrimet', 'BLM', 'weather', 'crop water use', 'Oregon', 'irrigation', 'water consumption'],
         link: '/apps/agrimet',
-        status: 'under_development'
+        status: 'live'
       },
       {
         title: 'OSU Irrigation Scheduler',

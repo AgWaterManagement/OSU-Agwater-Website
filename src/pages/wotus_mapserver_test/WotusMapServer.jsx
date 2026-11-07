@@ -5,7 +5,8 @@ import "leaflet/dist/leaflet.css";
 
 const MAPSERVER_URL = "https://localhost:6001/mapserver/mapserv";
 // const MAP_FILE = "D:/MapServer/apps/tutorial/htdocs/example4.map";
-const MAP_FILE = "D:/MapServer/apps/WOTUS/WOTUS_test.map"
+// const MAP_FILE = "D:/MapServer/apps/WOTUS/WOTUS_test.map"
+const MAP_FILE = "D:/MapServer/apps/WOTUS/WOTUS_test_2.map"
 
 export default function WotusMapServer() {
   const [wotusLayerVisible, setWotusLayerVisible] = useState(true);
