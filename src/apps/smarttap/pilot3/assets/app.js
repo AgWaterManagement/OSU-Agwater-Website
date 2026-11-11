@@ -88,7 +88,7 @@
       summarize: el("summarize").checked,
       include_google_scholar: el("scholar").checked,
       include_map: el("map").checked,
-      model: "openrouter/elephant-alpha",
+      model: "openrouter/free",
       scholar_pages: 2,
       scholar_num: 10,
     };

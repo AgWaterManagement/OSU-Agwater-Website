@@ -185,7 +185,7 @@ export function SmartTapPilot3Workspace() {
       summarize: values.summarize,
       include_google_scholar: values.scholar,
       include_map: values.map,
-      model: "openrouter/elephant-alpha",
+      model: "openrouter/free",
       scholar_pages: 2,
       scholar_num: 10,
     };
